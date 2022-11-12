@@ -1,0 +1,20 @@
+model:
+  dropout: 0.5 
+  n_layers: 2 
+  d_hidden: 100
+  backbone: gat
+optim:
+  lr : 0.001
+  name : adam
+  epoch : 3000
+  patience : 1000
+  use_gpu : True
+  gpu_idx : 0
+  weight_decay : 0.0005
+dataset:
+  name : cora
+  data_dir : './data/cora/preprocessed_data.mat'
+output:
+  verbose : True
+  save_dir : './saved_model'
+  interval : 100
