@@ -33,7 +33,7 @@ class optimizer_config:
             self.use_gpu = False
         if self.use_gpu and not hasattr(self, 'gpu_idx'):
             self.gpu_idx = 0
-        if not hasattr(self, 'weig_decay'):
+        if not hasattr(self, 'weight_decay'):
             self.weight_decay = 5e-4
 
 
