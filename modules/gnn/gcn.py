@@ -1,18 +1,23 @@
+from torch import Tensor
+
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv, GATConv, SAGEConv
+from torch_geometric.nn import GCNConv
 
 
 class GCN(nn.Module):
+    r"""
+    #TODO: need to add descriptions.
+    """
     def __init__(
         self, 
-        n_feat, 
-        d_hid, 
-        n_class, 
-        dropout=0.5, 
-        n_layers=1, 
-        normalize=False
-        ):
+        n_feat: int,
+        d_hid: int,
+        n_class: int,
+        dropout: float = 0.5,
+        n_layers: int = 1,
+        normalize: bool = False
+    ):
 
         super().__init__()
         
@@ -36,7 +41,7 @@ class GCN(nn.Module):
         self.input_fc.reset_parameters()
         self.out_fc.reset_parameters()
 
-    def forward(self, data):
+    def forward(self, data: ) -> Tensor:
         x, adj_t = data.x, data.adj_t
         h = self.input_fc(x, adj_t)
         for i in range(self.num_layers):
