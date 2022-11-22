@@ -41,7 +41,7 @@ class GCN(nn.Module):
         self.input_fc.reset_parameters()
         self.out_fc.reset_parameters()
 
-    def forward(self, data: ) -> Tensor:
+    def forward(self, data) -> Tensor:
         x, adj_t = data.x, data.adj_t
         h = self.input_fc(x, adj_t)
         for i in range(self.num_layers):
