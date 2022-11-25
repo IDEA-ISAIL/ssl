@@ -31,4 +31,6 @@ class DataIterator:
         return len(self.iterator)
 
     def __next__(self) -> Any:
+        if self.transform_fn is None:
+            return next(self.iterator)
         return self.transform_fn(next(self.iterator))

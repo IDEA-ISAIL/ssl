@@ -21,3 +21,14 @@ Preprocess and load the data
 
 ## module.py
 Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.
+
+# Reference files
+## dataset
+https://github.com/dmlc/dgl/blob/master/python/dgl/data/dgl_dataset.py
+https://github.com/dmlc/dgl/blob/master/python/dgl/data/gnn_benchmark.py
+https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/dataset.py
+
+## data
+https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/data.py
+
+## models
