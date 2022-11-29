@@ -23,6 +23,8 @@ Preprocess and load the data
 Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.
 
 # Reference files
+[GCC: Graph Contrastive Coding for Graph Neural Network Pre-Training](https://arxiv.org/pdf/2006.09963.pdf) [(Github)](https://github.com/THUDM/GCC)
+
 ## dataset
 https://github.com/dmlc/dgl/blob/master/python/dgl/data/dgl_dataset.py
 https://github.com/dmlc/dgl/blob/master/python/dgl/data/gnn_benchmark.py
