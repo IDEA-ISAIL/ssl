@@ -23,7 +23,16 @@ Preprocess and load the data
 Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.
 
 # Reference files
-[GCC: Graph Contrastive Coding for Graph Neural Network Pre-Training](https://arxiv.org/pdf/2006.09963.pdf) [(Github)](https://github.com/THUDM/GCC)
+## General
+[Deep Graph Infomax, ICLR'2019](https://arxiv.org/pdf/1809.10341.pdf), [(Github)](https://github.com/PetarV-/DGI)
+[GCC: Graph Contrastive Coding for Graph Neural Network Pre-Training, KDD'2020](https://arxiv.org/pdf/2006.09963.pdf), [(Github)](https://github.com/THUDM/GCC)
+
+## Heterogeneous
+[Unsupervised Attributed Multiplex Network Embedding, AAAI'2020](https://arxiv.org/pdf/1911.06750.pdf), [(Github)](https://github.com/pcy1302/DMGI)
+[Self-supervised Heterogeneous Graph Neural Network with Co-contrastive Learning, KDD'2021](https://arxiv.org/pdf/2105.09111.pdf), [(Github)](https://github.com/liun-online/HeCo)
+
+## Temporal
+[Mining Spatio-Temporal Relations via Self-Paced Graph Contrastive Learning, KDD'2022](https://dl.acm.org/doi/pdf/10.1145/3534678.3539422), [(Github), code is not ready on 11/29](https://github.com/RongfanLi98/SPGCL)
 
 ## dataset
 https://github.com/dmlc/dgl/blob/master/python/dgl/data/dgl_dataset.py
