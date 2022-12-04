@@ -34,5 +34,3 @@ __all__ = [
 class BaseModule(torch.nn.Module, ABC):
     def __init__(self) -> None:
         super().__init__()
-
-    def 
