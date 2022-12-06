@@ -27,10 +27,43 @@ import torch.nn
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    'BaseModule'
-    ]
+    'BaseMethod'
+]
 
 
-class BaseModule(torch.nn.Module, ABC):
-    def __init__(self) -> None:
-        super().__init__()
+# this is actually a trainer.
+class BaseMethod(ABC):
+    @abstractmethod
+    def __init__(self,
+                 encoder: torch.nn.Module,
+                 data_transform: Any,
+                 data_iterator: Any,
+                 ) -> None:
+        """
+        Base class for self-supervised learning methods.
+
+        """
+        self.encoder = encoder
+        self.data_transform = data_transform
+        self.data_iterator = data_iterator
+
+    @abstractmethod
+    def get_loss(self, **kwargs):
+        """
+        Loss function.
+        """
+        pass
+
+    @abstractmethod
+    def train(self):
+        """
+        Train the encoder.
+        """
+        pass
+
+    @abstractmethod
+    def save_encoder(self):
+        """
+        Save the parameters of the encoder.
+        """
+        pass
