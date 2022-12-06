@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-This file implements BaseExtractor, which is the abstract class other
+This file implements BaseMethod, which is the abstract class other
 extractors will inherit from.
 """
 
@@ -33,11 +33,11 @@ __all__ = [
 
 # this is actually a trainer.
 class BaseMethod(ABC):
-    @abstractmethod
     def __init__(self,
                  encoder: torch.nn.Module,
                  data_transform: Any,
                  data_iterator: Any,
+                 **kwargs
                  ) -> None:
         """
         Base class for self-supervised learning methods.
@@ -61,9 +61,16 @@ class BaseMethod(ABC):
         """
         pass
 
-    @abstractmethod
-    def save_encoder(self):
+    def save_encoder(self, path) -> None:
         """
         Save the parameters of the encoder.
+        path: path to save the parameters.
         """
-        pass
+        torch.save(self.encoder, path)
+
+    def load_encoder(self, path) -> None:
+        """
+        Load the parameters of the encoder.
+        """
+        state_dict = torch.load(path)
+        self.encoder.load_state_dict(state_dict)
