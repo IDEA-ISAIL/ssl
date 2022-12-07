@@ -9,20 +9,20 @@ from typing import Union, Hashable, Iterable, Optional
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    'AugmentBase'
+    "BaseAugment"
 ]
 
 
-class AugmentBase(ABC):
+class BaseAugment(ABC):
     @abstractmethod
-    def augment_pos(self, **kwargs):
+    def positive(self, **kwargs):
         """
         Positive augmentation.
         """
         raise NotImplementedError
 
     @abstractmethod
-    def augment_neg(self, **kwargs):
+    def negative(self, **kwargs):
         """
         Negative augmentation.
         """
