@@ -53,15 +53,15 @@ class GCN(torch.nn.Module):
         return out
 
 
-class GCN_DGI(torch.nn.Module):
+class DGIGCN(torch.nn.Module):
     def __init__(self,
-                 in_ft,
-                 out_ft=512,
-                 act=torch.nn.PReLU(),
-                 bias=True):
-        super(GCN_DGI, self).__init__()
+                 in_ft: int,
+                 out_ft: int=512,
+                 act: torch.nn=torch.nn.PReLU(),
+                 bias: bool=True):
+        super(DGIGCN, self).__init__()
         self.fc = torch.nn.Linear(in_ft, out_ft, bias=False)
-        self.act = torch.nn.PReLU()
+        self.act = act
 
         if bias:
             self.bias = torch.nn.Parameter(torch.FloatTensor(out_ft))

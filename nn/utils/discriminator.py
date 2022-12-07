@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 
-class DiscriminatorDGI(nn.Module):
+class DGIDiscriminator(nn.Module):
     def __init__(self, n_h):
-        super(DiscriminatorDGI, self).__init__()
+        super(DGIDiscriminator, self).__init__()
         self.f_k = nn.Bilinear(n_h, n_h, 1)
 
         for m in self.modules():
