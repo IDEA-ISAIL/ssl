@@ -22,13 +22,14 @@ from abc import ABC, abstractmethod
 from typing import Tuple, List, Dict, Any
 from typing import Union, Hashable, Iterable, Optional
 
-import torch.nn
+import torch
+from augment import BaseAugment
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    'BaseMethod',
-    'ContrastiveMethod'
+    "BaseMethod",
+    "ContrastiveMethod"
 ]
 
 
@@ -38,7 +39,7 @@ class BaseMethod(ABC):
             self,
             encoder: torch.nn.Module,
             data_iterator: Any,
-            data_augment: Any,
+            data_augment: BaseAugment,
     ) -> None:
         """
         Base class for self-supervised learning methods.
@@ -53,14 +54,14 @@ class BaseMethod(ABC):
         """
         Loss function.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def train(self):
         """
         Train the encoder.
         """
-        pass
+        raise NotImplementedError
 
     def save_encoder(self, path) -> None:
         """
@@ -82,7 +83,7 @@ class ContrastiveMethod(BaseMethod):
             self,
             encoder: torch.nn.Module,
             data_iterator: Any,
-            data_augment: Any,
+            data_augment: BaseAugment,
             discriminator: torch.nn.Module,
     ) -> None:
         super().__init__(
@@ -94,16 +95,16 @@ class ContrastiveMethod(BaseMethod):
         self.discriminator = discriminator
 
     def train(self):
-        pass
+        raise NotImplementedError
 
     def get_loss(self, **kwargs):
-        pass
+        raise NotImplementedError
 
     def get_pos(self):
-        pass
+        raise NotImplementedError
 
-    def get_negative(self):
-        pass
+    def get_neg(self):
+        raise NotImplementedError
 
     @classmethod
     def get_label_pairs(cls, batch_size: int, n_pos: int, n_neg: int):

@@ -1,8 +1,9 @@
 import torch
 import numpy as np
 
-from nn import GCN_DGI, AvgReadout, DiscriminatorDGI
-from methods.base_methods import BaseContrastiveMethod
+from nn import DGIGCN, AvgReadout, DGIDiscriminator
+from augment import BaseAugment, DGIAugment
+from methods.base import ContrastiveMethod
 
 from typing import Tuple, List, Dict, Any
 
@@ -10,7 +11,7 @@ from typing import Tuple, List, Dict, Any
 class DGI_old(torch.nn.Module):
     def __init__(self, n_in, n_h, activation):
         super(DGI_old, self).__init__()
-        self.gcn = GCN_DGI(n_in, n_h, activation)
+        self.gcn = DGIGCN(n_in, n_h, activation)
         self.read = AvgReadout()
 
         self.sigm = torch.nn.Sigmoid()
@@ -37,19 +38,21 @@ class DGI_old(torch.nn.Module):
         return h_1.detach(), c.detach()
 
 
-class DGI(BaseContrastiveMethod):
+class DGI(ContrastiveMethod):
     def __init__(self,
-                 encoder: torch.nn.Module=GCN_DGI,
-                 data_transform: Any,
+                 encoder: torch.nn.Module=DGIGCN,
+                 data_augment: BaseAugment=DGIAugment,
                  data_iterator: Any,
-                 discriminator: torch.nn.Module=DiscriminatorDGI,
-                 lr=0.001,
-                 l2_coef=0.0,
-                 n_epochs=10000,
-                 patience=20,
+                 discriminator: torch.nn.Module=DGIDiscriminator,
+                 lr: float=0.001,
+                 weight_decay: float=0.0,
+                 n_epochs: int=10000,
+                 patience: int=20,
+                 cuda: int=None,
+                 sparse: bool=True
                  ):
         super().__init__(encoder=encoder,
-                         data_transform=data_transform,
+                         data_augment=data_augment,
                          data_iterator=data_iterator,
                          discriminator=discriminator)
 
@@ -57,11 +60,14 @@ class DGI(BaseContrastiveMethod):
         self.read = AvgReadout()
         self.sigm = torch.nn.Sigmoid()
 
-        self.optimizer = torch.optim.Adam(self.encoder.parameters(), lr, weight_decay=l2_coef)
+        self.optimizer = torch.optim.Adam(self.encoder.parameters(), lr, weight_decay=weight_decay)
         self.b_xent = torch.nn.BCEWithLogitsLoss()
 
         self.n_epochs = n_epochs
         self.patience = patience
+
+        self.cuda = cuda
+        self.sparse = sparse
 
     def get_loss(self, features, shuf_fts):
         logits = self.encoder(features, shuf_fts, sp_adj if sparse else adj, sparse, None, None, None)
@@ -69,19 +75,18 @@ class DGI(BaseContrastiveMethod):
         return loss
 
     def train(self):
-
-        if torch.cuda.is_available():
-            print('Using CUDA')
-            model.cuda()
-            features = features.cuda()
-            if sparse:
-                sp_adj = sp_adj.cuda()
-            else:
-                adj = adj.cuda()
-            labels = labels.cuda()
-            idx_train = idx_train.cuda()
-            idx_val = idx_val.cuda()
-            idx_test = idx_test.cuda()
+        # if self.cuda:
+        #     print('Using CUDA')
+        #     self.encoder.cuda()
+        #     features = features.cuda()
+        #     if sparse:
+        #         sp_adj = sp_adj.cuda()
+        #     else:
+        #         adj = adj.cuda()
+        #     labels = labels.cuda()
+        #     idx_train = idx_train.cuda()
+        #     idx_val = idx_val.cuda()
+        #     idx_test = idx_test.cuda()
 
         cnt_wait = 0
         best = 1e9
@@ -92,11 +97,10 @@ class DGI(BaseContrastiveMethod):
             self.optimizer.zero_grad()
 
             # data augmentation
-            idx = np.random.permutation(nb_nodes)
-            shuf_fts = features[:, idx, :]
+            feat_neg = self.data_augment.negative(n_nodes, features)
 
-            lbl_1 = torch.ones(batch_size, nb_nodes)
-            lbl_2 = torch.zeros(batch_size, nb_nodes)
+            lbl_1 = torch.ones(batch_size, n_nodes)
+            lbl_2 = torch.zeros(batch_size, n_nodes)
             lbl = torch.cat((lbl_1, lbl_2), 1)
 
             if torch.cuda.is_available():
