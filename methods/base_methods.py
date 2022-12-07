@@ -27,25 +27,26 @@ import torch.nn
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    'BaseMethod'
+    'BaseMethod',
+    'ContrastiveMethod'
 ]
 
 
 # this is actually a trainer.
 class BaseMethod(ABC):
-    def __init__(self,
-                 encoder: torch.nn.Module,
-                 data_transform: Any,
-                 data_iterator: Any,
-                 **kwargs
-                 ) -> None:
+    def __init__(
+            self,
+            encoder: torch.nn.Module,
+            data_iterator: Any,
+            data_transform: Any,
+    ) -> None:
         """
         Base class for self-supervised learning methods.
 
         """
         self.encoder = encoder
-        self.data_transform = data_transform
         self.data_iterator = data_iterator
+        self.data_transform = data_transform
 
     @abstractmethod
     def get_loss(self, **kwargs):
@@ -74,3 +75,42 @@ class BaseMethod(ABC):
         """
         state_dict = torch.load(path)
         self.encoder.load_state_dict(state_dict)
+
+
+class ContrastiveMethod(BaseMethod):
+    def __init__(
+            self,
+            encoder: torch.nn.Module,
+            data_iterator: Any,
+            data_transform: Any,
+            discriminator: torch.nn.Module,
+    ) -> None:
+        super().__init__(
+            encoder=encoder,
+            data_iterator=data_iterator,
+            data_transform=data_transform
+        )
+
+        self.discriminator = discriminator
+
+    def train(self):
+        pass
+
+    def get_loss(self, **kwargs):
+        pass
+
+    def get_pos(self):
+        pass
+
+    def get_negative(self):
+        pass
+
+    @classmethod
+    def get_label_pairs(cls, batch_size: int, n_pos: int, n_neg: int):
+        """
+        Get the positive and negative files
+        """
+        label_pos = torch.ones(batch_size, n_pos)
+        label_neg = torch.zeros(batch_size, n_neg)
+        labels = torch.cat((label_pos, label_neg), 1)
+        return labels
