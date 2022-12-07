@@ -9,29 +9,21 @@ from typing import Union, Hashable, Iterable, Optional
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    'BaseTransform'
+    'AugmentBase'
 ]
 
 
-class BaseTransform(ABC):
+class AugmentBase(ABC):
     @abstractmethod
-    def trans_pos(self, **kwargs):
+    def augment_pos(self, **kwargs):
         """
-        Positive transformation.
+        Positive augmentation.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
-    def trans_neg(self, **kwargs):
+    def augment_neg(self, **kwargs):
         """
-        Negative transformation.
+        Negative augmentation.
         """
-        pass
-
-
-class DataTransform(BaseTransform):
-    def trans_pos(self, data: Any):
-        return data
-
-    def trans_neg(self, data: Any):
         raise NotImplementedError

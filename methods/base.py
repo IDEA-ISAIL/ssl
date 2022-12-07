@@ -38,7 +38,7 @@ class BaseMethod(ABC):
             self,
             encoder: torch.nn.Module,
             data_iterator: Any,
-            data_transform: Any,
+            data_augment: Any,
     ) -> None:
         """
         Base class for self-supervised learning methods.
@@ -46,7 +46,7 @@ class BaseMethod(ABC):
         """
         self.encoder = encoder
         self.data_iterator = data_iterator
-        self.data_transform = data_transform
+        self.data_augment = data_augment
 
     @abstractmethod
     def get_loss(self, **kwargs):
@@ -82,13 +82,13 @@ class ContrastiveMethod(BaseMethod):
             self,
             encoder: torch.nn.Module,
             data_iterator: Any,
-            data_transform: Any,
+            data_augment: Any,
             discriminator: torch.nn.Module,
     ) -> None:
         super().__init__(
             encoder=encoder,
             data_iterator=data_iterator,
-            data_transform=data_transform
+            data_augment=data_augment
         )
 
         self.discriminator = discriminator
