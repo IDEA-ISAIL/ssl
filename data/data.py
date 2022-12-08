@@ -1,6 +1,6 @@
 
 
-class BaseData:
+class Data:
     """
     TODO: torch geomtric data structure.
     """
@@ -8,7 +8,7 @@ class BaseData:
         raise NotImplementedError
 
 
-class HomoData(BaseData):
+class HomoData(Data):
     def __init__(self):
         self.adj = None
         self.attrs = None

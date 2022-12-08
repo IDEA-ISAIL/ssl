@@ -1,48 +1,30 @@
-# Copyright 2022 The Forte Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-"""
-This file implements BaseMethod, which is the abstract class other
-extractors will inherit from.
-"""
-
 from typing import Tuple, List, Dict, Any
 from typing import Union, Hashable, Iterable, Optional
 
 import torch
-from augment import BaseAugment
+from augment import Augment
+from loader import Loader
 
 __all__ = [
-    "BaseMethod",
+    "Method",
     "ContrastiveMethod"
 ]
 
 
 # this is actually a trainer.
-class BaseMethod:
+class Method:
     def __init__(
             self,
             encoder: torch.nn.Module,
-            data_iterator: Any,
-            data_augment: BaseAugment,
+            data_loader: Loader,
+            data_augment: Augment,
     ) -> None:
         """
         Base class for self-supervised learning methods.
 
         """
         self.encoder = encoder
-        self.data_iterator = data_iterator
+        self.data_iterator = data_loader
         self.data_augment = data_augment
 
     def get_loss(self, **kwargs):
@@ -72,17 +54,17 @@ class BaseMethod:
         self.encoder.load_state_dict(state_dict)
 
 
-class ContrastiveMethod(BaseMethod):
+class ContrastiveMethod(Method):
     def __init__(
             self,
             encoder: torch.nn.Module,
-            data_iterator: Any,
-            data_augment: BaseAugment,
+            data_loader: Loader,
+            data_augment: Augment,
             discriminator: torch.nn.Module,
     ) -> None:
         super().__init__(
             encoder=encoder,
-            data_iterator=data_iterator,
+            data_loader=data_loader,
             data_augment=data_augment
         )
 
