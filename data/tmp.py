@@ -18,5 +18,5 @@ import torch
 from torch import Tensor
 from torch_sparse import SparseTensor
 
-class BaseData(ABC):
-    def
+class BaseDataset(ABC):
+    def 

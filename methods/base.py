@@ -17,15 +17,11 @@ This file implements BaseMethod, which is the abstract class other
 extractors will inherit from.
 """
 
-import logging
-from abc import ABC, abstractmethod
 from typing import Tuple, List, Dict, Any
 from typing import Union, Hashable, Iterable, Optional
 
 import torch
 from augment import BaseAugment
-
-logger = logging.getLogger(__name__)
 
 __all__ = [
     "BaseMethod",
@@ -34,7 +30,7 @@ __all__ = [
 
 
 # this is actually a trainer.
-class BaseMethod(ABC):
+class BaseMethod:
     def __init__(
             self,
             encoder: torch.nn.Module,
@@ -49,14 +45,12 @@ class BaseMethod(ABC):
         self.data_iterator = data_iterator
         self.data_augment = data_augment
 
-    @abstractmethod
     def get_loss(self, **kwargs):
         """
         Loss function.
         """
         raise NotImplementedError
 
-    @abstractmethod
     def train(self):
         """
         Train the encoder.
