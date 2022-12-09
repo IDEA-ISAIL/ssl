@@ -30,5 +30,4 @@ class DiscriminatorDGI(torch.nn.Module):
             sc_2 += s_bias2
 
         logits = torch.cat((sc_1, sc_2), 1)
-
         return logits
