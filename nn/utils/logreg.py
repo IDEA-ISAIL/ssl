@@ -1,11 +1,13 @@
 import torch
 import torch.nn as nn
 
+from torch_geometric.typing import Tensor
+
 
 class LogReg(nn.Module):
-    def __init__(self, ft_in, nb_classes):
+    def __init__(self, dim_in: int, n_classes: int):
         super(LogReg, self).__init__()
-        self.fc = nn.Linear(ft_in, nb_classes)
+        self.fc = nn.Linear(dim_in, n_classes)
 
         for m in self.modules():
             self.weights_init(m)
@@ -16,6 +18,6 @@ class LogReg(nn.Module):
             if m.bias is not None:
                 m.bias.data.fill_(0.0)
 
-    def forward(self, seq):
-        ret = self.fc(seq)
+    def forward(self, x: Tensor):
+        ret = self.fc(x)
         return ret
