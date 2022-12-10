@@ -1,34 +1,55 @@
+import copy
 from data import Data
 
-from abc import ABC
-from typing import List
+from typing import List, Union
 
 
 __all__ = [
+    "Augmentor",
+    "Augmentation",
     "DataAugmentation"
 ]
 
 
-class Augmentation:
-    r"""Base class for augmentation."""
+class Augmentor:
+    r"""Base class for augmentor."""
     def __init__(self):
         pass
 
-    def augment(self, *args, **kwargs):
+    def apply(self, *args, **kwargs):
+        r"""Apply the augmentor to inputs."""
         raise NotImplementedError
 
     def __call__(self, *args, **kwargs):
-        raise self.augment(args, kwargs)
+        return self.apply(*args, **kwargs)
+
+
+class Augmentation:
+    r"""Base class for augmentation. A wrapper of augmentors."""
+    def __init__(self, augmentors: Union[Augmentor, List[Augmentor]]):
+        if type(augmentors) == List:
+            self.augmentors = augmentors
+        else:
+            self.augmentors = [augmentors]
+
+    def apply(self, *args, **kwargs):
+        r"""Apply the augmentors to inputs."""
+        raise NotImplementedError
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError
 
 
 class DataAugmentation(Augmentation):
-    r"""Base class for data augmentor."""
-    def __init__(self, augmentors: List[Augmentation]):
-        super(DataAugmentation, self).__init__()
-        self.augmentors = augmentors
+    r"""Base class for data augmentation. A wrapper of augmentors."""
+    def __init__(self, augmentors: Union[Augmentor, List[Augmentor]]):
+        super().__init__(augmentors=augmentors)
 
-    def augment(self, data: Data):
-        raise NotImplementedError
+    def apply(self, data: Data):
+        data_tmp = copy.deepcopy(data)
+        for augmentor in self.augmentors:
+            data_tmp = augmentor(data_tmp)
+        return data_tmp
 
     def __call__(self, data: Data):
-        raise self.augment(data=data)
+        return self.apply(data)

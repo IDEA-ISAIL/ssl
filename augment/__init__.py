@@ -1,7 +1,8 @@
-from .base import DataAugmentation
-from .dgi import AugmentationDGI
+from .base import *
+from .dgi import *
 
-__all__ = [
-    "DataAugmentation",
-    "AugmentationDGI"
-]
+# __all__ = [
+#     "Augmentation",
+#     "DataAugmentation",
+#     "AugmentationDGI"
+# ]
