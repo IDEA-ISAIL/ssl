@@ -1,2 +1,2 @@
-from .base_data import BaseData
-from .dgi_data import DGIData
+from .data import Data
+from .dgi_data import DataDGI

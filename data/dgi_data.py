@@ -3,13 +3,14 @@ import sys
 import pickle as pkl
 import networkx as nx
 
-from data.base_data import HomoData
+from data.dataset import Dataset
 from data.utils import *
 
 
-class DGIData(HomoData):
+class DataDGI(Dataset):
     def __init__(self):
-        super().__init__()
+        self.x = None
+        self.adj = None
         self.labels = None
         self.idx_train = None
         self.idx_val = None
@@ -43,8 +44,8 @@ class DGIData(HomoData):
         #     ty_extended[test_idx_range - min(test_idx_range), :] = ty
         #     ty = ty_extended
 
-        self.attrs = sp.vstack((allx, tx)).tolil()
-        self.attrs[test_idx_reorder, :] = self.attrs[test_idx_range, :]
+        self.x = sp.vstack((allx, tx)).tolil()
+        self.x[test_idx_reorder, :] = self.x[test_idx_range, :]
         self.adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
 
         self.labels = np.vstack((ally, ty))
@@ -55,5 +56,5 @@ class DGIData(HomoData):
         self.idx_val = range(len(y), len(y) + 500)
 
 
-data = DGIData()
+data = DataDGI()
 data.load(path="../datasets/cora_dgi")

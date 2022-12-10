@@ -1,137 +1,91 @@
 import torch
 import numpy as np
 
-from nn import DGIGCN, AvgReadout, DGIDiscriminator
-from augment import BaseAugment, DGIAugment
-from methods.base import ContrastiveMethod
+from nn.models import ModelDGI
+from augment import Augment, AugmentDGI
+from loader import Loader, FullLoader
+from .method import ContrastiveMethod
 
-from typing import Tuple, List, Dict, Any
-
-
-class DGI_old(torch.nn.Module):
-    def __init__(self, n_in, n_h, activation):
-        super(DGI_old, self).__init__()
-        self.gcn = DGIGCN(n_in, n_h, activation)
-        self.read = AvgReadout()
-
-        self.sigm = torch.nn.Sigmoid()
-
-        self.disc = DiscriminatorDGI(n_h)
-
-    def forward(self, seq1, seq2, adj, sparse, msk, samp_bias1, samp_bias2):
-        h_1 = self.gcn(seq1, adj, sparse)
-
-        c = self.read(h_1, msk)
-        c = self.sigm(c)
-
-        h_2 = self.gcn(seq2, adj, sparse)
-
-        ret = self.disc(c, h_1, h_2, samp_bias1, samp_bias2)
-
-        return ret
-
-    # Detach the return variables
-    def embed(self, seq, adj, sparse, msk):
-        h_1 = self.gcn(seq, adj, sparse)
-        c = self.read(h_1, msk)
-
-        return h_1.detach(), c.detach()
+from torch_geometric.typing import *
 
 
 class DGI(ContrastiveMethod):
+    r"""
+    TODO: add descriptions
+    """
     def __init__(self,
-                 encoder: torch.nn.Module=DGIGCN,
-                 data_augment: BaseAugment=DGIAugment,
-                 data_iterator: Any,
-                 discriminator: torch.nn.Module=DGIDiscriminator,
-                 lr: float=0.001,
-                 weight_decay: float=0.0,
-                 n_epochs: int=10000,
-                 patience: int=20,
-                 cuda: int=None,
-                 sparse: bool=True
+                 model: torch.nn.Module = ModelDGI,
+                 data_augment: Augment = AugmentDGI,
+                 data_loader: Loader = FullLoader,
+                 lr: float = 0.001,
+                 weight_decay: float = 0.0,
+                 n_epochs: int = 10000,
+                 patience: int = 20,
+                 use_cuda: bool = True,
+                 is_sparse: bool = True,
+                 save_root: str = "",
                  ):
-        super().__init__(encoder=encoder,
+        super().__init__(model=model,
                          data_augment=data_augment,
-                         data_iterator=data_iterator,
-                         discriminator=discriminator)
+                         data_loader=data_loader,
+                         save_root=save_root)
 
-        self.discriminator = discriminator
-        self.read = AvgReadout()
-        self.sigm = torch.nn.Sigmoid()
-
-        self.optimizer = torch.optim.Adam(self.encoder.parameters(), lr, weight_decay=weight_decay)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
         self.b_xent = torch.nn.BCEWithLogitsLoss()
 
         self.n_epochs = n_epochs
         self.patience = patience
 
-        self.cuda = cuda
-        self.sparse = sparse
+        self.use_cuda = use_cuda
+        self.is_sparse = is_sparse
 
-    def get_loss(self, features, shuf_fts):
-        logits = self.encoder(features, shuf_fts, sp_adj if sparse else adj, sparse, None, None, None)
-        loss = self.b_xent(logits, lbl)
+    def get_loss(self, x: Tensor, x_neg: Tensor, adj: Adj, labels: Tensor):
+        logits = self.model(x, x_neg, adj, self.is_sparse, None, None, None)
+        loss = self.b_xent(logits, labels)
         return loss
 
     def train(self):
-        # if self.cuda:
-        #     print('Using CUDA')
-        #     self.encoder.cuda()
-        #     features = features.cuda()
-        #     if sparse:
-        #         sp_adj = sp_adj.cuda()
-        #     else:
-        #         adj = adj.cuda()
-        #     labels = labels.cuda()
-        #     idx_train = idx_train.cuda()
-        #     idx_val = idx_val.cuda()
-        #     idx_test = idx_test.cuda()
-
         cnt_wait = 0
         best = 1e9
         best_t = 0
 
+        data = self.data_loader.data
+        x = data.x.cuda()
+        adj = data.adj
+        n_nodes = data.n_nodes
+        batch_size = self.data_loader.batch_size
+
+        if self.use_cuda:
+            x = x.cuda()
+
         for epoch in range(self.n_epochs):
-            self.encoder.train()
+            self.model.train()
             self.optimizer.zero_grad()
 
             # data augmentation
-            feat_neg = self.data_augment.negative(n_nodes, features)
+            x_neg = self.data_augment.negative(n_nodes=n_nodes, x=x)
+            labels = self.get_label_pairs(batch_size=batch_size, n_pos=n_nodes, n_neg=n_nodes)
 
-            lbl_1 = torch.ones(batch_size, n_nodes)
-            lbl_2 = torch.zeros(batch_size, n_nodes)
-            lbl = torch.cat((lbl_1, lbl_2), 1)
+            if self.use_cuda:
+                x_neg = x_neg.cuda()
+                labels = labels.cuda()
 
-            if torch.cuda.is_available():
-                shuf_fts = shuf_fts.cuda()
-                lbl = lbl.cuda()
+            # get loss
+            loss = self.get_loss(x=x, x_neg=x_neg, adj=adj, labels=labels)
 
-
-            loss = self.get_loss()
-
+            # early stop
             if loss < best:
                 best = loss
                 best_t = epoch
                 cnt_wait = 0
-                torch.save(model.state_dict(), 'best_dgi.pkl')
+                self.save_model(path="model_{}.ckpt".format(epoch))
+                self.save_encoder(path="encoder_{}.ckpt".format(epoch))
             else:
                 cnt_wait += 1
 
-            if cnt_wait == patience:
+            if cnt_wait == self.patience:
                 print('Early stopping!')
                 break
 
             loss.backward()
             self.optimizer.step()
-
-    def _forward(self, seq1, seq2, adj, sparse, msk, samp_bias1, samp_bias2):
-        h_1 = self.encoder(seq1, adj, sparse)
-
-        c = self.read(h_1, msk)
-        c = self.sigm(c)
-
-        h_2 = self.encoder(seq2, adj, sparse)
-
-        ret = self.discriminator(c, h_1, h_2, samp_bias1, samp_bias2)
-        return ret

@@ -1,7 +1,7 @@
-from .base import BaseAugment
-from .dgi import DGIAugment
+from .augment import Augment
+from .dgi import AugmentDGI
 
 __all__ = [
-    "BaseAugment",
-    "DGIAugment"
+    "Augment",
+    "AugmentDGI"
 ]

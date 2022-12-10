@@ -7,13 +7,13 @@ __all__ = [
 
 
 class Augment:
-    def positive(self, **kwargs):
+    def positive(self, *args, **kwargs):
         """
         Positive augmentation.
         """
         raise NotImplementedError
 
-    def negative(self, **kwargs):
+    def negative(self, *args, **kwargs):
         """
         Negative augmentation.
         """

@@ -8,11 +8,11 @@ class Loader:
     """
     TODO: torch geomtric data structure.
     """
-    def __init__(self, batch_size: int, data: Data):
+    def __init__(self, batch_size: int, data: Data, **kwargs):
         self.batch_size = batch_size
         self.data = data
 
-    def __iter__(self, **kwargs):
+    def __iter__(self, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -20,7 +20,7 @@ class FullLoader(Loader):
     """
     r"Load entire graph each time."
     """
-    def __init__(self, data):
+    def __init__(self, data: Data):
         super().__init__(batch_size=BATCH_SIZE, data=data)
 
     def __iter__(self):

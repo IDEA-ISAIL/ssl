@@ -1,25 +1,36 @@
+from typing import Optional
+from torch_geometric.typing import (
+    Adj,
+    EdgeTensorType,
+    EdgeType,
+    FeatureTensorType,
+    NodeType,
+    OptTensor,
+)
 
 
 class Data:
     """
-    TODO: torch geomtric data structure.
+    TODO: geometric data structure
     """
-    def load(self, **kwargs) -> None:
+    def __init__(self,
+                 x: OptTensor = None,
+                 adj: Optional[Adj] = None,
+                 **kwargs):
+        if x is not None:
+            self.x = x
+        if adj is not None:
+            self.adj = adj
+
+    @property
+    def n_nodes(self) -> int:
         raise NotImplementedError
 
 
 class HomoData(Data):
-    def __init__(self):
-        self.adj = None
-        self.attrs = None
-
-    def load(self, path: str) -> None:
-        """
-        Load the specified dataset.
-        path: the folder of the dataset.
-        """
-        raise NotImplementedError
+    def __init__(self, x: OptTensor = None, adj: Optional[Adj] = None):
+        super().__init__(x=x, adj=adj)
 
     @property
-    def n_nodes(self):
-        return len(self.attrs)
+    def n_nodes(self) -> int:
+        return len(self.adj)

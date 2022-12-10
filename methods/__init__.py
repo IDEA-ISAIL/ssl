@@ -1,6 +1,6 @@
-from .base import BaseMethod
+from .method import Method
 
 
 __all__ = [
-    'BaseMethod'
+    'Method'
 ]
