@@ -55,16 +55,16 @@ class GCN(torch.nn.Module):
 
 class GCNDGI(torch.nn.Module):
     def __init__(self,
-                 in_ft: int,
-                 out_ft: int=512,
-                 act: torch.nn=torch.nn.PReLU(),
-                 bias: bool=True):
+                 dim_in: int,
+                 dim_out: int = 512,
+                 act: torch.nn = torch.nn.PReLU(),
+                 bias: bool = True):
         super(GCNDGI, self).__init__()
-        self.fc = torch.nn.Linear(in_ft, out_ft, bias=False)
+        self.fc = torch.nn.Linear(dim_in, dim_out, bias=False)
         self.act = act
 
         if bias:
-            self.bias = torch.nn.Parameter(torch.FloatTensor(out_ft))
+            self.bias = torch.nn.Parameter(torch.FloatTensor(dim_out))
             self.bias.data.fill_(0.0)
         else:
             self.register_parameter('bias', None)

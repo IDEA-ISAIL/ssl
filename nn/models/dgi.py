@@ -13,7 +13,7 @@ class ModelDGI(Model):
         encoder (torch.nn.Module): the encoder to be trained.
         discriminator (torch.nn.Module): the discriminator for contrastive learning.
     """
-    def __init__(self, encoder: torch.nn.Module, discriminator: torch.nn.Module):
+    def __init__(self, encoder: torch.nn.Module, discriminator: torch.nn.Module = DiscriminatorDGI()):
         super().__init__(encoder=encoder)
         self.discriminator = discriminator
         self.read = AvgReadout()

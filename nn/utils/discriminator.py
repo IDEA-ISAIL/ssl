@@ -4,7 +4,7 @@ from torch_geometric.typing import Tensor, OptTensor
 
 
 class DiscriminatorDGI(torch.nn.Module):
-    def __init__(self, dim_h: int):
+    def __init__(self, dim_h: int = 512):
         super().__init__()
         self.f_k = torch.nn.Bilinear(dim_h, dim_h, 1)
 
