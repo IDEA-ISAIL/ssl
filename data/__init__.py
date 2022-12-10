@@ -1,2 +1,2 @@
-from .data import Data
-from .dgi_data import DataDGI
+from .data import Data, HomoData
+from .dataset_dgi import *

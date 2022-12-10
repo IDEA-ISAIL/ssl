@@ -2,12 +2,14 @@ import os
 import sys
 import pickle as pkl
 import networkx as nx
+import torch_sparse
 
-from data.dataset import Dataset
-from data.utils import *
+from .data import HomoData
+from .dataset import Dataset
+from .utils import *
 
 
-class DataDGI(Dataset):
+class DatasetDGI(Dataset):
     def __init__(self):
         self.x = None
         self.adj = None
@@ -17,6 +19,7 @@ class DataDGI(Dataset):
         self.idx_test = None
 
     def load(self, path):  # {'pubmed', 'citeseer', 'cora'}
+        print("Loading data from {}".format(path))
         names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']
         objects = []
         for i in range(len(names)):
@@ -48,6 +51,13 @@ class DataDGI(Dataset):
         self.x[test_idx_reorder, :] = self.x[test_idx_range, :]
         self.adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
 
+        self.x, _ = preprocess_features(self.x)
+        self.adj = normalize_adj(self.adj + sp.eye(self.adj.shape[0]))
+
+        self.x = torch.FloatTensor(self.x)
+        self.adj = sparse_mx_to_torch_sparse_tensor(self.adj)
+        # self.adj = torch.FloatTensor(self.adj)
+
         self.labels = np.vstack((ally, ty))
         self.labels[test_idx_reorder, :] = self.labels[test_idx_range, :]
 
@@ -55,6 +65,9 @@ class DataDGI(Dataset):
         self.idx_train = range(len(y))
         self.idx_val = range(len(y), len(y) + 500)
 
+    def to_data(self):
+        return HomoData(x=self.x, adj=self.adj)
 
-data = DataDGI()
-data.load(path="../datasets/cora_dgi")
+
+# data = DatasetDGI()
+# data.load(path="../datasets/cora_dgi")
