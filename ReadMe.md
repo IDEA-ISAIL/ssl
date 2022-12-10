@@ -27,6 +27,11 @@ Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.
 * [Deep Graph Infomax, ICLR'2019](https://arxiv.org/pdf/1809.10341.pdf), [(Github)](https://github.com/PetarV-/DGI)
 * [GCC: Graph Contrastive Coding for Graph Neural Network Pre-Training, KDD'2020](https://arxiv.org/pdf/2006.09963.pdf), [(Github)](https://github.com/THUDM/GCC)
 * [Graph Contrastive Learning Automated, ICML'2021](https://arxiv.org/pdf/2106.07594.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)
+* GCA
+* GraphCL
+* 
+### non-contrastive
+* BGRL
 
 ## Heterogeneous/Multiplex/Multiview
 * [Unsupervised Attributed Multiplex Network Embedding, AAAI'2020](https://arxiv.org/pdf/1911.06750.pdf), [(Github)](https://github.com/pcy1302/DMGI)
@@ -44,6 +49,11 @@ Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.
 
 ## Signed
 * [SGCL: Contrastive Representation Learning for Signed Graphs, CIKM'2021](https://dl.acm.org/doi/pdf/10.1145/3459637.3482478), no public code
+
+## Molecure
+* InfoGraph
+* JOAO
+* GraphMAE
 
 ## dataset
 https://github.com/dmlc/dgl/blob/master/python/dgl/data/dgl_dataset.py
