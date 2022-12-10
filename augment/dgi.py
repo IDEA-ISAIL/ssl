@@ -1,11 +1,14 @@
 import numpy as np
 import torch
 
-from augment.augment import Augment
+from augment.base import Augmentation
 
 
 # 假如有人想自定义augmentation怎么办？
-class AugmentDGI(Augment):
+class AugmentationDGI(Augmentation):
+    def __init__(self):
+        super(AugmentationDGI, self).__init__()
+
     def positive(self, features: torch.Tensor):
         return features
 
