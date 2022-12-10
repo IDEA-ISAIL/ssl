@@ -1,8 +1,6 @@
 import torch
-import numpy as np
 
-from nn.models import ModelDGI
-from augment import Augment, AugmentDGI
+from augment import DataAugmentation, AugNegDGI, AugPosDGI
 from loader import Loader, FullLoader
 from .method import ContrastiveMethod
 
@@ -14,9 +12,10 @@ class DGI(ContrastiveMethod):
     TODO: add descriptions
     """
     def __init__(self,
-                 model: torch.nn.Module = ModelDGI,
-                 data_augment: Augment = AugmentDGI,
-                 data_loader: Loader = FullLoader,
+                 model: torch.nn.Module,
+                 data_loader: Loader,
+                 augment_pos: DataAugmentation = AugPosDGI(),
+                 augment_neg: DataAugmentation = AugNegDGI(),
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
@@ -26,8 +25,9 @@ class DGI(ContrastiveMethod):
                  save_root: str = "",
                  ):
         super().__init__(model=model,
-                         data_augment=data_augment,
                          data_loader=data_loader,
+                         augment_pos=augment_pos,
+                         augment_neg=augment_neg,
                          save_root=save_root)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
@@ -47,23 +47,29 @@ class DGI(ContrastiveMethod):
     def train(self):
         cnt_wait = 0
         best = 1e9
-        best_t = 0
 
         data = self.data_loader.data
-        x = data.x.cuda()
         adj = data.adj
         n_nodes = data.n_nodes
         batch_size = self.data_loader.batch_size
 
         if self.use_cuda:
-            x = x.cuda()
+            self.model = self.model.cuda()
+            adj = adj.cuda()
 
         for epoch in range(self.n_epochs):
             self.model.train()
             self.optimizer.zero_grad()
 
             # data augmentation
-            x_neg = self.data_augment.negative(n_nodes=n_nodes, x=x)
+            data_pos = self.augment_pos(data)
+            data_neg = self.augment_neg(data)
+
+            x_pos = data_pos.x
+            x_neg = data_neg.x
+            if self.use_cuda:
+                x_pos = x_pos.cuda()
+                x_neg = x_neg.cuda()
             labels = self.get_label_pairs(batch_size=batch_size, n_pos=n_nodes, n_neg=n_nodes)
 
             if self.use_cuda:
@@ -71,12 +77,11 @@ class DGI(ContrastiveMethod):
                 labels = labels.cuda()
 
             # get loss
-            loss = self.get_loss(x=x, x_neg=x_neg, adj=adj, labels=labels)
+            loss = self.get_loss(x=x_pos, x_neg=x_neg, adj=adj, labels=labels)
 
             # early stop
             if loss < best:
                 best = loss
-                best_t = epoch
                 cnt_wait = 0
                 self.save_model(path="model_{}.ckpt".format(epoch))
                 self.save_encoder(path="encoder_{}.ckpt".format(epoch))

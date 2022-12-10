@@ -1,9 +1,9 @@
-import os.path
+import os
 from typing import Tuple, List, Dict, Any
 from typing import Union, Hashable, Iterable, Optional
 
 import torch
-from augment import Augment
+from augment import Augmentation
 from loader import Loader
 
 __all__ = [
@@ -21,7 +21,6 @@ class Method:
             self,
             model: torch.nn.Module,
             data_loader: Loader,
-            data_augment: Augment,
             save_root: str = "",
             use_cuda: bool = True,
             *args,
@@ -32,20 +31,18 @@ class Method:
         Args:
             model (torch.nn.Module): the entire model, including encoders and other components (e.g. discriminators).
             data_loader (Loader):
-            data_augment (Augment):
             save_root (str): the root to save the model/encoder.
             use_cuda (bool): whether to use cuda or not.
             *args:
             **kwargs:
         """
         self.model = model  # entire model to train
-
         self.data_loader = data_loader
-        self.data_augment = data_augment
-
         self.save_root = save_root
-
         self.use_cuda = use_cuda
+
+        if not os.path.exists(self.save_root):
+            os.makedirs(self.save_root)
 
     def get_loss(self, *args, **kwargs):
         r"""Loss function."""
@@ -91,15 +88,17 @@ class ContrastiveMethod(Method):
             self,
             model: torch.nn.Module,
             data_loader: Loader,
-            data_augment: Augment,
+            augment_pos: Augmentation,
+            augment_neg: Augmentation,
             save_root: str = "",
     ) -> None:
         super().__init__(
             model=model,
             data_loader=data_loader,
-            data_augment=data_augment,
-            save_root=save_root,
+            save_root=save_root
         )
+        self.augment_pos = augment_pos
+        self.augment_neg = augment_neg
 
     def get_loss(self, *args, **kwargs):
         r"""Loss function."""
