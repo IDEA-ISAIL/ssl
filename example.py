@@ -17,13 +17,12 @@ data_loader = FullLoader(data)
 
 # neural networks
 encoder = GCNDGI(dim_in=1433)
-# discriminator = DiscriminatorDGI(dim_h=512)
-# model = ModelDGI(encoder=encoder, discriminator=discriminator)
-model = ModelDGI(encoder=encoder)
+discriminator = DiscriminatorDGI(dim_h=512)
+model = ModelDGI(encoder=encoder, discriminator=discriminator)
+# model = ModelDGI(encoder=encoder)
 
 # trainer
 augment_pos = AugPosDGI()
 augment_neg = AugNegDGI()
 dgi = DGI(model=model, data_loader=data_loader, augment_pos=AugPosDGI(), augment_neg=AugNegDGI(), save_root="./results")
 dgi.train()
-
