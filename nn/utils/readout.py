@@ -1,12 +1,11 @@
 import torch
-import torch.nn as nn
 
 from torch_geometric.typing import Tensor, OptTensor
 
 
-class AvgReadout(nn.Module):
+class AvgReadout(torch.nn.Module):
     def __init__(self):
-        super(AvgReadout, self).__init__()
+        super().__init__()
 
     def forward(self, x: Tensor, msk: OptTensor = None):
         if msk is None:

@@ -53,13 +53,13 @@ class GCN(torch.nn.Module):
         return out
 
 
-class DGIGCN(torch.nn.Module):
+class GCNDGI(torch.nn.Module):
     def __init__(self,
                  in_ft: int,
                  out_ft: int=512,
                  act: torch.nn=torch.nn.PReLU(),
                  bias: bool=True):
-        super(DGIGCN, self).__init__()
+        super(GCNDGI, self).__init__()
         self.fc = torch.nn.Linear(in_ft, out_ft, bias=False)
         self.act = act
 
@@ -70,9 +70,9 @@ class DGIGCN(torch.nn.Module):
             self.register_parameter('bias', None)
 
         for m in self.modules():
-            self.weights_init(m)
+            self._weights_init(m)
 
-    def weights_init(self, m):
+    def _weights_init(self, m):
         if isinstance(m, torch.nn.Linear):
             torch.nn.init.xavier_uniform_(m.weight.data)
             if m.bias is not None:
