@@ -28,7 +28,7 @@ Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.
 * GCC: [GCC: Graph Contrastive Coding for Graph Neural Network Pre-Training, KDD'2020](https://arxiv.org/pdf/2006.09963.pdf), [(Github)](https://github.com/THUDM/GCC)
 * GraphCL: [Graph Contrastive Learning with Augmentations](https://proceedings.nips.cc/paper/2020/file/3fe230348e9a12c13120749e3f9fa4cd-Paper.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL) [Lecheng]
 * [Graph Contrastive Learning Automated, ICML'2021](https://arxiv.org/pdf/2106.07594.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)
-* MVGRL: [Contrastive Multi-View Representation Learning on Graphs](https://proceedings.mlr.press/v119/hassani20a/hassani20a.pdf), [(Github)](https://github.com/kavehhassani/mvgrl)
+* MVGRL: [Contrastive Multi-View Representation Learning on Graphs](https://proceedings.mlr.press/v119/hassani20a/hassani20a.pdf), [(Github)](https://github.com/kavehhassani/mvgrl) [Zhichen]
 * GCA: [Graph Contrastive Learning with Adaptive Augmentation
 ](https://arxiv.org/abs/2010.14945), [(Github)](https://github.com/CRIPAC-DIG/GCA)
 
