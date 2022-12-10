@@ -83,8 +83,8 @@ class DGI(ContrastiveMethod):
             if loss < best:
                 best = loss
                 cnt_wait = 0
-                self.save_model(path="model_{}.ckpt".format(epoch))
-                self.save_encoder(path="encoder_{}.ckpt".format(epoch))
+                self.save_model()
+                self.save_encoder()
             else:
                 cnt_wait += 1
 
