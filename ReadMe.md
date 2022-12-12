@@ -24,7 +24,7 @@ Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.
 
 # Reference files
 ## General
-* DGI: [Deep Graph Infomax, ICLR'2019](https://arxiv.org/pdf/1809.10341.pdf), [(Github)](https://github.com/PetarV-/DGI)[Baoyu]
+* DGI: [Deep Graph Infomax, ICLR'2019](https://arxiv.org/pdf/1809.10341.pdf), [(Github)](https://github.com/PetarV-/DGI) [Baoyu]
 * GCC: [GCC: Graph Contrastive Coding for Graph Neural Network Pre-Training, KDD'2020](https://arxiv.org/pdf/2006.09963.pdf), [(Github)](https://github.com/THUDM/GCC) [Lihui]
 * GraphCL: [Graph Contrastive Learning with Augmentations](https://proceedings.nips.cc/paper/2020/file/3fe230348e9a12c13120749e3f9fa4cd-Paper.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL) [Lecheng]
 * [Graph Contrastive Learning Automated, ICML'2021](https://arxiv.org/pdf/2106.07594.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)
@@ -35,7 +35,8 @@ Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.
 ### non-contrastive
 * BGRL: [Large-Scale Representation Learning on Graphs via Bootstrapping
 ](https://arxiv.org/abs/2102.06514), [(Github)](https://github.com/Namkyeong/BGRL_Pytorch)
-* AFGRL
+* AFGRL: [Augmentation-Free Self-Supervised Learning on Graphs
+](https://arxiv.org/abs/2112.02472), [(Github)](https://github.com/Namkyeong/AFGRL) [Baoyu]
 
 ## Heterogeneous/Multiplex/Multiview
 * [Unsupervised Attributed Multiplex Network Embedding, AAAI'2020](https://arxiv.org/pdf/1911.06750.pdf), [(Github)](https://github.com/pcy1302/DMGI)
