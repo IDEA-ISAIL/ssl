@@ -36,7 +36,7 @@ Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.
 * BGRL: [Large-Scale Representation Learning on Graphs via Bootstrapping
 ](https://arxiv.org/abs/2102.06514), [(Github)](https://github.com/Namkyeong/BGRL_Pytorch)
 * AFGRL: [Augmentation-Free Self-Supervised Learning on Graphs
-](https://arxiv.org/abs/2112.02472), [(Github)](https://github.com/Namkyeong/AFGRL)
+](https://arxiv.org/abs/2112.02472), [(Github)](https://github.com/Namkyeong/AFGRL) [Tianxin]
 
 ## Heterogeneous/Multiplex/Multiview
 * [Unsupervised Attributed Multiplex Network Embedding, AAAI'2020](https://arxiv.org/pdf/1911.06750.pdf), [(Github)](https://github.com/pcy1302/DMGI)
