@@ -138,4 +138,6 @@ __pychache__
 ckpt*/
 .ckpt
 
+# others
 results/
+.vscode/
