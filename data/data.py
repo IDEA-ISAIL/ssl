@@ -1,10 +1,10 @@
 from typing import Optional
 from torch_geometric.typing import (
     Adj,
-    EdgeTensorType,
-    EdgeType,
-    FeatureTensorType,
-    NodeType,
+    # EdgeTensorType,
+    # EdgeType,
+    # FeatureTensorType,
+    # NodeType,
     OptTensor,
 )
 

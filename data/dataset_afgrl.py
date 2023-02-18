@@ -9,7 +9,7 @@ from .dataset import Dataset
 from .utils import *
 
 
-class DatasetDGI(Dataset):
+class DatasetAFGRL(Dataset):
     def __init__(self):
         self.x = None
         self.adj = None
@@ -50,7 +50,8 @@ class DatasetDGI(Dataset):
         self.x = sp.vstack((allx, tx)).tolil()
         self.x[test_idx_reorder, :] = self.x[test_idx_range, :]
         self.adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
-        
+        self.adj_ori_sparse = sparse_mx_to_torch_sparse_tensor(self.adj)
+
         self.x, _ = preprocess_features(self.x)
         self.adj = normalize_adj(self.adj + sp.eye(self.adj.shape[0]))
 

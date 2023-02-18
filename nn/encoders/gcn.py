@@ -60,6 +60,7 @@ class GCNDGI(torch.nn.Module):
                  act: torch.nn = torch.nn.PReLU(),
                  bias: bool = True):
         super(GCNDGI, self).__init__()
+        self.dim_out = dim_out
         self.fc = torch.nn.Linear(dim_in, dim_out, bias=False)
         self.act = act
 

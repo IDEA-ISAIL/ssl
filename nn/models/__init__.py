@@ -1,2 +1,4 @@
 from .model import Model
 from .dgi import ModelDGI
+from .bgrl import ModelBGRL
+from .afgrl import ModelAFGRL
