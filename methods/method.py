@@ -8,7 +8,6 @@ from loader import Loader
 
 __all__ = [
     "Method",
-    "ContrastiveMethod"
 ]
 
 ENCODER_NAME = "encoder.ckpt"
@@ -81,37 +80,3 @@ class Method:
         r"""Load the parameters of the entire model."""
         state_dict = torch.load(path)
         self.model.load_state_dict(state_dict)
-
-
-class ContrastiveMethod(Method):
-    def __init__(
-            self,
-            model: torch.nn.Module,
-            data_loader: Loader,
-            augment_pos: Augmentation,
-            augment_neg: Augmentation,
-            save_root: str = "",
-    ) -> None:
-        super().__init__(
-            model=model,
-            data_loader=data_loader,
-            save_root=save_root
-        )
-        self.augment_pos = augment_pos
-        self.augment_neg = augment_neg
-
-    def get_loss(self, *args, **kwargs):
-        r"""Loss function."""
-        raise NotImplementedError
-
-    def train(self, *args, **kwargs):
-        r"""Train the encoder."""
-        raise NotImplementedError
-
-    @classmethod
-    def get_label_pairs(cls, batch_size: int, n_pos: int, n_neg: int):
-        r"""Get the positive and negative files."""
-        label_pos = torch.ones(batch_size, n_pos)
-        label_neg = torch.zeros(batch_size, n_neg)
-        labels = torch.cat((label_pos, label_neg), 1)
-        return labels
