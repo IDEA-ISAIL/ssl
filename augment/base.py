@@ -38,18 +38,3 @@ class Augmentation:
 
     def __call__(self, *args, **kwargs):
         raise NotImplementedError
-
-
-class DataAugmentation(Augmentation):
-    r"""Base class for data augmentation. A wrapper of augmentors."""
-    def __init__(self, augmentors: Union[Augmentor, List[Augmentor]]):
-        super().__init__(augmentors=augmentors)
-
-    def apply(self, data: Data):
-        data_tmp = copy.deepcopy(data)
-        for augmentor in self.augmentors:
-            data_tmp = augmentor(data_tmp)
-        return data_tmp
-
-    def __call__(self, data: Data):
-        return self.apply(data)
