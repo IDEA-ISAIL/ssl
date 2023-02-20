@@ -57,12 +57,14 @@ class DGI(Method):
 
         data = self.data_loader.data
         adj = data.adj
+        x = data.x
         n_nodes = data.n_nodes
         batch_size = self.data_loader.batch_size
 
         if self.use_cuda:
             self.model = self.model.cuda()
             adj = adj.cuda()
+            x = x.cuda()
 
         for epoch in range(self.n_epochs):
             self.model.train()
@@ -81,7 +83,7 @@ class DGI(Method):
                 labels = labels.cuda()
 
             # get loss
-            loss = self.get_loss(x=data.x, x_neg=x_neg, adj=adj, labels=labels)
+            loss = self.get_loss(x=x, x_neg=x_neg, adj=adj, labels=labels)
 
             # early stop
             if loss < best:
