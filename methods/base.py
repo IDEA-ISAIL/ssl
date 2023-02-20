@@ -36,7 +36,8 @@ class Method:
             **kwargs:
         """
         self.model = model  # entire model to train, including encoders and other necessary modules
-        self.augments = augments
+        self.data_augment = data_augment
+        self.emb_augment = emb_augment
         self.data_loader = data_loader
         self.save_root = save_root
         self.use_cuda = use_cuda
