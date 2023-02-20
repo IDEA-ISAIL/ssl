@@ -19,6 +19,7 @@ class Method:
     def __init__(
             self,
             model: torch.nn.Module,
+            augments: Augmentation,
             data_loader: Loader,
             save_root: str = "",
             use_cuda: bool = True,
@@ -35,7 +36,8 @@ class Method:
             *args:
             **kwargs:
         """
-        self.model = model  # entire model to train
+        self.model = model  # entire model to train, including encoders and other necessary modules
+        self.augments = augments
         self.data_loader = data_loader
         self.save_root = save_root
         self.use_cuda = use_cuda
