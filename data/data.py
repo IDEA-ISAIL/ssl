@@ -1,4 +1,4 @@
-from ssl.typing import Optional
+from typing import Optional
 from torch_geometric.typing import Adj, OptTensor
 
 
