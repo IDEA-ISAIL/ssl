@@ -1,4 +1,4 @@
-from ssl.data import Data
+from data import Data
 
 
 BATCH_SIZE = 1  # for full loader
