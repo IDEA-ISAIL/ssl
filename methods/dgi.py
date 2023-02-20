@@ -1,6 +1,6 @@
 import torch
 
-from augment.collections import augments_dgi
+from augment.collections import augment_dgi
 from loader import Loader
 from .base import Method
 
@@ -15,7 +15,7 @@ class DGI(Method):
     def __init__(self,
                  model: torch.nn.Module,
                  data_loader: Loader,
-                 data_augment: OptAugment=augments_dgi,
+                 data_augment: OptAugment=augment_dgi,
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
