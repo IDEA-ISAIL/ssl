@@ -1,21 +1,21 @@
 import torch
 
-from augment import DataAugmentation, AugNegDGI, AugPosDGI
-from loader import Loader, FullLoader
-from .method import ContrastiveMethod
+from augment.collections import augment_dgi
+from loader import Loader
+from .base import Method
 
-from torch_geometric.typing import *
+from torch_geometric.typing import Tensor, Adj
+from my_typing import OptAugment
 
 
-class DGI(ContrastiveMethod):
+class DGI(Method):
     r"""
     TODO: add descriptions
     """
     def __init__(self,
                  model: torch.nn.Module,
                  data_loader: Loader,
-                 augment_pos: DataAugmentation = AugPosDGI(),
-                 augment_neg: DataAugmentation = AugNegDGI(),
+                 data_augment: OptAugment=augment_dgi,
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
@@ -25,9 +25,9 @@ class DGI(ContrastiveMethod):
                  save_root: str = "",
                  ):
         super().__init__(model=model,
+                         data_augment=data_augment,
+                         emb_augment=None,
                          data_loader=data_loader,
-                         augment_pos=augment_pos,
-                         augment_neg=augment_neg,
                          save_root=save_root)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
@@ -44,31 +44,37 @@ class DGI(ContrastiveMethod):
         loss = self.b_xent(logits, labels)
         return loss
 
+    def get_label_pairs(self, batch_size: int, n_pos: int, n_neg: int):
+        r"""Get the positive and negative files."""
+        label_pos = torch.ones(batch_size, n_pos)
+        label_neg = torch.zeros(batch_size, n_neg)
+        labels = torch.cat((label_pos, label_neg), 1)
+        return labels
+
     def train(self):
         cnt_wait = 0
         best = 1e9
 
         data = self.data_loader.data
         adj = data.adj
+        x = data.x
         n_nodes = data.n_nodes
         batch_size = self.data_loader.batch_size
 
         if self.use_cuda:
             self.model = self.model.cuda()
             adj = adj.cuda()
+            x = x.cuda()
 
         for epoch in range(self.n_epochs):
             self.model.train()
             self.optimizer.zero_grad()
 
             # data augmentation
-            data_pos = self.augment_pos(data)
-            data_neg = self.augment_neg(data)
+            data_neg = self.data_augment(data)
 
-            x_pos = data_pos.x
             x_neg = data_neg.x
             if self.use_cuda:
-                x_pos = x_pos.cuda()
                 x_neg = x_neg.cuda()
             labels = self.get_label_pairs(batch_size=batch_size, n_pos=n_nodes, n_neg=n_nodes)
 
@@ -77,7 +83,7 @@ class DGI(ContrastiveMethod):
                 labels = labels.cuda()
 
             # get loss
-            loss = self.get_loss(x=x_pos, x_neg=x_neg, adj=adj, labels=labels)
+            loss = self.get_loss(x=x, x_neg=x_neg, adj=adj, labels=labels)
 
             # early stop
             if loss < best:
