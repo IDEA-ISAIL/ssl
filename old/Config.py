@@ -43,7 +43,7 @@ class dataset_config:
         if not hasattr(self, 'name'):
             self.name = 'cora'
         if not hasattr(self, 'data_dir'):
-            self.data_dir = 'ssl/data/cora/preprocessed_data.mat'
+            self.data_dir = 'data/cora/preprocessed_data.mat'
 
 
 class output_config:
