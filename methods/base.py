@@ -1,9 +1,8 @@
 import os
-from ssl.typing import Optional
+from my_typing import OptAugment
 
 import torch
-from ssl.augment import Augmentor, AugmentorList, AugmentorDict
-from ssl.loader import Loader
+from loader import Loader
 
 __all__ = [
     "Method",
@@ -18,8 +17,8 @@ class Method:
     def __init__(
             self,
             model: torch.nn.Module,
-            data_augment: Optional[Augmentor, AugmentorList, AugmentorDict, None],
-            emb_augment: Optional[Augmentor, AugmentorList, AugmentorDict, None],
+            data_augment: OptAugment,
+            emb_augment: OptAugment,
             data_loader: Loader,
             save_root: str = "",
             use_cuda: bool = True,
