@@ -1,4 +1,4 @@
-from .method import Method
+from .base import Method
 from .dgi import DGI
 from .mvgrl import MVGRL
 

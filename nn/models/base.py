@@ -16,6 +16,3 @@ class Model(torch.nn.Module):
 
     def get_embs(self, *args, **kwargs):
         raise NotImplementedError
-
-    def get_embs_numpy(self, *args, **kwargs):
-        raise NotImplementedError

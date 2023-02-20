@@ -4,10 +4,10 @@ from scipy.linalg import fractional_matrix_power
 from torch.linalg import inv
 
 from .base import Augmentor
-from data import Data, HomoData
+from data import HomoData
 
 
-class Shuffle(Augmentor):
+class DataShuffle(Augmentor):
     def __init__(self, is_x: bool = True, is_adj: bool = False):
         super().__init__()
         self.is_x = is_x

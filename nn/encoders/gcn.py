@@ -79,9 +79,9 @@ class GCNDGI(torch.nn.Module):
                 m.bias.data.fill_(0.0)
 
     # Shape of seq: (batch, nodes, features)
-    def forward(self, seq, adj, sparse=False):
+    def forward(self, seq, adj, is_sparse=False):
         seq_fts = self.fc(seq)
-        if sparse:
+        if is_sparse:
             out = torch.unsqueeze(torch.spmm(adj, torch.squeeze(seq_fts, 0)), 0)
         else:
             out = torch.bmm(adj, seq_fts)

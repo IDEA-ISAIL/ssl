@@ -1,17 +1,25 @@
 from data import DatasetDGI, DatasetMVGRL
 from loader import FullLoader
+from augment.collections import augment_dgi
 
-from augment import AugPosDGI, AugNegDGI, AugPosMVGRL, AugPPRMVGRL, AugHeatMVGRL
 
-from nn.encoders import GCNDGI, GCNMVGRL
-from nn.utils import DiscriminatorDGI, DiscriminatorMVGRL
-from nn.models import ModelDGI, ModelMVGRL
-from methods import DGI, MVGRL
+#from augment import AugPosDGI, AugNegDGI, AugPosMVGRL, AugPPRMVGRL, AugHeatMVGRL
+#
+#from nn.encoders import GCNDGI, GCNMVGRL
+#from nn.utils import DiscriminatorDGI, DiscriminatorMVGRL
+#from nn.models import ModelDGI, ModelMVGRL
+#from methods import DGI, MVGRL
+#
+from nn.utils import DiscriminatorDGI
+from nn.encoders import GCNDGI
+from nn.models import ModelDGI
+from methods import DGI
+
 
 
 # data
 dataset = DatasetDGI()
-dataset.load(path="./datasets/cora_dgi")
+dataset.load(path="datasets/cora_dgi")
 data = dataset.to_data()
 data_loader = FullLoader(data)
 
@@ -22,9 +30,7 @@ model = ModelDGI(encoder=encoder, discriminator=discriminator)
 # model = ModelDGI(encoder=encoder)
 
 # trainer
-augment_pos = AugPosDGI()
-augment_neg = AugNegDGI()
-dgi = DGI(model=model, data_loader=data_loader, augment_pos=AugPosDGI(), augment_neg=AugNegDGI(), save_root="./results")
+dgi = DGI(model=model, data_loader=data_loader, data_augment=augment_dgi, save_root="./results")
 dgi.train()
 
 
@@ -43,3 +49,6 @@ dgi.train()
 # augment_neg = AugPPRMVGRL()
 # mvgrl = MVGRL(model=model, data_loader=data_loader, augment_pos=AugPosMVGRL(), augment_neg=AugPPRMVGRL(), save_root="./results")
 # mvgrl.train()
+
+embs = model.get_embs(x=data.x.cuda(), adj=data.adj.cuda(), is_numpy=True)
+
