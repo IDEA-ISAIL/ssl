@@ -1,11 +1,11 @@
 import torch
 
-from ssl.augment import Augmentor, AugmentorList, AugmentorDict
-from ssl.augment.collections import augments_dgi
-from ssl.loader import Loader
+from augment.collections import augments_dgi
+from loader import Loader
 from .base import Method
 
-from torch_geometric.typing import *
+from torch_geometric.typing import Tensor, Adj
+from my_typing import OptAugment
 
 
 class DGI(Method):
@@ -14,8 +14,8 @@ class DGI(Method):
     """
     def __init__(self,
                  model: torch.nn.Module,
-                 data_augment: Optional[Augmentor, AugmentorList, AugmentorDict] = augments_dgi,
                  data_loader: Loader,
+                 data_augment: OptAugment=augments_dgi,
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
@@ -44,6 +44,13 @@ class DGI(Method):
         loss = self.b_xent(logits, labels)
         return loss
 
+    def get_label_pairs(self, batch_size: int, n_pos: int, n_neg: int):
+        r"""Get the positive and negative files."""
+        label_pos = torch.ones(batch_size, n_pos)
+        label_neg = torch.zeros(batch_size, n_neg)
+        labels = torch.cat((label_pos, label_neg), 1)
+        return labels
+
     def train(self):
         cnt_wait = 0
         best = 1e9
@@ -62,12 +69,10 @@ class DGI(Method):
             self.optimizer.zero_grad()
 
             # data augmentation
-            data_neg = self.augments(data)
+            data_neg = self.data_augment(data)
 
-            x_pos = data_pos.x
             x_neg = data_neg.x
             if self.use_cuda:
-                x_pos = x_pos.cuda()
                 x_neg = x_neg.cuda()
             labels = self.get_label_pairs(batch_size=batch_size, n_pos=n_nodes, n_neg=n_nodes)
 
@@ -76,7 +81,7 @@ class DGI(Method):
                 labels = labels.cuda()
 
             # get loss
-            loss = self.get_loss(x=x_pos, x_neg=x_neg, adj=adj, labels=labels)
+            loss = self.get_loss(x=data.x, x_neg=x_neg, adj=adj, labels=labels)
 
             # early stop
             if loss < best:
