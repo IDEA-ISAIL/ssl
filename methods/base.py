@@ -1,9 +1,8 @@
 import os
-from typing import Tuple, List, Dict, Any
 from typing import Union, Hashable, Iterable, Optional
 
 import torch
-from augment import Augmentation
+from augment import Augmentor, AugmentorList, AugmentorDict
 from loader import Loader
 
 __all__ = [
@@ -19,7 +18,7 @@ class Method:
     def __init__(
             self,
             model: torch.nn.Module,
-            augments: Augmentation,
+            augments: Optional[Augmentor, AugmentorList, AugmentorDict],
             data_loader: Loader,
             save_root: str = "",
             use_cuda: bool = True,
