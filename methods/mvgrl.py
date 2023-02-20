@@ -1,15 +1,15 @@
 import torch
 
-from augment import DataAugmentation, AugPosMVGRL, AugPPRMVGRL, AugHeatMVGRL
+from augment import AugPosMVGRL, AugPPRMVGRL, AugHeatMVGRL
 from loader import Loader, FullLoader
-from .method import ContrastiveMethod
+from .base import Method
 from data.utils import sparse_mx_to_torch_sparse_tensor
 
 from torch_geometric.typing import *
 from scipy.sparse import coo_matrix
 
 
-class MVGRL(ContrastiveMethod):
+class MVGRL(Method):
     r"""
     TODO: add descriptions
     """
