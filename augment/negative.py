@@ -2,10 +2,10 @@ import copy
 import torch
 
 from .base import Augmentor
-from ssl.data import HomoData
+from data import HomoData
 
 
-class Shuffle(Augmentor):
+class DataShuffle(Augmentor):
     def __init__(self, is_x: bool = True, is_adj: bool = False):
         super().__init__()
         self.is_x = is_x

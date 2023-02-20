@@ -1,5 +1,5 @@
 from .base import Augmentor
-from ssl.data import Data
+from data import Data
 
 
 class Echo(Augmentor):
