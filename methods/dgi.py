@@ -1,21 +1,21 @@
 import torch
 
-from augment import DataAugmentation, AugNegDGI, AugPosDGI
-from loader import Loader, FullLoader
-from .method import ContrastiveMethod
+from ssl.augment import Augmentor, AugmentorList, AugmentorDict
+from ssl.augment.collections import augments_dgi
+from ssl.loader import Loader
+from .base import Method
 
 from torch_geometric.typing import *
 
 
-class DGI(ContrastiveMethod):
+class DGI(Method):
     r"""
     TODO: add descriptions
     """
     def __init__(self,
                  model: torch.nn.Module,
+                 data_augment: Optional[Augmentor, AugmentorList, AugmentorDict] = augments_dgi,
                  data_loader: Loader,
-                 augment_pos: DataAugmentation = AugPosDGI(),
-                 augment_neg: DataAugmentation = AugNegDGI(),
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
@@ -25,9 +25,9 @@ class DGI(ContrastiveMethod):
                  save_root: str = "",
                  ):
         super().__init__(model=model,
+                         data_augment=data_augment,
+                         emb_augment=None,
                          data_loader=data_loader,
-                         augment_pos=augment_pos,
-                         augment_neg=augment_neg,
                          save_root=save_root)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
@@ -62,8 +62,7 @@ class DGI(ContrastiveMethod):
             self.optimizer.zero_grad()
 
             # data augmentation
-            data_pos = self.augment_pos(data)
-            data_neg = self.augment_neg(data)
+            data_neg = self.augments(data)
 
             x_pos = data_pos.x
             x_neg = data_neg.x

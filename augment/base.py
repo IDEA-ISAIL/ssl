@@ -41,4 +41,3 @@ class AugmentorDict(UserDict):
         except AssertionError:
             raise "AssertionError. The value should be an instance of Augmentor or Augmentors."
         super().__setitem__(key, value)
-

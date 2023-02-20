@@ -1,7 +1,7 @@
 import torch
 
 from .model import Model
-from nn.utils import AvgReadout, DiscriminatorDGI
+from ssl.nn.utils import AvgReadout, DiscriminatorDGI
 
 from torch_geometric.typing import Tensor, Adj
 

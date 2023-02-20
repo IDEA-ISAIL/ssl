@@ -2,7 +2,7 @@ import copy
 import torch
 
 from .base import Augmentor
-from data import Data, HomoData
+from ssl.data import HomoData
 
 
 class Shuffle(Augmentor):
