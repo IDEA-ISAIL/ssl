@@ -1,11 +1,9 @@
-import copy
-import torch
-
 from .base import Augmentor
-from data import Data, HomoData
+from data import Data
 
 
 class Echo(Augmentor):
+    """ TODO: maybe this class is unnecessary. """
     def __init__(self):
         super().__init__()
 

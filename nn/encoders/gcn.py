@@ -60,6 +60,7 @@ class GCNDGI(torch.nn.Module):
                  act: torch.nn = torch.nn.PReLU(),
                  bias: bool = True):
         super(GCNDGI, self).__init__()
+        self.dim_out = dim_out
         self.fc = torch.nn.Linear(dim_in, dim_out, bias=False)
         self.act = act
 
@@ -89,4 +90,40 @@ class GCNDGI(torch.nn.Module):
         if self.bias is not None:
             out += self.bias
 
+        return self.act(out)
+    
+class GCNMVGRL(torch.nn.Module):
+    def __init__(self,
+                 dim_in: int,
+                 dim_out: int = 512,
+                 bias: bool = True):
+        super(GCNMVGRL, self).__init__()
+        self.fc = torch.nn.Linear(dim_in, dim_out, bias=False)
+        self.act = torch.nn.PReLU()
+
+        if bias:
+            self.bias = torch.nn.Parameter(torch.FloatTensor(dim_out))
+            self.bias.data.fill_(0.0)
+        else:
+            self.register_parameter('bias', None)
+
+        for m in self.modules():
+            self._weights_init(m)
+
+    def _weights_init(self, m):
+        if isinstance(m, torch.nn.Linear):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.fill_(0.0)
+
+    # Shape of seq: (batch, nodes, features)
+    def forward(self, seq, adj, sparse=False):
+        seq_fts = self.fc(seq)
+        if sparse:
+            # out = torch.unsqueeze(torch.spmm(adj, torch.squeeze(seq_fts, 0)), 0)
+            out = torch.bmm(adj, seq_fts)
+        else:
+            out = torch.bmm(adj, seq_fts)
+        if self.bias is not None:
+            out += self.bias
         return self.act(out)

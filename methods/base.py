@@ -1,9 +1,8 @@
 import os
-from typing import Tuple, List, Dict, Any
-from typing import Union, Hashable, Iterable, Optional
+from typing import Optional
+from my_typing import OptAugment
 
 import torch
-from augment import Augmentation
 from loader import Loader
 
 __all__ = [
@@ -19,6 +18,8 @@ class Method:
     def __init__(
             self,
             model: torch.nn.Module,
+            data_augment: OptAugment,
+            emb_augment: OptAugment,
             data_loader: Loader,
             save_root: str = "",
             use_cuda: bool = True,
@@ -35,7 +36,9 @@ class Method:
             *args:
             **kwargs:
         """
-        self.model = model  # entire model to train
+        self.model = model  # entire model to train, including encoders and other necessary modules
+        self.data_augment = data_augment
+        self.emb_augment = emb_augment
         self.data_loader = data_loader
         self.save_root = save_root
         self.use_cuda = use_cuda

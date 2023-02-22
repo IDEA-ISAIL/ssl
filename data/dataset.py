@@ -1,10 +1,10 @@
-from torch_geometric.typing import (
-    EdgeTensorType,
-    EdgeType,
-    FeatureTensorType,
-    NodeType,
-    OptTensor,
-)
+# from torch_geometric.typing import (
+#     EdgeTensorType,
+#     EdgeType,
+#     FeatureTensorType,
+#     NodeType,
+#     OptTensor,
+# )
 
 
 class Dataset:

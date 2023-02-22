@@ -9,7 +9,7 @@ from .dataset import Dataset
 from .utils import *
 
 
-class DatasetDGI(Dataset):
+class DatasetMVGRL(Dataset):
     def __init__(self):
         self.x = None
         self.adj = None
@@ -50,7 +50,7 @@ class DatasetDGI(Dataset):
         self.x = sp.vstack((allx, tx)).tolil()
         self.x[test_idx_reorder, :] = self.x[test_idx_range, :]
         self.adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
-        
+
         self.x, _ = preprocess_features(self.x)
         self.adj = normalize_adj(self.adj + sp.eye(self.adj.shape[0]))
 
@@ -59,17 +59,12 @@ class DatasetDGI(Dataset):
         # self.adj = torch.FloatTensor(self.adj)
 
         self.labels = np.vstack((ally, ty))
-        # print("label shape",self.labels.shape)
         self.labels[test_idx_reorder, :] = self.labels[test_idx_range, :]
 
         self.idx_test = test_idx_range.tolist()
         self.idx_train = range(len(y))
-        # print(self.idx_train)
         self.idx_val = range(len(y), len(y) + 500)
 
     def to_data(self):
         return HomoData(x=self.x, adj=self.adj)
 
-
-# data = DatasetDGI()
-# data.load(path="../datasets/cora_dgi")

@@ -1,90 +1,76 @@
 import torch
 
-from augment.collections import augment_dgi
-from loader import Loader
+import numpy as np
+from augment import DataAugmentation, AugNegDGI, AugPosDGI
+from loader import Loader, FullLoader
 from .base import Method
+from .utils import EMA, update_moving_average
 
-from torch_geometric.typing import Tensor, Adj
-from my_typing import OptAugment
+from torch_geometric.typing import *
 
 
-class DGI(Method):
+class AFGRL(Method):
     r"""
     TODO: add descriptions
     """
     def __init__(self,
                  model: torch.nn.Module,
                  data_loader: Loader,
-                 data_augment: OptAugment=augment_dgi,
+                 augment_pos: DataAugmentation = AugPosDGI(),
+                 augment_neg: DataAugmentation = AugNegDGI(),
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
+                 moving_average_decay=0.9,
                  patience: int = 20,
                  use_cuda: bool = True,
                  is_sparse: bool = True,
                  save_root: str = "",
                  ):
         super().__init__(model=model,
-                         data_augment=data_augment,
-                         emb_augment=None,
                          data_loader=data_loader,
+                         augment_pos=augment_pos,
+                         augment_neg=augment_neg,
                          save_root=save_root)
 
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
-        self.b_xent = torch.nn.BCEWithLogitsLoss()
-
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr, weight_decay=weight_decay)
+        self.ema_updater = EMA(moving_average_decay, n_epochs)
+        # TODO: scheduler
+        scheduler = lambda epoch: epoch / 1000 if epoch < 1000 \
+                    else ( 1 + np.cos((epoch-1000) * np.pi / (n_epochs - 1000))) * 0.5
+        self.scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda = scheduler)
         self.n_epochs = n_epochs
         self.patience = patience
 
         self.use_cuda = use_cuda
         self.is_sparse = is_sparse
 
-    def get_loss(self, x: Tensor, x_neg: Tensor, adj: Adj, labels: Tensor):
-        logits = self.model(x, x_neg, adj, self.is_sparse, None, None, None)
-        loss = self.b_xent(logits, labels)
-        return loss
-
-    def get_label_pairs(self, batch_size: int, n_pos: int, n_neg: int):
-        r"""Get the positive and negative files."""
-        label_pos = torch.ones(batch_size, n_pos)
-        label_neg = torch.zeros(batch_size, n_neg)
-        labels = torch.cat((label_pos, label_neg), 1)
-        return labels
-
     def train(self):
         cnt_wait = 0
         best = 1e9
 
         data = self.data_loader.data
-        adj = data.adj
-        x = data.x
         n_nodes = data.n_nodes
         batch_size = self.data_loader.batch_size
 
         if self.use_cuda:
             self.model = self.model.cuda()
-            adj = adj.cuda()
-            x = x.cuda()
+            self.model.adj_ori = self.model.adj_ori.cuda()
 
         for epoch in range(self.n_epochs):
             self.model.train()
             self.optimizer.zero_grad()
 
-            # data augmentation
-            data_neg = self.data_augment(data)
 
-            x_neg = data_neg.x
+            x = data.x
+            adj = data.adj
             if self.use_cuda:
-                x_neg = x_neg.cuda()
-            labels = self.get_label_pairs(batch_size=batch_size, n_pos=n_nodes, n_neg=n_nodes)
-
-            if self.use_cuda:
-                x_neg = x_neg.cuda()
-                labels = labels.cuda()
+                x = x.cuda()
+                adj = adj.cuda()
 
             # get loss
-            loss = self.get_loss(x=x, x_neg=x_neg, adj=adj, labels=labels)
-
+            loss = self.model(x, adj)
+            print(loss)
             # early stop
             if loss < best:
                 best = loss
@@ -100,3 +86,5 @@ class DGI(Method):
 
             loss.backward()
             self.optimizer.step()
+            self.scheduler.step()
+            update_moving_average(self.ema_updater, self.model.teacher_encoder, self.model.encoder)

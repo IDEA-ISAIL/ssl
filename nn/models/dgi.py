@@ -1,6 +1,6 @@
 import torch
 
-from .model import Model
+from .base import Model
 from nn.utils import AvgReadout, DiscriminatorDGI
 
 from torch_geometric.typing import Tensor, Adj
@@ -32,7 +32,7 @@ class ModelDGI(Model):
         return logits
 
     def get_embs(self, x: Tensor, adj: Adj, is_sparse: bool = True, is_numpy: bool = False):
-        embs = self.encoder(x=x, adj=adj, is_sparse=is_sparse).detach()
+        embs = self.encoder(seq=x, adj=adj, is_sparse=is_sparse).detach()
         if is_numpy:
-            return embs.cpu().to_numpy()
+            return embs.cpu().numpy()
         return embs
