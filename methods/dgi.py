@@ -2,12 +2,12 @@ import torch
 
 from augment import DataAugmentation, AugNegDGI, AugPosDGI
 from loader import Loader, FullLoader
-from .method import ContrastiveMethod
+from .base import Method
 
 from torch_geometric.typing import *
 
 
-class DGI(ContrastiveMethod):
+class DGI(Method):
     r"""
     TODO: add descriptions
     """

@@ -1,13 +1,13 @@
 import copy
 from data import Data
 
-from typing import List, Union, Dict
+from typing import List, Union
 
 
 __all__ = [
     "Augmentor",
-    "Augmentors",
     "Augmentation",
+    "DataAugmentation"
 ]
 
 
@@ -24,28 +24,26 @@ class Augmentor:
         return self.apply(*args, **kwargs)
 
 
-class Augmentors:
-    r"""A wrapper for a list of augmentors."""
+class Augmentation:
+    r"""Base class for augmentation. A wrapper of augmentors."""
     def __init__(self, augmentors: Union[Augmentor, List[Augmentor]]):
         if type(augmentors) == List:
             self.augmentors = augmentors
         else:
             self.augmentors = [augmentors]
 
-    def apply(self, inputs):
+    def apply(self, *args, **kwargs):
         r"""Apply the augmentors to inputs."""
-        for augmentor in self.augmentors:
-            inputs = augmentor(inputs)
-        return inputs
+        raise NotImplementedError
 
-    def __call__(self, inputs):
-        self.apply(inputs)
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError
 
 
-class Augmentation:
-    r"""Base class for augmentation. A dictionary of augmentors."""
-    def __init__(self, augment_dict: Dict[str, Augmentors]):
-        self.augment_dict = augment_dict
+class DataAugmentation(Augmentation):
+    r"""Base class for data augmentation. A wrapper of augmentors."""
+    def __init__(self, augmentors: Union[Augmentor, List[Augmentor]]):
+        super().__init__(augmentors=augmentors)
 
     def apply(self, data: Data):
         data_tmp = copy.deepcopy(data)

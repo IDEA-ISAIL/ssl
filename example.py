@@ -8,6 +8,7 @@ from nn.utils import DiscriminatorDGI
 from nn.models import ModelDGI
 from methods import DGI
 
+from evaluation.base_evaluator import eval
 
 # data
 dataset = DatasetDGI()
@@ -26,3 +27,6 @@ augment_pos = AugPosDGI()
 augment_neg = AugNegDGI()
 dgi = DGI(model=model, data_loader=data_loader, augment_pos=AugPosDGI(), augment_neg=AugNegDGI(), save_root="./results")
 dgi.train()
+
+#evaluator
+eval(model.get_embs(dataset.x.cuda(), dataset.adj.cuda(), True), dataset)

@@ -59,10 +59,12 @@ class DatasetDGI(Dataset):
         # self.adj = torch.FloatTensor(self.adj)
 
         self.labels = np.vstack((ally, ty))
+        print("label shape",self.labels.shape)
         self.labels[test_idx_reorder, :] = self.labels[test_idx_range, :]
 
         self.idx_test = test_idx_range.tolist()
         self.idx_train = range(len(y))
+        print(self.idx_train)
         self.idx_val = range(len(y), len(y) + 500)
 
     def to_data(self):

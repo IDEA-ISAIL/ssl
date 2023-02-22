@@ -7,7 +7,7 @@ from ogb.nodeproppred import Evaluator
 import torch.nn.functional as F
 from Config import load_config
 from Dataloader import load_graph
-
+print("test")
 
 def main(config, data, idx):
     use_cuda = config.optim.use_gpu and torch.cuda.is_available()
