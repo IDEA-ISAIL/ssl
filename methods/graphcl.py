@@ -1,21 +1,21 @@
 import torch
 
-from augment import DataAugmentation, AugNegDGI, AugPosDGI
+from augment import DataAugmentation, Augmentor
 from loader import Loader, FullLoader
 from .method import ContrastiveMethod
 
 from torch_geometric.typing import *
 
 
-class DGI(ContrastiveMethod):
+class GraphCL(ContrastiveMethod):
     r"""
     TODO: add descriptions
     """
     def __init__(self,
                  model: torch.nn.Module,
                  data_loader: Loader,
-                 augment_pos: DataAugmentation = AugPosDGI(),
-                 augment_neg: DataAugmentation = AugNegDGI(),
+                 augment_pos: DataAugmentation = Augmentor(),
+                 augment_neg: DataAugmentation = Augmentor(),
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
@@ -31,6 +31,7 @@ class DGI(ContrastiveMethod):
                          save_root=save_root)
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
+        # self.optimizer_lr = torch.optim.Adam(self.classifier.parameters(), lr, weight_decay=weight_decay)
         self.b_xent = torch.nn.BCEWithLogitsLoss()
 
         self.n_epochs = n_epochs
@@ -49,27 +50,26 @@ class DGI(ContrastiveMethod):
         best = 1e9
 
         data = self.data_loader.data
-        adj = data.adj
-        n_nodes = data.n_nodes
+
         batch_size = self.data_loader.batch_size
+        # data augmentation
+        data_neg = self.augment_neg(data)
+        data_pos = data_neg
+        adj = data_neg.adj
+        x_pos = data_pos.x
+        x_neg = data_neg.x
+        n_nodes = data_neg.n_nodes
 
         if self.use_cuda:
             self.model = self.model.cuda()
             adj = adj.cuda()
+            x_pos = x_pos.cuda()
+            x_neg = x_neg.cuda()
 
         for epoch in range(self.n_epochs):
             self.model.train()
             self.optimizer.zero_grad()
 
-            # data augmentation
-            data_pos = self.augment_pos(data)
-            data_neg = self.augment_neg(data)
-
-            x_pos = data_pos.x
-            x_neg = data_neg.x
-            if self.use_cuda:
-                x_pos = x_pos.cuda()
-                x_neg = x_neg.cuda()
             labels = self.get_label_pairs(batch_size=batch_size, n_pos=n_nodes, n_neg=n_nodes)
 
             if self.use_cuda:
@@ -94,3 +94,6 @@ class DGI(ContrastiveMethod):
 
             loss.backward()
             self.optimizer.step()
+
+        # get embeddings
+        # embeds = self.model.get_embs(x_pos, adj, self.is_sparse)

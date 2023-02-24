@@ -50,7 +50,7 @@ class DatasetDGI(Dataset):
         self.x = sp.vstack((allx, tx)).tolil()
         self.x[test_idx_reorder, :] = self.x[test_idx_range, :]
         self.adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
-        
+
         self.x, _ = preprocess_features(self.x)
         self.adj = normalize_adj(self.adj + sp.eye(self.adj.shape[0]))
 

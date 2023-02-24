@@ -1,4 +1,4 @@
-from .gcn import GCN, GCNDGI, GCNMVGRL
+from .gcn import GCN, GCNDGI
 
 
 # __all__ = [

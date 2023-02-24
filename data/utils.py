@@ -100,3 +100,4 @@ def parse_index_file(filename):
     for line in open(filename):
         index.append(int(line.strip()))
     return index
+

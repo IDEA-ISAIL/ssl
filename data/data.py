@@ -1,5 +1,12 @@
 from typing import Optional
-from torch_geometric.typing import Adj, OptTensor
+from torch_geometric.typing import (
+    Adj,
+    EdgeTensorType,
+    EdgeType,
+    FeatureTensorType,
+    NodeType,
+    OptTensor,
+)
 
 
 class Data:

@@ -1,5 +1,14 @@
-from collections import UserDict
+import copy
+from data import Data
+
 from typing import List, Union
+
+
+__all__ = [
+    "Augmentor",
+    "Augmentation",
+    "DataAugmentation"
+]
 
 
 class Augmentor:
@@ -15,29 +24,32 @@ class Augmentor:
         return self.apply(*args, **kwargs)
 
 
-class AugmentorList:
-    r"""A wrapper for a list of augmentors."""
+class Augmentation:
+    r"""Base class for augmentation. A wrapper of augmentors."""
     def __init__(self, augmentors: Union[Augmentor, List[Augmentor]]):
         if type(augmentors) == List:
             self.augmentors = augmentors
         else:
             self.augmentors = [augmentors]
 
-    def apply(self, inputs):
-        r"""Sequentially apply each augmentor to inputs."""
+    def apply(self, *args, **kwargs):
+        r"""Apply the augmentors to inputs."""
+        raise NotImplementedError
+
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError
+
+
+class DataAugmentation(Augmentation):
+    r"""Base class for data augmentation. A wrapper of augmentors."""
+    def __init__(self, augmentors: Union[Augmentor, List[Augmentor]]):
+        super().__init__(augmentors=augmentors)
+
+    def apply(self, data: Data):
+        data_tmp = copy.deepcopy(data)
         for augmentor in self.augmentors:
-            inputs = augmentor(inputs)
-        return inputs
+            data_tmp = augmentor(data_tmp)
+        return data_tmp
 
-    def __call__(self, inputs):
-        self.apply(inputs)
-
-
-class AugmentorDict(UserDict):
-    r"""Base class for augmentation. A dictionary of augmentors."""
-    def __setitem__(self, key, value):
-        try:
-            assert isinstance(value, Augmentor)  or isinstance(value, AugmentorList)
-        except AssertionError:
-            raise "AssertionError. The value should be an instance of Augmentor or Augmentors."
-        super().__setitem__(key, value)
+    def __call__(self, data: Data):
+        return self.apply(data)
