@@ -4,7 +4,7 @@ import torch
 
 import numpy as np
 import copy
-from .model import Model
+from .base import Model
 from torch_geometric.typing import Tensor, Adj
 from data.utils import sparse_mx_to_torch_sparse_tensor
 import faiss

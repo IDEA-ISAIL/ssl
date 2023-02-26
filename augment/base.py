@@ -37,7 +37,7 @@ class AugmentorDict(UserDict):
     r"""Base class for augmentation. A dictionary of augmentors."""
     def __setitem__(self, key, value):
         try:
-            assert isinstance(value, Augmentor)  or isinstance(value, AugmentorList)
+            assert isinstance(value, Augmentor) or isinstance(value, AugmentorList)
         except AssertionError:
             raise "AssertionError. The value should be an instance of Augmentor or Augmentors."
         super().__setitem__(key, value)
