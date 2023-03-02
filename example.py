@@ -15,7 +15,7 @@ from nn.encoders import GCNDGI
 from nn.models import ModelDGI
 from methods import DGI
 
-from evaluation.evaluator import eval
+from evaluation import eval
 
 
 # data
@@ -53,7 +53,10 @@ dgi.train()
 #evaluator
 embs = model.get_embs(x=data.x.cuda(), adj=data.adj.cuda(), is_numpy=True)
 labels = dataset.labels
-eval(embs, labels, evaluator = "logistic_classify")
+
+# node classification/ link prediction/ graph reconstruction
+
+eval(embs, labels, evaluator = "similarity_search")
 
 
 

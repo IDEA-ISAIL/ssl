@@ -1,15 +1,35 @@
 import torch
 import torch.nn as nn
-from .base_evaluator import LogReg
+from .base_evaluator import Evaluator
 import numpy as np
 import warnings
 
-from sklearn.model_selection import GridSearchCV, KFold, StratifiedKFold
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.metrics import accuracy_score
 from sklearn.svm import SVC, LinearSVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn import preprocessing
 
+class Evaluator(nn.Module):
+    def forward(self)->None:
+        raise NotImplementedError
+    
+class LogReg(Evaluator):
+    def __init__(self, hid_units, nb_classes):
+        super(LogReg, self).__init__()
+        self.fc = nn.Linear(hid_units, nb_classes)
+
+        for m in self.modules():
+            self.weights_init(m)
+
+    def weights_init(self, m):
+        if isinstance(m, nn.Linear):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.fill_(0.0)
+
+    def forward(self, seq):
+        ret = self.fc(seq)
+        return ret
 
 def logistic_classify(embeds, labels):
     nb_classes = np.unique(labels).shape[0]
@@ -105,33 +125,4 @@ def linearsvc_classify(embeds, labels, search = False):
         accs.append(accuracy_score(y_test, classifier.predict(x_test)))
     return np.mean(accs)
 
-def eval(embeds, labels, evaluator = "logistic_classify", search=True):
-    # labels = labels[np.newaxis]
-    labels = np.argmax(labels, axis=1)
-    labels = preprocessing.LabelEncoder().fit_transform(labels)
-    x, y = np.array(embeds[0]), np.array(labels)
 
-    acc = 0
-    if evaluator == "logistic_classify":
-  
-        _acc = logistic_classify(x, y)
-        if _acc > acc:
-            acc = _acc
-  
-    elif evaluator == "svc_classify":
-        _acc = svc_classify(x,y, search)
-        if _acc > acc:
-            acc = _acc
-
-    elif evaluator == "linearsvc_classify":
-        _acc = linearsvc_classify(x, y, search)
-        if _acc > acc:
-            acc = _acc
-   
-    elif evaluator == "randomforest_classify":
-        _acc = randomforest_classify(x, y, search)
-        if _acc > acc:
-            acc = _acc
-   
-    print('Average accuracy:', acc)
-    return acc
