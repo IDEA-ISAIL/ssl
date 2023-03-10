@@ -1,12 +1,11 @@
-from data import DatasetDGI, DatasetMVGRL
-from loader import FullLoader
-from augment.collections import augment_dgi
+from src.data import DatasetDGI
+from src.loader import FullLoader
+from src.augment.collections import augment_dgi
 
-from nn.utils import DiscriminatorDGI
+from src.nn.utils import DiscriminatorDGI
 from src.nn.encoders import GCNDGI
-from nn.models import ModelDGI
-from methods import DGI
-
+from src.nn.models import ModelDGI
+from src.methods import DGI
 
 
 # data
