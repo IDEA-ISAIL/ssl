@@ -21,9 +21,10 @@ class DataShuffle(Augmentor):
         if self.is_adj:
             raise NotImplementedError
         return data_tmp
-    
+
+
 class ComputePPR(Augmentor):
-    def __init__(self, alpha = 0.2, self_loop = True):
+    def __init__(self, alpha=0.2, self_loop=True):
         super().__init__()
         self.alpha = alpha
         self.self_loop = self_loop
@@ -38,9 +39,10 @@ class ComputePPR(Augmentor):
         at = torch.matmul(torch.matmul(dinv, a), dinv)
         data_tmp.adj = self.alpha * inv((torch.eye(a.shape[0]) - (1 - self.alpha) * at))
         return data_tmp
-    
+
+
 class ComputeHeat(Augmentor):
-    def __init__(self, t = 5, self_loop = True):
+    def __init__(self, t=5, self_loop=True):
         super().__init__()
         self.t = t
         self.self_loop = self_loop
@@ -178,7 +180,7 @@ class AugmentSubgraph(Augmentor):
             else:
                 break
 
-        drop_node_list = sorted([i for i in all_node_list if not i in sub_node_id_list])
+        drop_node_list = sorted([i for i in all_node_list if i not in sub_node_id_list])
 
         aug_input_fea = delete_row_col(input_fea, drop_node_list, only_row=True)
         aug_input_adj = delete_row_col(input_adj, drop_node_list)
