@@ -1,6 +1,6 @@
 """ Next update. """
 
-from typing import Union, Optional
+from src.typing import Union, Optional
 from augment import Augmentor, AugmentorList, AugmentorDict
 
 AugmentType = Union[Augmentor, AugmentorList, AugmentorDict]

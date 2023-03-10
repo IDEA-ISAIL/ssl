@@ -1,16 +1,16 @@
-from data import DatasetAFGRL
-from loader import FullLoader
+from src.data import DatasetAFGRL
+from src.loader import FullLoader
 
-from augment import AugPosDGI, AugNegDGI
+from src.augment import AugPosDGI, AugNegDGI
 
-from nn.encoders import GCNDGI
-from nn.models import ModelAFGRL
-from methods import AFGRL
+from src.nn.encoders import GCNDGI
+from src.nn.models import ModelAFGRL
+from src.methods import AFGRL
 import copy
 
 # data
 dataset = DatasetAFGRL()
-dataset.load(path="./datasets/cora_dgi")
+dataset.load(path="src/datasets/cora_dgi")
 data = dataset.to_data()
 data_loader = FullLoader(data)
 

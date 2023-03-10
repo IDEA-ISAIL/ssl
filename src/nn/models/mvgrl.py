@@ -1,7 +1,7 @@
 import torch
 
 from .base import Model
-from nn.utils import AvgReadout, DiscriminatorMVGRL
+from src.nn.utils import AvgReadout, DiscriminatorMVGRL
 
 from torch_geometric.typing import Tensor, Adj
 

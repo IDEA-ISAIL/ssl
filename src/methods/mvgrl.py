@@ -1,9 +1,9 @@
 import torch
 
-from augment import augment_mvgrl_ppr
-from loader import Loader, FullLoader
+from src.augment import augment_mvgrl_ppr
+from src.loader import Loader, FullLoader
 from .base import Method
-from data.utils import sparse_mx_to_torch_sparse_tensor
+from src.data.utils import sparse_mx_to_torch_sparse_tensor
 
 from torch_geometric.typing import *
 from scipy.sparse import coo_matrix

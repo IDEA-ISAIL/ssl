@@ -1,11 +1,11 @@
 import torch
 
-from augment.collections import augment_dgi
-from loader import Loader
+from src.augment.collections import augment_dgi
+from src.loader import Loader
 from .base import Method
 
 from torch_geometric.typing import Tensor, Adj
-from my_typing import OptAugment
+from src.typing import OptAugment
 
 
 class DGI(Method):

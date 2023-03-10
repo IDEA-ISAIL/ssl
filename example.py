@@ -3,7 +3,7 @@ from loader import FullLoader
 from augment.collections import augment_dgi
 
 from nn.utils import DiscriminatorDGI
-from nn.encoders import GCNDGI
+from src.nn.encoders import GCNDGI
 from nn.models import ModelDGI
 from methods import DGI
 
@@ -11,7 +11,7 @@ from methods import DGI
 
 # data
 dataset = DatasetDGI()
-dataset.load(path="datasets/cora_dgi")
+dataset.load(path="src/datasets/cora_dgi")
 data = dataset.to_data()
 data_loader = FullLoader(data)
 

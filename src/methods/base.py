@@ -1,9 +1,9 @@
 import os
 from typing import Optional
-from my_typing import OptAugment
+from src.typing import OptAugment
 
 import torch
-from loader import Loader
+from src.loader import Loader
 
 __all__ = [
     "Method",

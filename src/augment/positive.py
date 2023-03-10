@@ -1,5 +1,5 @@
 from .base import Augmentor
-from data import Data
+from src.data import Data
 
 
 class Echo(Augmentor):

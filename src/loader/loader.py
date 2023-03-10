@@ -1,4 +1,4 @@
-from data import Data
+from src.data import Data
 
 
 BATCH_SIZE = 1  # for full loader

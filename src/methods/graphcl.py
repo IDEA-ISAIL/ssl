@@ -1,12 +1,11 @@
 import torch
 
-from augment import Augmentor
-from loader import Loader, FullLoader
+from src.loader import Loader
 # from .method import ContrastiveMethod
-from augment.collections import augment_dgi
+from src.augment.collections import augment_dgi
 from .base import Method
 from torch_geometric.typing import *
-from my_typing import OptAugment
+from src.typing import OptAugment
 
 
 class GraphCL(Method):

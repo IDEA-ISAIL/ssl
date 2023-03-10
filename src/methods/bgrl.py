@@ -1,8 +1,8 @@
 import copy
 import torch
 import numpy as np
-from augment import DataAugmentation, AugNegDGI, AugPosDGI
-from loader import Loader, FullLoader
+from src.augment import DataAugmentation, AugNegDGI, AugPosDGI
+from src.loader import Loader, FullLoader
 from .base import Method
 from .utils import EMA, update_moving_average
 

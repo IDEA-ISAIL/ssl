@@ -6,8 +6,9 @@ import numpy as np
 import copy
 from .base import Model
 from torch_geometric.typing import Tensor, Adj
-from data.utils import sparse_mx_to_torch_sparse_tensor
+from src.data.utils import sparse_mx_to_torch_sparse_tensor
 import faiss
+
 
 def loss_fn(x, y):
     x = F.normalize(x, dim=-1, p=2)

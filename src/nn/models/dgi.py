@@ -1,10 +1,12 @@
 import torch
+
 from .base import Model
-from nn.utils import AvgReadout, DiscriminatorDGI
+from src.nn.utils import AvgReadout, DiscriminatorDGI
+
 from torch_geometric.typing import Tensor, Adj
 
 
-class ModelGraphCL(Model):
+class ModelDGI(Model):
     r"""The full model to train the encoder.
 
     Args:
@@ -29,10 +31,8 @@ class ModelGraphCL(Model):
         logits = self.discriminator(c, h_1, h_2, samp_bias1, samp_bias2)
         return logits
 
-    def get_embs(self, x: Tensor, adj: Adj, is_sparse: bool = True):
-        embs = self.encoder(x, adj=adj, sparse=is_sparse)
-        return embs.detach()
-
-    def get_embs_numpy(self, x: Tensor, adj: Adj, is_sparse: bool = True):
-        embs = self.get_embs(x=x, adj=adj, is_sparse=is_sparse)
-        return embs.cpu().to_numpy()
+    def get_embs(self, x: Tensor, adj: Adj, is_sparse: bool = True, is_numpy: bool = False):
+        embs = self.encoder(seq=x, adj=adj, is_sparse=is_sparse).detach()
+        if is_numpy:
+            return embs.cpu().numpy()
+        return embs

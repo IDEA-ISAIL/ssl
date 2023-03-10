@@ -3,7 +3,7 @@ import torch
 from scipy.linalg import fractional_matrix_power
 from torch.linalg import inv
 from .base import Augmentor
-from data import HomoData
+from src.data import HomoData
 import random
 
 
