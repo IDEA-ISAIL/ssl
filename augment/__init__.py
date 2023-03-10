@@ -1,7 +1,5 @@
 from .base import *
-# from .dgi import *
-from .mvgrl import *
-from .negative import *
+from .collections import *
 
 # __all__ = [
 #     "Augmentation",
