@@ -1,6 +1,6 @@
 import torch
 
-from augment import AugPosMVGRL, AugPPRMVGRL, AugHeatMVGRL
+from augment import augment_mvgrl_ppr
 from loader import Loader, FullLoader
 from .base import Method
 from data.utils import sparse_mx_to_torch_sparse_tensor
@@ -16,8 +16,7 @@ class MVGRL(Method):
     def __init__(self,
                  model: torch.nn.Module,
                  data_loader: Loader,
-                 augment_pos: DataAugmentation = AugPosMVGRL(),
-                 augment_neg: DataAugmentation = AugPPRMVGRL(),
+                 data_augment: augment_mvgrl_ppr,
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 3000,
@@ -28,9 +27,9 @@ class MVGRL(Method):
                  save_root: str = "",
                  ):
         super().__init__(model=model,
+                         data_augment=data_augment,
+                         emb_augment=[],
                          data_loader=data_loader,
-                         augment_pos=augment_pos,
-                         augment_neg=augment_neg,
                          save_root=save_root)
         
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
@@ -57,11 +56,10 @@ class MVGRL(Method):
         ft_size = data.x.shape[1]
 
         # data augmentation
-        data_pos = self.augment_pos(data)
-        data_neg = self.augment_neg(data)
+        data_neg = self.data_augment(data)
 
-        x_pos = data_pos.x
-        adj = data_pos.adj.to_dense()
+        x_pos = data.x
+        adj = data.adj.to_dense()
         x_neg = data_neg.x
         diff = data_neg.adj.to_dense()
 
