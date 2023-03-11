@@ -1,6 +1,5 @@
 from typing import List, Callable
 
-
 from torch_geometric.transforms import BaseTransform
 
 
