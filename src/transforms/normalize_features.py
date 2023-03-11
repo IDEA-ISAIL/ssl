@@ -4,13 +4,14 @@ from torch_geometric.data import Data, HeteroData
 from torch_geometric.data.datapipes import functional_transform
 from torch_geometric.transforms import BaseTransform
 
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Any
 from torch_geometric.typing import Tensor
 
 # based on torch_geometric.transforms.normalize_features.py
+# from torch_geometric.transforms.normalize_features import NormalizeFeatures
 
 
-@functional_transform('normalize_features')
+# @functional_transform('normalize_features_ssl')
 class NormalizeFeatures(BaseTransform):
     r"""Row-normalizes the attributes given in :obj:`attrs` to sum-up to one
     (functional name: :obj:`normalize_features`).
@@ -27,7 +28,7 @@ class NormalizeFeatures(BaseTransform):
 
     ord = "sum1"
 
-    def __init__(self, attrs: List[str] = ["x"], ord: Optional[str, int, float] = None):
+    def __init__(self, attrs: List[str] = ["x"], ord: Optional[Any] = None):
         self.attrs = attrs
         if ord is not None:
             self.ord = ord
