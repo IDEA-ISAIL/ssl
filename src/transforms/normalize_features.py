@@ -11,7 +11,7 @@ from torch_geometric.typing import Tensor
 # from torch_geometric.transforms.normalize_features import NormalizeFeatures
 
 
-# @functional_transform('normalize_features_ssl')
+@functional_transform('normalize_features_ssl')
 class NormalizeFeatures(BaseTransform):
     r"""Row-normalizes the attributes given in :obj:`attrs` to sum-up to one
     (functional name: :obj:`normalize_features`).
