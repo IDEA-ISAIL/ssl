@@ -27,11 +27,11 @@ class Edge2Adj(BaseTransform):
 
         if self.norm is None:
             if edge_weight is None:
-                data.adj = torch.sparse_coo_tensor(data.edge_index, torch.ones_like(data.edge_indx[0]),
-                                                   [data.num_nodes, data.num_nodes])
+                data.adj_t = torch.sparse_coo_tensor(data.edge_index, torch.ones_like(data.edge_indx[0]),
+                                                     [data.num_nodes, data.num_nodes])
             else:
-                data.adj = torch.sparse_coo_tensor(data.edge_index, data.edge_weight,
-                                                   [data.num_nodes, data.num_nodes])
+                data.adj_t = torch.sparse_coo_tensor(data.edge_index, data.edge_weight,
+                                                     [data.num_nodes, data.num_nodes])
         else:
             data = self.norm(data)
         return data
