@@ -5,11 +5,10 @@ import networkx as nx
 import torch_sparse
 
 from .data import HomoData
-from .dataset import Dataset
 from .utils import *
 
 
-class DatasetDGI(Dataset):
+class DatasetDGI:
     def __init__(self):
         self.x = None
         self.adj = None
@@ -53,6 +52,7 @@ class DatasetDGI(Dataset):
         
         self.x, _ = preprocess_features(self.x)
         self.adj = normalize_adj(self.adj + sp.eye(self.adj.shape[0]))
+        # self.adj = self.adj + sp.eye(self.adj.shape[0])
 
         self.x = torch.FloatTensor(self.x)
         self.adj = sparse_mx_to_torch_sparse_tensor(self.adj)

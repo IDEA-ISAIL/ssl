@@ -5,11 +5,10 @@ import networkx as nx
 import torch_sparse
 
 from .data import HomoData
-from .dataset import Dataset
 from .utils import *
 
 
-class DatasetMVGRL(Dataset):
+class DatasetMVGRL:
     def __init__(self):
         self.x = None
         self.adj = None

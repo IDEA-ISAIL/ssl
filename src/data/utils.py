@@ -1,3 +1,7 @@
+"""
+TODO: these functions are about to be removed.
+"""
+
 import torch
 
 import numpy as np
@@ -11,7 +15,7 @@ def normalize_adj(adj):
     """
     Symmetrically normalize adjacency matrix.
     """
-    adj = sp.coo_matrix(adj)
+    adj = sp.coo_matrix(adj, dtype=np.float)
     rowsum = np.array(adj.sum(1))
     d_inv_sqrt = np.power(rowsum, -0.5).flatten()
     d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
