@@ -4,7 +4,7 @@ import torch
 
 import numpy as np
 import copy
-from .base import Model
+from .base import BaseModel
 from torch_geometric.typing import Tensor, Adj
 
 
@@ -24,7 +24,7 @@ def set_requires_grad(model, val):
         p.requires_grad = val
 
 
-class ModelBGRL(Model):
+class Model(BaseModel):
     r"""The full model to train the encoder.
 
     Args:

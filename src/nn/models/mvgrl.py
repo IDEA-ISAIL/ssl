@@ -1,6 +1,6 @@
 import torch
 
-from .base import Model
+from .base import BaseModel
 from src.nn.utils import AvgReadout
 
 from torch_geometric.typing import Tensor, Adj, OptTensor
@@ -38,7 +38,7 @@ class Discriminator(torch.nn.Module):
         return logits
 
 
-class ModelMVGRL(Model):
+class Model(BaseModel):
     r"""The full model to train the encoder.
 
     Args:

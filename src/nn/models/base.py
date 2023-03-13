@@ -1,7 +1,7 @@
 import torch
 
 
-class Model(torch.nn.Module):
+class BaseModel(torch.nn.Module):
     r"""The full model to train the encoder.
 
     Args:

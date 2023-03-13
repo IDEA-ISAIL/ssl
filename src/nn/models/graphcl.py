@@ -1,10 +1,10 @@
 import torch
-from .base import Model
+from .base import BaseModel
 from src.nn.utils import AvgReadout, DiscriminatorDGI
 from torch_geometric.typing import Tensor, Adj
 
 
-class ModelGraphCL(Model):
+class Model(BaseModel):
     r"""The full model to train the encoder.
 
     Args:

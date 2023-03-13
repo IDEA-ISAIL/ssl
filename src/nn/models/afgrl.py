@@ -4,7 +4,7 @@ import torch
 
 import numpy as np
 import copy
-from .base import Model
+from .base import BaseModel
 from torch_geometric.typing import Tensor, Adj
 from src.data.utils import sparse_mx_to_torch_sparse_tensor
 import faiss
@@ -28,7 +28,7 @@ def set_requires_grad(model, val):
 
 
 
-class ModelAFGRL(Model):
+class Model(BaseModel):
     r"""The full model to train the encoder.
 
     Args:
