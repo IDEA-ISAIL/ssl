@@ -8,7 +8,7 @@ import copy
 
 # data
 dataset = DatasetDGI()
-dataset.load(path="src/datasets/cora_dgi")
+dataset.load(path="datasets/cora_dgi")
 data = dataset.to_data()
 data_loader = FullLoader(data)
 
