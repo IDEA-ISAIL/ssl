@@ -1,3 +1,8 @@
+"""
+TODO: This file is going to be removed. Move discriminators to src/nn/models.
+"""
+
+
 import torch
 
 from torch_geometric.typing import Tensor, OptTensor
