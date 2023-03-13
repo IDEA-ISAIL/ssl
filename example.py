@@ -1,10 +1,8 @@
 from src.data import DatasetDGI
-from src.loader import FullLoader
 from src.augment.collections import augment_dgi
 import torch
 
-from src.nn.encoders import GCNDGI
-from src.nn.models import ModelDGI
+from src.nn.models.dgi import Model, Encoder, Discriminator
 from src.methods import DGI
 from src.datasets import Planetoid
 from src.transforms import NormalizeFeatures, GCNNorm, TransformList, Edge2Adj
@@ -33,9 +31,9 @@ print("Adjacency matrix difference:", torch.sum(adj_pyg - adj_old))
 data_loader = DataLoader(dataset)
 
 # Neural networks
-encoder = GCNDGI(dim_in=1433)
-# encoder = GCN(1433, 512, num_layers=1, act="prelu")
-model = ModelDGI(encoder=encoder)
+# encoder = Encoder(dim_in=1433)
+encoder = GCN(1433, 512, num_layers=1, act="prelu")
+model = Model(encoder=encoder)
 
 # Trainer
 dgi = DGI(model=model, data_loader=data_loader, data_augment=augment_dgi, save_root="./results")
