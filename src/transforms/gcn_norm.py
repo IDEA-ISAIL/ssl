@@ -1,5 +1,5 @@
 import torch
-from torch_sparse import SparseTensor, fill_diag, mul
+from torch_sparse import SparseTensor, fill_diag, mul, set_diag
 from torch_sparse import sum as sparsesum
 from torch_scatter import scatter_add
 
@@ -37,7 +37,7 @@ class GCNNorm(BaseTransform):
             data.edge_index, data.edge_weight = gcn_norm(
                 data.edge_index, edge_weight, data.num_nodes,
                 add_self_loops=self.add_self_loops)
-        else:
+        if 'adj_t' in data:  # It is possible that the data has both edge_index and adj_t
             data.adj_t = gcn_norm(data.adj_t, add_self_loops=self.add_self_loops)
 
         return data
@@ -51,7 +51,9 @@ def gcn_norm(edge_index, edge_weight=None, num_nodes=None, add_self_loops=1., fl
         adj_t = edge_index
         if not adj_t.has_value():
             adj_t = adj_t.fill_value(1., dtype=dtype)
-        adj_t = fill_diag(adj_t, add_self_loops)
+        # adj_t = fill_diag(adj_t, add_self_loops)  this seems incorrect
+        diag_val = adj_t.get_diag() + add_self_loops
+        adj_t = set_diag(adj_t, diag_val)
         deg = sparsesum(adj_t, dim=1)
         deg_inv_sqrt = deg.pow_(-0.5)
         deg_inv_sqrt.masked_fill_(deg_inv_sqrt == float('inf'), 0.)

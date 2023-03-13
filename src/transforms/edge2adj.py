@@ -1,4 +1,5 @@
 import torch
+from torch_sparse import SparseTensor
 
 from torch_geometric.data.datapipes import functional_transform
 from torch_geometric.transforms import BaseTransform
@@ -25,13 +26,13 @@ class Edge2Adj(BaseTransform):
         if 'edge_weight' in data:
             edge_weight = data.edge_weight
 
-        if self.norm is None:
-            if edge_weight is None:
-                data.adj_t = torch.sparse_coo_tensor(data.edge_index, torch.ones_like(data.edge_indx[0]),
-                                                     [data.num_nodes, data.num_nodes])
-            else:
-                data.adj_t = torch.sparse_coo_tensor(data.edge_index, data.edge_weight,
-                                                     [data.num_nodes, data.num_nodes])
+        if edge_weight is None:
+            adj_t = torch.sparse_coo_tensor(data.edge_index, torch.ones_like(data.edge_index[0]),
+                                            [data.num_nodes, data.num_nodes], dtype=torch.float)
         else:
+            adj_t = torch.sparse_coo_tensor(data.edge_index, data.edge_weight,
+                                            [data.num_nodes, data.num_nodes], dtype=torch.float)
+        data.adj_t = SparseTensor.from_torch_sparse_coo_tensor(adj_t)
+        if self.norm is not None:
             data = self.norm(data)
         return data
