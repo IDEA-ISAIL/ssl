@@ -41,6 +41,7 @@ class DGI(Method):
 
     def get_loss(self, x: Tensor, x_neg: Tensor, adj: Adj, labels: Tensor):
         logits = self.model(x, x_neg, adj, self.is_sparse, None, None, None)
+        # logits = self.model(x, adj)
         loss = self.b_xent(logits, labels)
         return loss
 
@@ -55,48 +56,52 @@ class DGI(Method):
         cnt_wait = 0
         best = 1e9
 
-        data = self.data_loader.data
-        adj = data.adj
-        x = data.x
-        n_nodes = data.n_nodes
-        batch_size = self.data_loader.batch_size
+        # data = self.data_loader.data
+        # adj = data.adj
+        # x = data.x
+        # n_nodes = data.n_nodes
+        # batch_size = self.data_loader.batch_size
 
         if self.use_cuda:
             self.model = self.model.cuda()
-            adj = adj.cuda()
-            x = x.cuda()
 
         for epoch in range(self.n_epochs):
-            self.model.train()
-            self.optimizer.zero_grad()
+            for data in self.data_loader:
+                self.model.train()
+                self.optimizer.zero_grad()
 
-            # data augmentation
-            data_neg = self.data_augment(data)
+                if self.use_cuda:
+                    data = data.cuda()
+                x = data.x
+                adj = data.adj_t.to_torch_sparse_coo_tensor()
 
-            x_neg = data_neg.x
-            if self.use_cuda:
-                x_neg = x_neg.cuda()
-            labels = self.get_label_pairs(batch_size=batch_size, n_pos=n_nodes, n_neg=n_nodes)
+                # data augmentation
+                data_neg = self.data_augment(data)
 
-            if self.use_cuda:
-                x_neg = x_neg.cuda()
-                labels = labels.cuda()
+                x_neg = data_neg.x
+                if self.use_cuda:
+                    x_neg = x_neg.cuda()
+                labels = self.get_label_pairs(batch_size=len(data), n_pos=len(x), n_neg=len(x))
 
-            # get loss
-            loss = self.get_loss(x=x, x_neg=x_neg, adj=adj, labels=labels)
+                if self.use_cuda:
+                    x_neg = x_neg.cuda()
+                    labels = labels.cuda()
 
-            # early stop
-            if loss < best:
-                best = loss
-                cnt_wait = 0
-                self.save_model()
-                self.save_encoder()
-            else:
-                cnt_wait += 1
+                # get loss
+                loss = self.get_loss(x=x, x_neg=x_neg, adj=adj, labels=labels)
 
-            if cnt_wait == self.patience:
-                print('Early stopping!')
-                break
+                # early stop
+                if loss < best:
+                    best = loss
+                    cnt_wait = 0
+                    self.save_model()
+                    self.save_encoder()
+                else:
+                    cnt_wait += 1
 
-            loss.backward()
-            self.optimizer.step()
+                if cnt_wait == self.patience:
+                    print('Early stopped!')
+                    return
+
+                loss.backward()
+                self.optimizer.step()
