@@ -19,6 +19,7 @@ Note: In the future versions, we will:
 1. Creat two sub-folders: `data` and `emb` in the `augment` folder.
 2. Put all the folders into the new `ssl` folder.
 
+## 2023.03
 ### 2023.03.10: Update structure 
 1. Create `/src` folder to solve the problem of `typing.py`.
 2. Move `Discriminators` from `/src/nn/utils/discriminator/py` to their corresponding `/src/nn/models/xx.py`.
