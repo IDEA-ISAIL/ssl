@@ -91,4 +91,5 @@ https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/d
 - [PyTorch Geometric](https://github.com/pyg-team/pytorch_geometric)
 - [PyTorch Geometric Temporal](https://github.com/benedekrozemberczki/pytorch_geometric_temporal)
 - [PyGCL](https://github.com/PyGCL/PyGCL)
-
+- [Solo-Learn](https://github.com/vturrisi/solo-learn)
+- [Lightly](https://github.com/lightly-ai/lightly)
