@@ -1,13 +1,17 @@
 import copy
-import torch
+import random
 from scipy.linalg import fractional_matrix_power
+
+import torch
 from torch.linalg import inv
+from torch_geometric.data import Data
+
 from .base import Augmentor
 from src.data import HomoData
-import random
 
 
 class DataShuffle(Augmentor):
+    """TODO: to be removed"""
     def __init__(self, is_x: bool = True, is_adj: bool = False):
         super().__init__()
         self.is_x = is_x
@@ -20,6 +24,17 @@ class DataShuffle(Augmentor):
             data_tmp.x = data_tmp.x[idx_tmp]
         if self.is_adj:
             raise NotImplementedError
+        return data_tmp
+
+
+class NodeShuffle(Augmentor):
+    def __init__(self):
+        super().__init__()
+
+    def apply(self, data: Data):
+        data_tmp = copy.deepcopy(data)
+        idx_tmp = torch.randperm(len(data.x))
+        data_tmp.x = data.x[idx_tmp]
         return data_tmp
 
 
