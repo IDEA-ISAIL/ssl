@@ -6,7 +6,7 @@ import numpy as np
 import copy
 from .base import BaseModel
 from torch_geometric.typing import Tensor, Adj
-from src.data.utils import sparse_mx_to_torch_sparse_tensor
+
 
 class Model(BaseModel):
     r"""The full model to train the encoder.

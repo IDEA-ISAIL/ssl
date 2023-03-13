@@ -69,7 +69,6 @@ class AFGRL(Method):
 
             # get loss
             loss = self.model(x, adj)
-            print(loss)
             # early stop
             if loss < best:
                 best = loss
