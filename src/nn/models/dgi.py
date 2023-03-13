@@ -69,10 +69,14 @@ class Discriminator(torch.nn.Module):
         c_x = torch.unsqueeze(c, 1)
         c_x = c_x.expand_as(h_pl)
 
-        sc_1 = torch.squeeze(self.f_k(h_pl, c_x), 2)
-        sc_2 = torch.squeeze(self.f_k(h_mi, c_x), 2)
+        # sc_1 = torch.squeeze(self.f_k(h_pl, c_x), 2)
+        # sc_2 = torch.squeeze(self.f_k(h_mi, c_x), 2)
+        # torch_geometric
+        sc_1 = torch.squeeze(self.f_k(h_pl, c_x))
+        sc_2 = torch.squeeze(self.f_k(h_mi, c_x))
 
-        logits = torch.cat((sc_1, sc_2), 1)
+        # logits = torch.cat((sc_1, sc_2), 1)
+        logits = torch.stack((sc_1, sc_2))
         return logits
 
 
@@ -89,13 +93,25 @@ class Model(BaseModel):
         self.read = AvgReadout()
         self.sigmoid = torch.nn.Sigmoid()
 
-    def forward(self, x: Tensor, x_neg: Tensor, adj: Adj, is_sparse: bool = True, msk: Tensor = None):
-        h_1 = self.encoder(x, adj, is_sparse)
+    # def forward(self, x: Tensor, x_neg: Tensor, adj: Adj, is_sparse: bool = True):
+    #     h_1 = self.encoder(x, adj, is_sparse)
+    #
+    #     c = self.read(h_1)
+    #     c = self.sigmoid(c)
+    #
+    #     h_2 = self.encoder(x_neg, adj, is_sparse)
+    #
+    #     logits = self.discriminator(c, h_1, h_2)
+    #     return logits
 
-        c = self.read(h_1, msk)
+    # torch_geometric gcn
+    def forward(self, data, data_neg):
+        h_1 = self.encoder(x=data.x, edge_index=data.edge_index, edge_weight=data.edge_weight)
+
+        c = self.read(h_1)
         c = self.sigmoid(c)
 
-        h_2 = self.encoder(x_neg, adj, is_sparse)
+        h_2 = self.encoder(x=data_neg.x, edge_index=data_neg.edge_index, edge_weight=data_neg.edge_weight)
 
         logits = self.discriminator(c, h_1, h_2)
         return logits
