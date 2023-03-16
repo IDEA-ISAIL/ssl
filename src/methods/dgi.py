@@ -1,158 +1,74 @@
 import torch
 
 from src.augment.collections import augment_dgi
-from src.loader import Loader
-from .base import Method
+from .base import BaseMethod
 
-from torch_geometric.typing import Tensor, Adj
-from src.typing import OptAugment
+from typing import Callable
+from src.typing import Tensor, OptAugment
 
 
-class DGI(Method):
+class Discriminator(torch.nn.Module):
+    def __init__(self, dim_h: int = 512):
+        super().__init__()
+        self.f_k = torch.nn.Bilinear(dim_h, dim_h, 1)
+
+        for m in self.modules():
+            self.weights_init(m)
+
+    def weights_init(self, m):
+        if isinstance(m, torch.nn.Bilinear):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.fill_(0.0)
+
+    def forward(self, c: Tensor, h_pl: Tensor, h_mi: Tensor):
+        c_x = torch.unsqueeze(c, 1)
+        c_x = c_x.expand_as(h_pl)
+
+        sc_1 = torch.squeeze(self.f_k(h_pl, c_x))
+        sc_2 = torch.squeeze(self.f_k(h_mi, c_x))
+
+        logits = torch.stack((sc_1, sc_2))
+        return logits
+
+
+class DGI(BaseMethod):
     r"""
     TODO: add descriptions
     """
     def __init__(self,
-                 model: torch.nn.Module,
-                 data_loader: Loader,
+                 encoder: torch.nn.Module,
+                 discriminator: torch.nn.Module = Discriminator(),
                  data_augment: OptAugment = augment_dgi,
-                 lr: float = 0.001,
-                 weight_decay: float = 0.0,
-                 n_epochs: int = 10000,
-                 patience: int = 20,
-                 use_cuda: bool = True,
-                 is_sparse: bool = True,
-                 save_root: str = "",
-                 ):
-        super().__init__(model=model,
+                 loss_function: Callable = torch.nn.BCEWithLogitsLoss()):
+        super().__init__(encoder=encoder,
                          data_augment=data_augment,
-                         emb_augment=None,
-                         data_loader=data_loader,
-                         save_root=save_root)
+                         loss_function=loss_function)
 
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
-        self.b_xent = torch.nn.BCEWithLogitsLoss()
+        self.discriminator = discriminator
 
-        self.n_epochs = n_epochs
-        self.patience = patience
+    def forward(self, batch, batch_neg):
+        h_1 = self.encoder(x=batch.x, edge_index=batch.edge_index, edge_weight=batch.edge_weight)
+        c = self.read(h_1)
+        c = self.sigmoid(c)
 
-        self.use_cuda = use_cuda
-        self.is_sparse = is_sparse
+        h_2 = self.encoder(x=batch_neg.x, edge_index=batch_neg.edge_index, edge_weight=batch_neg.edge_weight)
 
-    # def get_loss(self, x: Tensor, x_neg: Tensor, adj: Adj, labels: Tensor):
-    #     logits = self.model(x, x_neg, adj, self.is_sparse)
-    #     logits = self.model(x, adj)
-        # loss = self.b_xent(logits, labels)
-        # return loss
-    #
-    # def train(self):
-    #     cnt_wait = 0
-    #     best = 1e9
-    #
-    #     if self.use_cuda:
-    #         self.model = self.model.cuda()
-    #
-    #     for epoch in range(self.n_epochs):
-    #         for data in self.data_loader:
-    #             self.model.train()
-    #             self.optimizer.zero_grad()
-    #
-    #             if self.use_cuda:
-    #                 data = data.cuda()
-    #             x = data.x
-    #             adj = data.adj_t.to_torch_sparse_coo_tensor()
-    #
-    #             # data augmentation
-    #             data_neg = self.data_augment(data)
-    #
-    #             x_neg = data_neg.x
-    #             if self.use_cuda:
-    #                 x_neg = x_neg.cuda()
-    #             labels = self.get_label_pairs(batch_size=len(data), n_pos=len(x), n_neg=len(x))
-    #
-    #             if self.use_cuda:
-    #                 x_neg = x_neg.cuda()
-    #                 labels = labels.cuda()
-    #
-    #             # get loss
-    #             loss = self.get_loss(x=x, x_neg=x_neg, adj=adj, labels=labels)
-    #
-    #             # early stop
-    #             if loss < best:
-    #                 best = loss
-    #                 cnt_wait = 0
-    #                 self.save_model()
-    #                 self.save_encoder()
-    #             else:
-    #                 cnt_wait += 1
-    #
-    #             if cnt_wait == self.patience:
-    #                 print('Early stopped!')
-    #                 return
-    #
-    #             loss.backward()
-    #             self.optimizer.step()
+        logits = self.discriminator(c, h_1, h_2)
+        return logits
 
-    # troch_geometric
+    def train_iter(self, batch):
+        device = batch.device
+        self.model.train()
+        batch_neg = self.data_augment(batch).to(device)
 
-    def get_loss(self, data, data_neg, labels: Tensor):
-        logits = self.model(data, data_neg)
-        # logits = self.model(x, adj)
-        loss = self.b_xent(logits, labels)
+        logits = self.forward(batch=batch, batch_neg=batch_neg)
+        labels = get_label_pairs(n_pos=batch.num_nodes, n_neg=batch.num_nodes).to(device)
+
+        loss = self.loss_function(logits, labels)
         return loss
 
-    def train(self):
-        cnt_wait = 0
-        best = 1e9
 
-        if self.use_cuda:
-            self.model = self.model.cuda()
-
-        for epoch in range(self.n_epochs):
-            for data in self.data_loader:
-                self.model.train()
-                self.optimizer.zero_grad()
-
-                if self.use_cuda:
-                    data = data.cuda()
-
-                # data augmentation
-                data_neg = self.data_augment(data)
-
-                # labels = get_label_pairs(batch_size=len(data), n_pos=data.num_nodes, n_neg=data.num_nodes) #old
-                labels = get_label_pairs(n_pos=data.num_nodes, n_neg=data.num_nodes)
-                if self.use_cuda:
-                    data_neg = data_neg.cuda()
-                    labels = labels.cuda()
-
-                # get loss
-                loss = self.get_loss(data=data, data_neg=data_neg, labels=labels)
-
-                # early stop
-                if loss < best:
-                    best = loss
-                    cnt_wait = 0
-                    self.save_model()
-                    self.save_encoder()
-                else:
-                    cnt_wait += 1
-
-                if cnt_wait == self.patience:
-                    print('Early stopped!')
-                    return
-
-                loss.backward()
-                self.optimizer.step()
-
-
-# def get_label_pairs(batch_size: int, n_pos: int, n_neg: int):
-#     r"""Get the positive and negative files."""
-#     label_pos = torch.ones(batch_size, n_pos)
-#     label_neg = torch.zeros(batch_size, n_neg)
-#     labels = torch.cat((label_pos, label_neg), 1)
-#     return labels
-
-# torch_geometric
 def get_label_pairs(n_pos: int, n_neg: int):
     r"""Get the positive and negative files."""
     label_pos = torch.ones(n_pos)

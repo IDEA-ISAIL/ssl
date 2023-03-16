@@ -1,26 +1,22 @@
-import os
-from typing import Optional
-from src.typing import OptAugment
-
+import numpy
 import torch
-from src.loader import Loader
 
-__all__ = [
-    "Method",
-]
+from typing import Union, Callable, Optional
+from src.typing import OptAugment, Tensor
+
 
 ENCODER_NAME = "encoder.ckpt"
 MODEL_NAME = "model.ckpt"
 
 
-# this is actually a trainer.
 class Method:
+    """TODO: to be removed."""
     def __init__(
             self,
             model: torch.nn.Module,
             data_augment: OptAugment,
             emb_augment: OptAugment,
-            data_loader: Loader,
+            data_loader,
             save_root: str = "",
             use_cuda: bool = True,
             *args,
@@ -82,4 +78,65 @@ class Method:
     def load_model(self, path: str) -> None:
         r"""Load the parameters of the entire model."""
         state_dict = torch.load(path)
+        self.model.load_state_dict(state_dict)
+
+
+class BaseMethod(torch.nn.Module):
+    r"""Base class for self-supervised learning methods.
+
+    Args:
+        encoder (torch.nn.Module): the encoder to be trained.
+        save_root (str): the root to save the model/encoder.
+        use_cuda (bool): whether to use cuda or not.
+        *args:
+        **kwargs:
+    """
+    def __init__(self,
+                 encoder: torch.nn.Module,
+                 loss_function: Callable,
+                 data_augment: OptAugment = None,
+                 emb_augment: OptAugment = None,
+                 *args,
+                 **kwargs):
+        super().__init__()
+
+        self.encoder = encoder
+        self.loss_function = loss_function
+        self.data_augment = data_augment
+        self.emb_augment = emb_augment
+
+        self._param_path = None  # record the latest path used by save() or load()
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}()'
+
+    def forward(self, *args, **kwargs):
+        r"""Perform the forward pass."""
+        raise NotImplementedError
+
+    def train_iter(self, *args, **kwargs):
+        r"""Each training iteration."""
+        raise NotImplementedError
+
+    def get_embs(self, data, is_numpy: bool = False, *args, **kwargs) -> Union[Tensor, numpy.array]:
+        embs = self.encoder(data, *args, **kwargs).detach()
+        if is_numpy:
+            return embs.cpu().numpy()
+        return embs
+
+    def save(self, path: Optional[str] = None) -> None:
+        r"""Save the parameters of the entire model to the specified path."""
+        if path is None:
+            path = self.__class__.__name__ + ".ckpt"
+        self._param_path = path
+        torch.save(self.model, self._param_path)
+
+    def load(self, path: Optional[str] = None) -> None:
+        r"""Load the parameters from the specified path."""
+        if path is None:
+            path = self._param_path
+        if path is None:
+            raise FileNotFoundError
+        self._param_path = path
+        state_dict = torch.load(self._param_path)
         self.model.load_state_dict(state_dict)

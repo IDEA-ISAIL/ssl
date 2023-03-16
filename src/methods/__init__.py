@@ -1,7 +1,7 @@
-from .base import Method
+from .base import Method, BaseMethod
 from .dgi import DGI
-from .bgrl import BGRL
-from .afgrl import AFGRL
+# from .bgrl import BGRL
+# from .afgrl import AFGRL
 from .mvgrl import MVGRL
 from .graphcl import GraphCL
 
