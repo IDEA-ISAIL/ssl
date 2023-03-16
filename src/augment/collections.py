@@ -5,7 +5,8 @@ import torch
 
 from .base import *
 from .positive import Echo
-from .negative import DataShuffle, NodeShuffle, ComputePPR, ComputeHeat, RandomDropEdge, NeighborSearch_AFGRL
+from .negative import ComputePPR, ComputeHeat, RandomDropEdge, NeighborSearch_AFGRL
+from .shuffle_node import ShuffleNode
 
 __all__ = [
     "augment_dgi",
@@ -17,7 +18,7 @@ __all__ = [
 ]
 
 # augment_dgi = DataShuffle(is_x=True)
-augment_dgi = NodeShuffle()
+augment_dgi = ShuffleNode()
 augment_mvgrl_ppr = ComputePPR()
 augment_mvgrl_heat = ComputeHeat()
 augment_bgrl_1 = RandomDropEdge()

@@ -1,21 +1,21 @@
 import torch
 from torch_geometric.loader import DataLoader
 
-from src.methods import Method_New
-from .base import Trainer
+from src.methods import BaseMethod
+from .base import BaseTrainer
 from .utils import EarlyStopper
 
 
 BEST_VALUE = 1e9
 
 
-class DGITrainer(Trainer):
+class SimpleTrainer(BaseTrainer):
     r"""
     TODO: add descriptions
     """
 
     def __init__(self,
-                 method: Method_New,
+                 method: BaseMethod,
                  data_loader: DataLoader,
                  lr: float = 0.001,
                  weight_decay: float = 0.0,

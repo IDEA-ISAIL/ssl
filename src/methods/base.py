@@ -1,7 +1,8 @@
+import os
 import numpy
 import torch
 
-from typing import Union, Callable, Optional
+from typing import Union, Callable, Optional, Any
 from src.typing import OptAugment, Tensor
 
 
@@ -86,18 +87,15 @@ class BaseMethod(torch.nn.Module):
 
     Args:
         encoder (torch.nn.Module): the encoder to be trained.
-        save_root (str): the root to save the model/encoder.
-        use_cuda (bool): whether to use cuda or not.
-        *args:
-        **kwargs:
+        loss_function (Callable): loss function.
+        data_augment (OptAugment): data augment to be used.
+        emb_augment (OptAugment): embedding augment to be used.
     """
     def __init__(self,
                  encoder: torch.nn.Module,
                  loss_function: Callable,
                  data_augment: OptAugment = None,
-                 emb_augment: OptAugment = None,
-                 *args,
-                 **kwargs):
+                 emb_augment: OptAugment = None):
         super().__init__()
 
         self.encoder = encoder
@@ -110,11 +108,11 @@ class BaseMethod(torch.nn.Module):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}()'
 
-    def forward(self, *args, **kwargs):
+    def forward(self, *args, **kwargs) -> Tensor:
         r"""Perform the forward pass."""
         raise NotImplementedError
 
-    def train_iter(self, *args, **kwargs):
+    def train_iter(self, *args, **kwargs) -> Any:
         r"""Each training iteration."""
         raise NotImplementedError
 
