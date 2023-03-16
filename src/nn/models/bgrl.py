@@ -31,7 +31,7 @@ class Model(BaseModel):
         encoder (torch.nn.Module): the encoder to be trained.
         discriminator (torch.nn.Module): the discriminator for contrastive learning.
     """
-    def __init__(self, student_encoder: torch.nn.Module, teacher_encoder: torch.nn.Module):
+    def __init__(self, student_encoder: torch.nn.Module, teacher_encoder: torch.nn.Module, data_augment = None):
         super().__init__(encoder=student_encoder)
         self.encoder = student_encoder
         self.teacher_encoder = teacher_encoder
