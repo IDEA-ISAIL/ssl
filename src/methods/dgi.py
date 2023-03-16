@@ -1,6 +1,6 @@
 import torch
 
-from src.augment.collections import augment_dgi
+from src.augment import ShuffleNode
 from .base import BaseMethod
 
 from typing import Callable
@@ -39,8 +39,8 @@ class DGI(BaseMethod):
     def __init__(self,
                  encoder: torch.nn.Module,
                  discriminator: torch.nn.Module = Discriminator(),
-                 data_augment: OptAugment = augment_dgi,
-                 loss_function: Callable = torch.nn.BCEWithLogitsLoss()):
+                 data_augment: OptAugment = ShuffleNode,
+                 loss_function: Callable = torch.nn.BCEWithLogitsLoss()) -> None:
         super().__init__(encoder=encoder,
                          data_augment=data_augment,
                          loss_function=loss_function)
