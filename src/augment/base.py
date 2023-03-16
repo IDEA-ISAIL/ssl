@@ -7,30 +7,22 @@ class Augmentor:
     def __init__(self):
         pass
 
-    def apply(self, *args, **kwargs):
-        r"""Apply the augmentor to inputs."""
-        raise NotImplementedError
-
     def __call__(self, *args, **kwargs):
-        return self.apply(*args, **kwargs)
+        raise NotImplementedError
 
 
 class AugmentorList:
-    r"""A wrapper for a list of augmentors."""
+    r"""A wrapper for a list of augmentors. Sequentially apply each augmentor to inputs."""
     def __init__(self, augmentors: Union[Augmentor, List[Augmentor]]):
         if type(augmentors) == List:
             self.augmentors = augmentors
         else:
             self.augmentors = [augmentors]
 
-    def apply(self, inputs):
-        r"""Sequentially apply each augmentor to inputs."""
+    def __call__(self, inputs):
         for augmentor in self.augmentors:
             inputs = augmentor(inputs)
         return inputs
-
-    def __call__(self, inputs):
-        self.apply(inputs)
 
 
 class AugmentorDict(UserDict):

@@ -1,3 +1,6 @@
+"""TODO: create a separate file for each class."""
+
+
 import copy
 import random
 from scipy.linalg import fractional_matrix_power
@@ -10,41 +13,13 @@ from .base import Augmentor
 from src.data import HomoData
 
 
-class DataShuffle(Augmentor):
-    """TODO: to be removed"""
-    def __init__(self, is_x: bool = True, is_adj: bool = False):
-        super().__init__()
-        self.is_x = is_x
-        self.is_adj = is_adj
-
-    def apply(self, data: HomoData):
-        data_tmp = copy.deepcopy(data)
-        if self.is_x:
-            idx_tmp = torch.randperm(data_tmp.n_nodes)
-            data_tmp.x = data_tmp.x[idx_tmp]
-        if self.is_adj:
-            raise NotImplementedError
-        return data_tmp
-
-
-class NodeShuffle(Augmentor):
-    def __init__(self):
-        super().__init__()
-
-    def apply(self, data: Data):
-        data_tmp = copy.deepcopy(data)
-        idx_tmp = torch.randperm(len(data.x))
-        data_tmp.x = data.x[idx_tmp]
-        return data_tmp
-
-
 class ComputePPR(Augmentor):
     def __init__(self, alpha=0.2, self_loop=True):
         super().__init__()
         self.alpha = alpha
         self.self_loop = self_loop
 
-    def apply(self, data: HomoData):
+    def __call__(self, data: HomoData):
         data_tmp = copy.deepcopy(data)
         a = data_tmp.adj
         if self.self_loop:
@@ -62,7 +37,7 @@ class ComputeHeat(Augmentor):
         self.t = t
         self.self_loop = self_loop
 
-    def apply(self, data: HomoData):
+    def __call__(self, data: HomoData):
         data_tmp = copy.deepcopy(data)
         a = data_tmp.adj
         if self.self_loop:
@@ -87,7 +62,7 @@ class RandomMask(Augmentor):
         self.is_x = is_x
         self.is_adj = is_adj
 
-    def apply(self, data: HomoData, drop_percent=0.2):
+    def __call__(self, data: HomoData, drop_percent=0.2):
         data_tmp = copy.deepcopy(data)
         if self.is_x:
             mask_num = int(data_tmp.n_nodes * drop_percent)
@@ -107,7 +82,7 @@ class RandomDropEdge(Augmentor):
         self.is_x = is_x
         self.is_adj = is_adj
 
-    def apply(self, data: HomoData, drop_percent=0.2):
+    def __call__(self, data: HomoData, drop_percent=0.2):
         data_tmp = copy.deepcopy(data)
         percent = drop_percent / 2
         row_idx, col_idx = data.x.nonzero().T
@@ -145,7 +120,7 @@ class RandomDropNode(Augmentor):
         self.is_x = is_x
         self.is_adj = is_adj
 
-    def apply(self, data: HomoData, drop_percent=0.2):
+    def __call__(self, data: HomoData, drop_percent=0.2):
         data_tmp = copy.deepcopy(data)
         input_adj = torch.tensor(data_tmp.adj.to_dense().tolist())
         input_fea = data_tmp.x.squeeze(0)
@@ -171,7 +146,7 @@ class AugmentSubgraph(Augmentor):
         self.is_x = is_x
         self.is_adj = is_adj
 
-    def apply(self, data: HomoData, drop_percent=0.2):
+    def __call__(self, data: HomoData, drop_percent=0.2):
         data_tmp = copy.deepcopy(data)
         input_adj = data_tmp.adj.to_dense()
         input_fea = data_tmp.x.squeeze(0)
@@ -228,7 +203,7 @@ class NeighborSearch_AFGRL(Augmentor):
     def repeat_1d_tensor(self, t, num_reps):
         return t.unsqueeze(1).expand(-1, num_reps)
 
-    def apply(self, adj, student, teacher, top_k):
+    def __call__(self, adj, student, teacher, top_k):
         n_data, d = student.shape
         similarity = torch.matmul(student, torch.transpose(teacher, 1, 0).detach())
         similarity += torch.eye(n_data, device=self.device) * 10
