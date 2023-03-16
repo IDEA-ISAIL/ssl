@@ -1,16 +1,14 @@
-from data import DatasetDGI
-from loader import FullLoader
+from src.data import DatasetDGI
+from src.loader import FullLoader
 
-from augment import AugPosDGI, AugNegDGI
-
-from nn.encoders import GCNDGI
-from nn.models import ModelBGRL
-from methods import BGRL
+from src.nn.encoders import GCNDGI
+from src.nn.models import ModelBGRL
+from src.methods import BGRL
 import copy
 
 # data
 dataset = DatasetDGI()
-dataset.load(path="./datasets/cora_dgi")
+dataset.load(path="datasets/cora_dgi")
 data = dataset.to_data()
 data_loader = FullLoader(data)
 

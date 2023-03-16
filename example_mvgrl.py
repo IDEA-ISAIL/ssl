@@ -1,19 +1,19 @@
-from data import DatasetDGI, DatasetMVGRL
-from loader import FullLoader
-from augment.collections import augment_mvgrl_ppr, augment_mvgrl_heat
+from src.data import DatasetDGI, DatasetMVGRL
+from src.loader import FullLoader
+from src.augment.collections import augment_mvgrl_ppr, augment_mvgrl_heat
 
 
 # from augment import AugPosMVGRL, AugPPRMVGRL, AugHeatMVGRL
 
-from nn.encoders import GCNDGI
-from nn.utils import DiscriminatorMVGRL
-from nn.models import ModelMVGRL
-from methods import MVGRL
+from src.nn.encoders import GCNDGI
+from src.nn.utils import DiscriminatorMVGRL
+from src.nn.models import ModelMVGRL
+from src.methods import MVGRL
 
 
 ### MVGRL ###
 dataset = DatasetMVGRL()
-dataset.load(path="./datasets/cora_dgi")
+dataset.load(path="datasets/cora_dgi")
 data = dataset.to_data()
 data_loader = FullLoader(data)
 
