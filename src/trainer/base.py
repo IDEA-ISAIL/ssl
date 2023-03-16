@@ -3,20 +3,18 @@ from typing import Optional, Any
 
 import torch
 from torch_geometric.loader import DataLoader
-from src.methods import Method_New
+from src.methods import BaseMethod
 
 
 METHOD_NAME = "method.ckpt"
 
 
-class Trainer(object):
+class BaseTrainer(object):
     def __init__(self,
-                 method: Method_New,
+                 method: BaseMethod,
                  data_loader: DataLoader,
                  save_root: str = "./ckpt",
-                 use_cuda: bool = True,
-                 *args: Any,
-                 **kwargs: Any) -> None:
+                 use_cuda: bool = True) -> None:
         r"""Base class for self-supervised learning methods.
 
         Args:
@@ -24,8 +22,6 @@ class Trainer(object):
             data_loader (Loader):
             save_root (str): the root to save the method/encoder.
             use_cuda (bool): whether to use cuda or not.
-            *args:
-            **kwargs:
         """
         self.method = method
         self.data_loader = data_loader
@@ -36,7 +32,7 @@ class Trainer(object):
         if not os.path.exists(self.save_root):
             os.makedirs(self.save_root)
 
-    def train(self, *args, **kwargs):
+    def train(self, *args, **kwargs) -> Any:
         r"""Train the encoder."""
         raise NotImplementedError
 

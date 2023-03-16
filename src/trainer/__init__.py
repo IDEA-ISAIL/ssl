@@ -1,2 +1,2 @@
-from .base import Trainer
-from .dgi import DGITrainer
+from .base import BaseTrainer
+from .simple_trainer import SimpleTrainer
