@@ -15,6 +15,7 @@ class BaseTrainer(object):
                  data_loader: DataLoader,
                  save_root: str = "./ckpt",
                  use_cuda: bool = True) -> None:
+
         r"""Base class for self-supervised learning methods.
 
         Args:
