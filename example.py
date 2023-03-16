@@ -5,7 +5,7 @@ import torch
 from src.nn.models.dgi import Model, Encoder, Discriminator
 from src.methods import DGI
 from src.datasets import Planetoid
-from src.transforms import NormalizeFeatures, GCNNorm, TransformList, Edge2Adj
+from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 
 from torch_geometric.nn.models import GCN
 from torch_geometric.loader import DataLoader
@@ -18,7 +18,7 @@ data_old = dataset_old.to_data()
 x_old = data_old.x
 adj_old = data_old.adj.to_dense()
 
-pre_transforms = TransformList([NormalizeFeatures(ord=1), Edge2Adj(norm=GCNNorm(add_self_loops=1))])
+pre_transforms = Compose([NormalizeFeatures(ord=1), Edge2Adj(norm=GCNNorm(add_self_loops=1))])
 dataset = Planetoid(root="pyg_data", name="cora", pre_transform=pre_transforms)
 data_pyg = dataset.data
 x_pyg = data_pyg.x
