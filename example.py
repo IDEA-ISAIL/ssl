@@ -1,9 +1,9 @@
 from src.data import DatasetDGI
-from src.augment.collections import augment_dgi
+from src.augment import ShuffleNode
 import torch
 
-from src.nn.models.dgi import Model, Encoder, Discriminator
 from src.methods import DGI
+from src.trainer import SimpleTrainer
 from src.datasets import Planetoid
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 
@@ -33,10 +33,10 @@ data_loader = DataLoader(dataset)
 # Neural networks
 # encoder = Encoder(dim_in=1433)
 encoder = GCN(1433, 512, num_layers=1, act="prelu")
-model = Model(encoder=encoder)
+method = DGI(encoder=encoder, data_augment=ShuffleNode)
 
 # Trainer
-dgi = DGI(model=model, data_loader=data_loader, data_augment=augment_dgi, save_root="./results")
-dgi.train()
+trainer = SimpleTrainer(method=method, data_loader=data_loader)
+
 #
 # embs = model.get_embs(x=data.x.cuda(), adj=data.adj.cuda(), is_numpy=True)
