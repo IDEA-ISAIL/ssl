@@ -3,10 +3,10 @@
 ### 2022.11.12: Initial Push
 
 ## 2022.12
-### 2022.12.12: The 1st backbone framework - v0.1.0
+### 2022.12.12: The 1st backbone framework - <span style="color:blue">``v0.1.0``</span>
 
 ## 2023.02
-### 2023.02.20: Update augmentors - v0.1.1
+### 2023.02.20: Update augmentors - <span style="color:blue">``v0.1.1``</span>
 1. The `/augment` folder:
    1. Three augmentor classes: Augmentor, AugmentorList, AugmentorDict.
    2. Put single augmentors to `/augment/negative.py` & `/augment/positive.py`.
@@ -37,7 +37,7 @@ Other updates:
 1. Merge `Model` class with `Method` class, and `/src/nn/models` will be removed.
 2. Add `Trainer` class to take the part of functions of the old `Method`.
 
-### 2023.03.17: Add evaluation & the 1st overall framework test.
+### 2023.03.17: Add evaluation & the 1st overall framework test. <span style="color:blue">``v0.2.0``</span>
 1. Add `BaseEvaluator` and `LogisticRegression` classes.
 2. Support both `spectral` and `spatial` implementations of GCN for DGI.
 3. Put the supporting functions/classes of methods to `/src/methods/utils/`, such as `DGIGCN` and `DGIDiscriminator`.
