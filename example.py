@@ -50,7 +50,7 @@ from nn.encoders import GCNDGI
 from nn.models import ModelDGI
 from methods import DGI
 
-from evaluation import eval
+from src.evaluation import eval
 
 
 # data
