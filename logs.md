@@ -23,7 +23,7 @@ Note: In the future versions, we will:
 ### 2023.03.10: Update structure 
 1. Create `/src` folder to solve the problem of `typing.py`.
 
-### 2023.03.13: Adapt Data \& Datasets \& Loader to torch_geometric
+### 2023.03.13: Adapt Data & Datasets & Loader to torch_geometric
 1. Add `/src/transforms` folder, which contains transformations/normalization for Data, 
    including feature normalization and adjacency matrix construction.
 2. Update `example.py` and `/src/methods/dgi.py` based on torch_geometric.
@@ -32,3 +32,7 @@ Other updates:
 1. Update the name convention of `/src/nn/models` from `xxModel` to `Model`.
 2. Move `Discriminators` from `/src/nn/utils/discriminator/py` to their corresponding `/src/nn/models/xx.py`.
 3. Move `Model-specific encoders` from `/src/nn/encoders/` to their corresponding `/src/nn/models/xx.py`.
+
+### 2023.03.16: Reformulate structure of Model & Method & Trainer
+1. Merge `Model` class with `Method` class, and `/src/nn/models` will be removed.
+2. Add `Trainer` class to take the part of functions of the old `Method`.
