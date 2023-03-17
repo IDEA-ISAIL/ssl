@@ -117,8 +117,8 @@ class BaseMethod(torch.nn.Module):
         r"""Each training iteration."""
         raise NotImplementedError
 
-    def get_embs(self, data, is_numpy: bool = False, *args, **kwargs) -> Union[Tensor, numpy.array]:
-        embs = self.encoder(data, *args, **kwargs).detach()
+    def get_embs(self, is_numpy: bool = False, *args, **kwargs) -> Union[Tensor, numpy.array]:
+        embs = self.encoder(*args, **kwargs).detach()
         if is_numpy:
             return embs.cpu().numpy()
         return embs
