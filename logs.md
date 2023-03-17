@@ -36,3 +36,11 @@ Other updates:
 ### 2023.03.16: Reformulate structure of Model & Method & Trainer
 1. Merge `Model` class with `Method` class, and `/src/nn/models` will be removed.
 2. Add `Trainer` class to take the part of functions of the old `Method`.
+
+### 2023.03.17: Add evaluation & the 1st overall framework test.
+1. Add `BaseEvaluator` and `LogisticRegression` classes.
+2. Support both `spectral` and `spatial` implementations of GCN for DGI.
+3. Put the supporting functions/classes of methods to `/src/methods/utils/`, such as `DGIGCN` and `DGIDiscriminator`.
+4. The 1st test for the entire framework: `Data` -> `Method` -> `Trainer` -> `Evaluator`.
+
+Note: The performance of DGI on Cora can be reproduced by using the `spectral` convolution.
