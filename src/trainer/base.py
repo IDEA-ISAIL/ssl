@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Any
+from typing import Optional, Any, Union
 
 import torch
 from torch_geometric.loader import DataLoader
@@ -14,20 +14,21 @@ class BaseTrainer(object):
                  method: BaseMethod,
                  data_loader: DataLoader,
                  save_root: str = "./ckpt",
-                 use_cuda: bool = True) -> None:
+                 device: Union[str, int] = "cpu") -> None:
         r"""Base class for self-supervised learning methods.
 
         Args:
             method (torch.nn.Module): the entire method, including encoders and other components (e.g. discriminators).
             data_loader (Loader):
             save_root (str): the root to save the method/encoder.
-            use_cuda (bool): whether to use cuda or not.
+            device (str): set the device.
         """
         self.method = method
         self.data_loader = data_loader
 
         self.save_root = save_root
-        self.use_cuda = use_cuda
+        self.device = device
+        self.method.device = self.device
 
         if not os.path.exists(self.save_root):
             os.makedirs(self.save_root)

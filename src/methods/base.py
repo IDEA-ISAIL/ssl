@@ -103,6 +103,7 @@ class BaseMethod(torch.nn.Module):
         self.data_augment = data_augment
         self.emb_augment = emb_augment
 
+        self._device = None  # device: cuda or cpu
         self._param_path = None  # record the latest path used by save() or load()
 
     def __repr__(self) -> str:
@@ -127,7 +128,7 @@ class BaseMethod(torch.nn.Module):
         if path is None:
             path = self.__class__.__name__ + ".ckpt"
         self._param_path = path
-        torch.save(self.model, self._param_path)
+        torch.save(self.state_dict(), self._param_path)
 
     def load(self, path: Optional[str] = None) -> None:
         r"""Load the parameters from the specified path."""
@@ -138,3 +139,12 @@ class BaseMethod(torch.nn.Module):
         self._param_path = path
         state_dict = torch.load(self._param_path)
         self.model.load_state_dict(state_dict)
+
+    @property
+    def device(self):
+        return self._device
+
+    @device.setter
+    def device(self, value):
+        self._device = value
+        self.to(self.device)
