@@ -3,6 +3,7 @@ from src.augment import ShuffleNode
 import torch
 
 from src.methods import DGI
+from src.methods.utils import DGIDiscriminator
 from src.trainer import SimpleTrainer
 from src.datasets import Planetoid
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
@@ -32,8 +33,9 @@ data_loader = DataLoader(dataset)
 
 # Neural networks
 # encoder = Encoder(dim_in=1433)
-encoder = GCN(1433, 512, num_layers=1, act="prelu")
-method = DGI(encoder=encoder, data_augment=ShuffleNode)
+encoder = GCN(in_channels=1433, hidden_channels=512, num_layers=1, act="prelu")
+discriminator = DGIDiscriminator(in_channels=512)
+method = DGI(encoder=encoder, data_augment=ShuffleNode, discriminator=discriminator)
 
 # Trainer
 trainer = SimpleTrainer(method=method, data_loader=data_loader)
