@@ -1,3 +1,7 @@
+"""
+TODO: merge EMA class with update_moving_average() function.
+"""
+
 import numpy as np
 
 
@@ -14,7 +18,6 @@ class EMA:
         beta = 1 - (1 - self.beta) * (np.cos(np.pi * self.step / self.total_steps) + 1) / 2.0
         self.step += 1
         return old * beta + (1 - beta) * new
-
 
 
 def update_moving_average(ema_updater, ma_model, current_model):
