@@ -45,9 +45,4 @@ trainer = SimpleTrainer(method=method, data_loader=data_loader)
 # # node classification/ link prediction/ graph reconstruction
 #
 # eval(embs, labels, evaluator = "similarity_search")
-#
-#
-#
-# =======
-# # embs = model.get_embs(x=data.x.cuda(), adj=data.adj.cuda(), is_numpy=True)
-# >>>>>>> master
+
