@@ -46,6 +46,10 @@
 * MVGRL: [Contrastive Multi-View Representation Learning on Graphs](https://proceedings.mlr.press/v119/hassani20a/hassani20a.pdf), [(Github)](https://github.com/kavehhassani/mvgrl) [Zhichen]
 * GCA: [Graph Contrastive Learning with Adaptive Augmentation
 ](https://arxiv.org/abs/2010.14945), [(Github)](https://github.com/CRIPAC-DIG/GCA) [Dongqi]
+* AD-GCL: [Adversarial Graph Augmentation to Improve Graph Contrastive Learning github](https://openreview.net/forum?id=ioyq7NsR1KJ), [(Github)](https://github.com/susheels/adgcl)
+* JOAO: [Graph Contrastive Learning Automated](https://proceedings.mlr.press/v139/you21a.html), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)
+* SUGRL: [SUGRL: Simple Unsupervised Graph Representation Learning](https://ojs.aaai.org/index.php/AAAI/article/view/20748),[(Github)](https://github.com/YujieMo/SUGRL)
+* MERIT: [Multi-scale contrastive siamese networks for self-supervised graph representation learning](https://www.ijcai.org/proceedings/2021/0204.pdf), [(Github)](https://github.com/GRAND-Lab/MERIT)
 
 ### non-contrastive
 * BGRL: [Large-Scale Representation Learning on Graphs via Bootstrapping
@@ -87,4 +91,5 @@ https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/d
 - [PyTorch Geometric](https://github.com/pyg-team/pytorch_geometric)
 - [PyTorch Geometric Temporal](https://github.com/benedekrozemberczki/pytorch_geometric_temporal)
 - [PyGCL](https://github.com/PyGCL/PyGCL)
-
+- [Solo-Learn](https://github.com/vturrisi/solo-learn)
+- [Lightly](https://github.com/lightly-ai/lightly)

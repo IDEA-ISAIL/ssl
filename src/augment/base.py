@@ -24,12 +24,6 @@ class AugmentorList:
             inputs = augmentor(inputs)
         return inputs
 
-<<<<<<< HEAD:augment/base.py
-    def __call__(self, *args, **kwargs):
-        raise NotImplementedError
-
-=======
->>>>>>> master:src/augment/base.py
 
 class AugmentorDict(UserDict):
     r"""Base class for augmentation. A dictionary of augmentors."""

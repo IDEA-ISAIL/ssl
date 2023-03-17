@@ -1,16 +1,15 @@
-from data import DatasetDGI
-from loader import FullLoader
+from src.data import DatasetDGI
+from src.loader import FullLoader
+from src.augment.collections import augment_bgrl_1, augment_bgrl_2
 
-from augment import AugPosDGI, AugNegDGI
-
-from nn.encoders import GCNDGI
-from nn.models import ModelBGRL
-from methods import BGRL
+from src.nn.encoders import GCNDGI
+from src.nn.models.bgrl import Model
+from src.methods import BGRL
 import copy
 
 # data
 dataset = DatasetDGI()
-dataset.load(path="./datasets/cora_dgi")
+dataset.load(path="datasets/cora_dgi")
 data = dataset.to_data()
 data_loader = FullLoader(data)
 
@@ -18,9 +17,9 @@ data_loader = FullLoader(data)
 # TODO: use GCNDGI for now
 student_encoder = GCNDGI(dim_in=1433)
 teacher_encoder = copy.deepcopy(student_encoder)
-model = ModelBGRL(student_encoder=student_encoder, teacher_encoder=teacher_encoder)
+model = Model(student_encoder=student_encoder, teacher_encoder=teacher_encoder)
 
 # trainer
 #TODO: add augmentation
-bgrl = BGRL(model=model, data_loader=data_loader, save_root="./results")
+bgrl = BGRL(model=model, data_loader=data_loader, save_root="./results",  data_augment_1 = augment_bgrl_1, data_augment_2 = augment_bgrl_2)
 bgrl.train()
