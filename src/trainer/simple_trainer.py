@@ -5,6 +5,8 @@ from src.methods import BaseMethod
 from .base import BaseTrainer
 from .utils import EarlyStopper
 
+from typing import Union
+
 
 BEST_VALUE = 1e9
 
@@ -21,7 +23,7 @@ class SimpleTrainer(BaseTrainer):
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
                  patience: int = 20,
-                 device: str = "cuda:0",
+                 device: Union[str, int] = "cuda:0",
                  save_root: str = "./ckpt"):
         super().__init__(method=method,
                          data_loader=data_loader,
