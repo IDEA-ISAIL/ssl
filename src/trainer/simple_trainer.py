@@ -1,3 +1,5 @@
+import time
+
 import torch
 from torch_geometric.loader import DataLoader
 
@@ -10,9 +12,9 @@ from typing import Union
 
 class SimpleTrainer(BaseTrainer):
     r"""
-    TODO: add descriptions
+    TODO: 1. Add descriptions.
+          2. Do we need to support more arguments?
     """
-
     def __init__(self,
                  method: BaseMethod,
                  data_loader: DataLoader,
@@ -33,11 +35,13 @@ class SimpleTrainer(BaseTrainer):
         self.patience = patience
         self.device = device
 
-    def train(self):
-        early_stopper = EarlyStopper(patience=self.patience)
+        self.early_stopper = EarlyStopper(patience=self.patience)
 
+    def train(self):
         self.method = self.method.to(self.device)
         for epoch in range(self.n_epochs):
+            start_time = time.time()
+
             for data in self.data_loader:
                 self.method.train()
                 self.optimizer.zero_grad()
@@ -48,6 +52,12 @@ class SimpleTrainer(BaseTrainer):
                 loss.backward()
                 self.optimizer.step()
 
-            if early_stopper.is_stop(current_value=loss):
+            end_time = time.time()
+            info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
+            print(info)
+
+            self.early_stopper.update(loss)  # update the status
+            if self.early_stopper.save:
                 self.save()
+            if self.early_stopper.stop:
                 return
