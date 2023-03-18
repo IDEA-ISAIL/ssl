@@ -1,16 +1,17 @@
 import torch
+from torch_geometric.nn.resolver import activation_resolver
 
 
 class DGIGCN(torch.nn.Module):
     def __init__(self,
                  in_channels: int,
                  hidden_channels: int = 512,
-                 act: torch.nn = torch.nn.PReLU(),
+                 act: str = "prelu",
                  bias: bool = True):
         super().__init__()
         self.hidden_channels = hidden_channels
         self.fc = torch.nn.Linear(in_channels, hidden_channels, bias=False)
-        self.act = act
+        self.act = activation_resolver(act)
 
         if bias:
             self.bias = torch.nn.Parameter(torch.FloatTensor(hidden_channels))
