@@ -68,5 +68,6 @@ class DGI(BaseMethod):
         if self.conv_type == "spectral" or self.conv_type == 0:
             h = self.encoder(x=batch.x, adj=batch.adj_t.to_torch_sparse_coo_tensor())
         if self.conv_type == "spatial" or self.conv_type == 1:
-            h = self.encoder(x=batch.x, edge_index=batch.edge_index, edge_weight=batch.edge_weight)
+            edge_weight = batch.edge_weight if "edge_weight" in batch else None
+            h = self.encoder(x=batch.x, edge_index=batch.edge_index, edge_weight=edge_weight)
         return h
