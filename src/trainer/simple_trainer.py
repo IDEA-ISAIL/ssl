@@ -8,9 +8,6 @@ from .utils import EarlyStopper
 from typing import Union
 
 
-BEST_VALUE = 1e9
-
-
 class SimpleTrainer(BaseTrainer):
     r"""
     TODO: add descriptions
@@ -37,7 +34,7 @@ class SimpleTrainer(BaseTrainer):
         self.device = device
 
     def train(self):
-        early_stopper = EarlyStopper(patience=self.patience, best_value=BEST_VALUE)
+        early_stopper = EarlyStopper(patience=self.patience)
 
         self.method = self.method.to(self.device)
         for epoch in range(self.n_epochs):
