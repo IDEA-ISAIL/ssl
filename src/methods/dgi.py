@@ -38,6 +38,9 @@ class DGI(BaseMethod):
                  data_augment: AugmentType = ShuffleNode(),
                  loss_function: Callable = torch.nn.BCEWithLogitsLoss(),
                  conv_type: Union[str, int] = 'spectral') -> None:
+        """
+        TODO: do we need "int" for conv_type?
+        """
         super().__init__(encoder=encoder, data_augment=data_augment, loss_function=loss_function)
 
         self.discriminator = discriminator
