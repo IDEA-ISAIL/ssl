@@ -35,7 +35,18 @@ data_loader = DataLoader(dataset)
 
 # ---------------- Fully Torch_geometric -------------------
 # Neural networks
-encoder = GCN(in_channels=1433, hidden_channels=512, num_layers=1, act="prelu")  # torch_geometric build-in GCN
+class Encoder(torch.nn.Module):
+    def __init__(self, in_channels, hidden_channels=512, num_layers=1, act=torch.nn.PReLU()):
+        super().__init__()
+        # torch_geometric build-in GCN
+        self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=act)
+        self.act = act
+
+    def forward(self, x, edge_index, edge_weight=None):
+        return self.act(self.gcn(x=x, edge_index=edge_index, edge_weight=edge_weight))
+
+
+encoder = Encoder(in_channels=1433)
 discriminator = DGIDiscriminator(in_channels=512)
 method = DGI(encoder=encoder, data_augment=ShuffleNode(), discriminator=discriminator, conv_type="spatial")
 
