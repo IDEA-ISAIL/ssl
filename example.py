@@ -31,9 +31,6 @@ print("Attribute difference:", torch.sum(x_pyg - x_old))
 print("Adjacency matrix difference:", torch.sum(adj_pyg - adj_old))
 # ------------------------------------------
 
-train_mask = data_pyg.train_mask
-print(train_mask.shape)
-
 data_loader = DataLoader(dataset)
 
 # ---------------- Fully Torch_geometric -------------------
