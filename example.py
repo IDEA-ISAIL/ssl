@@ -11,7 +11,7 @@ from src.methods.utils import DGIDiscriminator, DGIGCN
 from src.trainer import SimpleTrainer
 from src.augment import ShuffleNode
 
-from src.evaluation import LogisticRegression
+from src.evaluation import LogisticRegression, SVCRegression, RandomForestClassifier, TSNEVisulization
 
 # -----------------------------------------
 # Show the difference between current & old versions.
@@ -67,5 +67,7 @@ trainer.train()
 data_pyg = data_pyg.to(method.device)
 embs = method.get_embs(x=data_pyg.x, adj=data_pyg.adj_t.to_torch_sparse_coo_tensor(), is_numpy=False)
 
-lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=50, device="cuda")
+lg = TSNEVisulization(n_components=3,device="cuda")
 lg(embs=embs, dataset=data_pyg)
+
+# plot_embedding2D(embs=embs, dataset=data_pyg)
