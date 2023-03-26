@@ -6,7 +6,10 @@ from src.data import DatasetDGI
 from src.datasets import Planetoid
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 
-from src.methods import DGI
+# from src.methods import DGI
+from src.methods.dgi import Encoder, Method
+from src.methods import DGI, DGIEncoder
+
 # from src.methods.utils import DGIDiscriminator, DGIGCN
 from src.trainer import SimpleTrainer
 from src.augment import ShuffleNode
@@ -35,8 +38,8 @@ data_loader = DataLoader(dataset)
 
 # ---------------- Fully Torch_geometric -------------------
 # Neural networks
-
-method = DGI(in_channels=1433, hidden_channels=512)
+encoder = Encoder()
+method = Method(encoder=xxx, in_channels=1433, hidden_channels=512)
 
 # Trainer
 trainer = SimpleTrainer(method=method, data_loader=data_loader, device="cuda:0")

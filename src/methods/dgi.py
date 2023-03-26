@@ -10,7 +10,7 @@ from typing import Optional
 from src.typing import AugmentType
 
 
-class DGI(BaseMethod):
+class Method(BaseMethod):
     r""" Deep Graph Infomax (DGI).
 
     Args:
@@ -63,7 +63,7 @@ class DGI(BaseMethod):
         return loss
 
 
-class Encoder(torch.nn.Module):
+class DGIEncoder(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels=512, num_layers=1, act=torch.nn.PReLU()):
         super().__init__()
         self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=act)
