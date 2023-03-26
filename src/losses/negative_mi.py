@@ -35,8 +35,8 @@ class NegativeMI(torch.nn.Module):
         r"""
         Args:
             (x, y): sampled from the joint distribution p(x, y). [batch_size, hidden_channels]
-            x_ind: sampled from p(x)
-            y_ind: sampled from p(y)
+            x_ind: sampled from p(x).  [batch_size, hidden_channels]
+            y_ind: sampled from p(y).  [batch_size, hidden_channels]
 
         Returns:
             The loss of the mutual information estimation.
