@@ -110,7 +110,7 @@ class BaseMethod(torch.nn.Module):
         return f'{self.__class__.__name__}()'
 
     def forward(self, *args, **kwargs) -> Tensor:
-        r"""Perform the forward pass."""
+        r"""Perform the forward pass. Create data/embedding pairs."""
         raise NotImplementedError
 
     def train_iter(self, *args, **kwargs) -> Any:
