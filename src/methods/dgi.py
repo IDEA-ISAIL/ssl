@@ -65,7 +65,7 @@ class DGI2(ContrastiveMethod):
     def __init__(self,
                  encoder: torch.nn.Module,
                  hidden_channels: int,
-                 readout: Union[Callable, torch.nn.Module] = AvgReadout(),
+                 readout: Callable = AvgReadout(),
                  data_augment: AugmentType = AugmentorDict({1: Echo(), 2: ShuffleNode()}),
                  loss_function: Optional[torch.nn.Module] = None) -> None:
         loss_function = loss_function if loss_function else NegativeMI(hidden_channels)
