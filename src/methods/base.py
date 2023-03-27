@@ -40,10 +40,6 @@ class BaseMethod(torch.nn.Module):
         r"""Perform the forward pass."""
         raise NotImplementedError
 
-    def train_iter(self, *args, **kwargs) -> Any:
-        r"""Each training iteration."""
-        raise NotImplementedError
-
     def apply_data_augment(self, *args, **kwargs) -> Any:
         r"""Apply online data augmentation."""
         raise NotImplementedError
@@ -56,10 +52,8 @@ class BaseMethod(torch.nn.Module):
         r"""Apply online embedding augmentation."""
         raise NotImplementedError
 
-    def get_embs(self, is_numpy: bool = False, *args, **kwargs) -> Union[Tensor, numpy.array]:
-        embs = self.encoder(*args, **kwargs).detach()
-        if is_numpy:
-            return embs.cpu().numpy()
+    def get_embs(self, *args, **kwargs) -> Tensor:
+        embs = self.encoder(*args, **kwargs)
         return embs
 
     def save(self, path: Optional[str] = None) -> None:
@@ -100,30 +94,41 @@ class ContrastiveMethod(BaseMethod):
                          data_augment=data_augment,
                          emb_augment=emb_augment)
 
+    # TODO: consider complex encoders (e.g., heterogeneous) in the future.
+
     def apply_data_augment_offline(self, *args, **kwargs):
         pass
 
-    def train_iter(self, batch):
-        aug2data = self.apply_data_augment(batch)
-        tmp = self.forward(aug2data)
-        pos_pairs, neg_pairs = self.get_data_pairs(*tmp)
-        loss = self.loss_function(pos_pairs=pos_pairs, neg_pairs=neg_pairs)
-        return loss
-
-    def apply_data_augment(self, batch):
+    def get_view_embs(self, batch):
+        r"""Get embeddings of each view.
+        1. Apply data augmentation to the input batch.
+        2. Use encoder to obtain the embeddings for each view.
+        3. Apply embedding augmentation over the embeddings.
+        """
         if self.data_augment is None:
-            return batch
+            view2emb = {1: self.get_embs(batch.to(self._device))}
+            return self.apply_emb_augment(view2emb)
 
-        aug2data = {}
-        for key, value in self.data_augment.items():
-            aug2data[key] = value(batch).to(self._device)
-        return aug2data
+        view2emb = {}
+        for view, augment in self.data_augment.items():
+            batch_aug = augment(batch).to(self._device)
+            view2emb[view] = self.get_embs(batch_aug)
+        return self.apply_emb_augment(view2emb)
 
-    def apply_emb_augment(self, *args, **kwargs):
-        pass
+    def apply_emb_augment(self, view2emb):
+        # TODO: must ensure the keys of emb_augment and data_augment are the same.
+        if self.emb_augment is None:
+            return view2emb
+
+        for view, augment in self.emb_augment.items():
+            view2emb[view] = augment(view2emb[view]).to(self._device)
+        return view2emb
 
     def get_data_pairs(self, *args, **kwargs):
         raise NotImplementedError
 
-    def forward(self, *args, **kwargs):
-        raise NotImplementedError
+    def forward(self, batch):
+        view2emb = self.get_view_embs(batch=batch)
+        pos_pairs, neg_pairs = self.get_data_pairs(view2emb)
+        loss = self.loss_function(pos_pairs=pos_pairs, neg_pairs=neg_pairs)
+        return loss
