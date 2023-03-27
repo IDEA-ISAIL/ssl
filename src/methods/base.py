@@ -44,6 +44,14 @@ class BaseMethod(torch.nn.Module):
         r"""Each training iteration."""
         raise NotImplementedError
 
+    def _apply_data_augment(self, *args, **kwargs) -> Any:
+        r"""Apply data augmentation."""
+        raise NotImplementedError
+
+    def _apply_emb_augment(self, *args, **kwargs) -> Any:
+        r"""Apply embedding augmentation."""
+        raise NotImplementedError
+
     def get_embs(self, is_numpy: bool = False, *args, **kwargs) -> Union[Tensor, numpy.array]:
         embs = self.encoder(*args, **kwargs).detach()
         if is_numpy:
