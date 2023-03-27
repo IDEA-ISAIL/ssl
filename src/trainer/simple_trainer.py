@@ -47,7 +47,7 @@ class SimpleTrainer(BaseTrainer):
                 self.optimizer.zero_grad()
 
                 data = data.to(self.device)
-                loss = self.method.train_iter(data)
+                loss = self.method(data)
 
                 loss.backward()
                 self.optimizer.step()
