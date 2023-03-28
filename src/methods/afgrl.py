@@ -1,15 +1,15 @@
 import torch
 
 import numpy as np
-from augment import DataAugmentation, AugNegDGI, AugPosDGI
-from loader import Loader, FullLoader
-from .base import Method
+# from augment import DataAugmentation, AugNegDGI, AugPosDGI
+from src.loader import Loader, FullLoader
+from .base import BaseMethod
 from .utils import EMA, update_moving_average
 
 from torch_geometric.typing import *
 
 
-class AFGRL(Method):
+class AFGRL(BaseMethod):
     r"""
     TODO: add descriptions
     """
@@ -69,6 +69,7 @@ class AFGRL(Method):
 
             # get loss
             loss = self.model(x, adj)
+            print(loss)
             # early stop
             if loss < best:
                 best = loss

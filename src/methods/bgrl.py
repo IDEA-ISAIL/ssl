@@ -1,15 +1,15 @@
 import copy
 import torch
 import numpy as np
-from src.augment import DataAugmentation, AugNegDGI, AugPosDGI
+# from src.augment import DataAugmentation, AugNegDGI, AugPosDGI
 from src.loader import Loader, FullLoader
-from .base import Method
+from .base import BaseMethod
 from .utils import EMA, update_moving_average
 
 from torch_geometric.typing import *
 
 
-class BGRL(Method):
+class BGRL(BaseMethod):
     r"""
     TODO: add descriptions
     """
