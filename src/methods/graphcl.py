@@ -1,12 +1,12 @@
-import torch
 from .base import BaseMethod
 from torch_geometric.typing import *
-from src.augment import RandomMask
+from src.augment import RandomMask, ShuffleNode
 from typing import Optional, Callable, Union
 from src.typing import AugmentType
 from .utils import AvgReadout
 from src.losses import NegativeMI
-from copy import deepcopy
+from src.loader import AugmentDataLoader
+
 
 class GraphCL(BaseMethod):
     r"""
@@ -25,31 +25,41 @@ class GraphCL(BaseMethod):
         self.sigmoid = torch.nn.Sigmoid()
 
     def forward(self, batch):
-        # batch2 = self.data_augment(batch).to(self._device)
-        # batch2 = self.negative
-        pos_batch, neg_batch = batch
-        h_pos = self.encoder(pos_batch)
-        h_neg = self.encoder(neg_batch)
+        pos_batch, neg_batch, neg_batch2 = batch
+        h_pos = self.encoder(pos_batch, pos_batch.adj_t)
+        if self.augment_type == 'edge':
+            h_neg1 = self.encoder(pos_batch, neg_batch.adj_t.to(pos_batch.batch.device))
+            h_neg2 = self.encoder(pos_batch, neg_batch2.adj_t.to(pos_batch.batch.device))
+        elif self.augment_type == 'mask':
+            h_neg1 = self.encoder(neg_batch, pos_batch.adj_t)
+            h_neg2 = self.encoder(neg_batch2, pos_batch.adj_t)
+        elif self.augment_type == 'node' or self.augment_type == 'subgraph':
+            h_neg1 = self.encoder(neg_batch, neg_batch.adj_t.to(pos_batch.batch.device))
+            h_neg2 = self.encoder(neg_batch2, neg_batch2.adj_t.to(pos_batch.batch.device))
+        else:
+            assert False
+        s1 = self.readout(h_neg1, keepdim=True)
+        s1 = self.sigmoid(s1)
+        s2 = self.readout(h_neg2, keepdim=True)
+        s2 = self.sigmoid(s2)
+        s1 = s1.expand_as(h_pos)
+        s2 = s2.expand_as(h_pos)
 
-        s = self.readout(h_pos, keepdim=True)
-        s = self.sigmoid(s)
-        s = s.expand_as(h_pos)
+        augmentation = ShuffleNode()
+        neg_batch3 = augmentation(pos_batch).to(self._device)
+        h_neg = self.encoder(neg_batch3, pos_batch.adj_t)
 
-        loss = self.loss_function(x=s, y=h_pos, x_ind=s, y_ind=h_neg)
-        return loss
-
-    # def apply_data_augment_offline(self, dataloader):
-    #     # return self.data_augment(dataset).to(self._device)
-    #     dataloader2 = deepcopy(dataloader)
-    #     dataloader2.dataset = self.data_augment(dataloader.dataset)
-    #     return dataloader2.to(self._device)
+        loss1 = self.loss_function(x=s1, y=h_pos, x_ind=s1, y_ind=h_neg)
+        loss2 = self.loss_function(x=s2, y=h_pos, x_ind=s2, y_ind=h_neg)
+        return loss1 + loss2
 
     def apply_data_augment_offline(self, dataloader):
         batch_list = []
         for i, batch in enumerate(dataloader):
             batch = batch.to(self._device)
             batch_aug = self.data_augment(batch)
-            batch_list.append((batch, batch_aug))
+            batch_aug2 = self.data_augment(batch)
+            batch_list.append((batch, batch_aug, batch_aug2))
         new_loader = AugmentDataLoader(batch_list=batch_list)
         return new_loader
 
@@ -80,15 +90,11 @@ class GraphCLEncoder(torch.nn.Module):
             if m.bias is not None:
                 m.bias.data.fill_(0.0)
 
-    # Shape of seq: (batch, nodes, features)
-
-    def forward(self, batch, is_sparse=True):
+    def forward(self, batch, adj, is_sparse=True):
         x = batch.x
-        adj = batch.adj_t.to_dense()
-        # edge_weight = batch.edge_weight if "edge_weight" in batch else None
+        adj = adj.to_dense()
         seq_fts = self.fc(x)
         if is_sparse:
-            # out = torch.unsqueeze(torch.spmm(edge_index, torch.squeeze(seq_fts, 0)), 0)
             out = torch.mm(adj, torch.squeeze(seq_fts, 0))
         else:
             out = torch.bmm(adj, seq_fts)
@@ -96,112 +102,3 @@ class GraphCLEncoder(torch.nn.Module):
             out += self.bias
 
         return self.act(out)
-
-# class GraphCL(Method):
-#     r"""
-#     TODO: add descriptions
-#     """
-#     def __init__(self,
-#                  model: torch.nn.Module,
-#                  data_loader: Loader,
-#                  data_augment: OptAugment = augment_dgi,
-#                  emb_augment: OptAugment =None,
-#                  lr: float = 0.001,
-#                  weight_decay: float = 0.0,
-#                  n_epochs: int = 10000,
-#                  patience: int = 20,
-#                  use_cuda: bool = True,
-#                  is_sparse: bool = True,
-#                  save_root: str = "",
-#                  ):
-#         super().__init__(model=model,
-#                          data_loader=data_loader,
-#                          data_augment=data_augment,
-#                          emb_augment=emb_augment,
-#                          save_root=save_root)
-#
-#
-#     def get_loss(self, x: Tensor, x_neg: Tensor, adj: Adj, labels: Tensor):
-#         logits = self.model(x, x_neg, adj, self.is_sparse, None, None, None)
-#         loss = self.b_xent(logits, labels)
-#         return loss
-#
-#     def get_label_pairs(self, batch_size: int, n_pos: int, n_neg: int):
-#         r"""Get the positive and negative files."""
-#         label_pos = torch.ones(batch_size, n_pos)
-#         label_neg = torch.zeros(batch_size, n_neg)
-#         labels = torch.cat((label_pos, label_neg), 1)
-#         return labels
-#
-#     def train(self):
-#         cnt_wait = 0
-#         best = 1e9
-#
-#         data = self.data_loader.data
-#
-#         batch_size = self.data_loader.batch_size
-#         # data augmentation
-#         data_neg = self.data_augment(data)
-#         data_pos = data_neg
-#         adj = data_neg.adj
-#         x_pos = data_pos.x
-#         x_neg = data_neg.x
-#         n_nodes = data_neg.n_nodes
-#
-#         if self.use_cuda:
-#             self.model = self.model.cuda()
-#             adj = adj.cuda()
-#             x_pos = x_pos.cuda()
-#             x_neg = x_neg.cuda()
-#
-#         for epoch in range(self.n_epochs):
-#             self.model.train()
-#             self.optimizer.zero_grad()
-#
-#             labels = self.get_label_pairs(batch_size=batch_size, n_pos=n_nodes, n_neg=n_nodes)
-#
-#             if self.use_cuda:
-#                 x_neg = x_neg.cuda()
-#                 labels = labels.cuda()
-#
-#             # get loss
-#             loss = self.get_loss(x=x_pos, x_neg=x_neg, adj=adj, labels=labels)
-#
-#             # early stop
-#             if loss < best:
-#                 best = loss
-#                 cnt_wait = 0
-#                 self.save_model()
-#                 self.save_encoder()
-#             else:
-#                 cnt_wait += 1
-#
-#             if cnt_wait == self.patience:
-#                 print('Early stopping!')
-#                 break
-#
-#             loss.backward()
-#             self.optimizer.step()
-
-
-class AugmentDataLoader:
-    def __init__(self, batch_list, shuffle=True):
-        self.batch_list = batch_list
-        self.shuffle = shuffle
-
-        self._nun_samples = len(self.batch_list)
-        self._cnt = 0
-        self._id_list = np.arange(0, self._nun_samples)
-
-    def __len__(self):
-        return self._nun_samples
-
-    def __iter__(self):
-        yield self.__next__()
-
-    def __next__(self):
-        self._cnt = (self._cnt + 1) % self._nun_samples
-        if self._cnt == 0 and self.shuffle:
-            np.random.shuffle(self._id_list)
-        idx = self._id_list[self._cnt]
-        return self.batch_list[idx]
