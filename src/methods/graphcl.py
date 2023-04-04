@@ -1,3 +1,4 @@
+import torch
 from .base import BaseMethod
 from torch_geometric.typing import *
 from src.augment import RandomMask
@@ -37,11 +38,20 @@ class GraphCL(BaseMethod):
         loss = self.loss_function(x=s, y=h_pos, x_ind=s, y_ind=h_neg)
         return loss
 
+    # def apply_data_augment_offline(self, dataloader):
+    #     # return self.data_augment(dataset).to(self._device)
+    #     dataloader2 = deepcopy(dataloader)
+    #     dataloader2.dataset = self.data_augment(dataloader.dataset)
+    #     return dataloader2.to(self._device)
+
     def apply_data_augment_offline(self, dataloader):
-        # return self.data_augment(dataset).to(self._device)
-        dataloader2 = deepcopy(dataloader)
-        dataloader2.dataset = self.data_augment(dataloader.dataset)
-        return dataloader2.to(self._device)
+        batch_list = []
+        for i, batch in enumerate(dataloader):
+            batch = batch.to(self._device)
+            batch_aug = self.data_augment(batch)
+            batch_list.append((batch, batch_aug))
+        new_loader = AugmentDataLoader(batch_list=batch_list)
+        return new_loader
 
 
 class GraphCLEncoder(torch.nn.Module):
@@ -172,3 +182,26 @@ class GraphCLEncoder(torch.nn.Module):
 #
 #             loss.backward()
 #             self.optimizer.step()
+
+
+class AugmentDataLoader:
+    def __init__(self, batch_list, shuffle=True):
+        self.batch_list = batch_list
+        self.shuffle = shuffle
+
+        self._nun_samples = len(self.batch_list)
+        self._cnt = 0
+        self._id_list = np.arange(0, self._nun_samples)
+
+    def __len__(self):
+        return self._nun_samples
+
+    def __iter__(self):
+        yield self.__next__()
+
+    def __next__(self):
+        self._cnt = (self._cnt + 1) % self._nun_samples
+        if self._cnt == 0 and self.shuffle:
+            np.random.shuffle(self._id_list)
+        idx = self._id_list[self._cnt]
+        return self.batch_list[idx]
