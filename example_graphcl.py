@@ -5,8 +5,9 @@ from torch_geometric.loader import DataLoader
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.datasets import Planetoid
 from src.evaluation import LogisticRegression
+import torch 
 
-
+torch.manual_seed(0)
 # data
 pre_transforms = Compose([NormalizeFeatures(ord=1), Edge2Adj(norm=GCNNorm(add_self_loops=1))])
 dataset = Planetoid(root="pyg_data", name="cora", pre_transform=pre_transforms)
