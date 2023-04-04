@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from torch_geometric.typing import *
 from src.augment import Augmentor, AugmentorList, AugmentorDict
 
 AugmentType = Union[Augmentor, AugmentorList, AugmentorDict]

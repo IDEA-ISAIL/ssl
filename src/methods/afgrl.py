@@ -16,8 +16,7 @@ class AFGRL(Method):
     def __init__(self,
                  model: torch.nn.Module,
                  data_loader: Loader,
-                 augment_pos: DataAugmentation = AugPosDGI(),
-                 augment_neg: DataAugmentation = AugNegDGI(),
+                 data_augment: None,
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
@@ -28,9 +27,9 @@ class AFGRL(Method):
                  save_root: str = "",
                  ):
         super().__init__(model=model,
+                         data_augment=data_augment,
+                         emb_augment=[],
                          data_loader=data_loader,
-                         augment_pos=augment_pos,
-                         augment_neg=augment_neg,
                          save_root=save_root)
 
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr, weight_decay=weight_decay)
@@ -70,7 +69,6 @@ class AFGRL(Method):
 
             # get loss
             loss = self.model(x, adj)
-            print(loss)
             # early stop
             if loss < best:
                 best = loss

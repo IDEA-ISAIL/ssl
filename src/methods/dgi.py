@@ -1,161 +1,88 @@
 import torch
 
-from src.augment.collections import augment_dgi
-from src.loader import Loader
-from .base import Method
+from .base import BaseMethod, ContrastiveMethod
+from .utils import AvgReadout
+from src.augment import ShuffleNode, Echo, AugmentorDict
+from src.losses import NegativeMI
 
-from torch_geometric.typing import Tensor, Adj
-from src.typing import OptAugment
+from typing import Optional, Callable, Union
+from src.typing import AugmentType
 
 
-class DGI(Method):
-    r"""
-    TODO: add descriptions
+class DGI(BaseMethod):
+    r""" Deep Graph Infomax (DGI).
+
+    Args:
+        encoder (Optional[torch.nn.Module]): the encoder to be trained.
+        hidden_channels (int): output dimension of the encoder.
+        readout (Union[Callable, torch.nn.Module]): the readout function to obtain the summary emb. of the entire graph.
+            (default: AvgReadout())
+        corruption (OptAugment): data augmentation/corruption to generate negative node pairs.
+            (default: ShuffleNode())
+        loss_function (Optional[torch.nn.Module]): the loss function. If None, then use the NegativeMI loss.
     """
     def __init__(self,
-                 model: torch.nn.Module,
-                 data_loader: Loader,
-                 data_augment: OptAugment = augment_dgi,
-                 lr: float = 0.001,
-                 weight_decay: float = 0.0,
-                 n_epochs: int = 10000,
-                 patience: int = 20,
-                 use_cuda: bool = True,
-                 is_sparse: bool = True,
-                 save_root: str = "",
-                 ):
-        super().__init__(model=model,
-                         data_augment=data_augment,
-                         emb_augment=None,
-                         data_loader=data_loader,
-                         save_root=save_root)
+                 encoder: torch.nn.Module,
+                 hidden_channels: int,
+                 readout: Union[Callable, torch.nn.Module] = AvgReadout(),
+                 corruption: AugmentType = ShuffleNode(),
+                 loss_function: Optional[torch.nn.Module] = None) -> None:
+        loss_function = loss_function if loss_function else NegativeMI(hidden_channels)
+        super().__init__(encoder=encoder, data_augment=corruption, loss_function=loss_function)
 
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
-        self.b_xent = torch.nn.BCEWithLogitsLoss()
+        self.readout = readout
+        self.sigmoid = torch.nn.Sigmoid()
 
-        self.n_epochs = n_epochs
-        self.patience = patience
+    def forward(self, batch):
+        batch2 = self.data_augment(batch).to(self._device)
 
-        self.use_cuda = use_cuda
-        self.is_sparse = is_sparse
+        h_pos = self.encoder(batch)
+        h_neg = self.encoder(batch2)
 
-    # def get_loss(self, x: Tensor, x_neg: Tensor, adj: Adj, labels: Tensor):
-    #     logits = self.model(x, x_neg, adj, self.is_sparse)
-    #     logits = self.model(x, adj)
-        # loss = self.b_xent(logits, labels)
-        # return loss
-    #
-    # def train(self):
-    #     cnt_wait = 0
-    #     best = 1e9
-    #
-    #     if self.use_cuda:
-    #         self.model = self.model.cuda()
-    #
-    #     for epoch in range(self.n_epochs):
-    #         for data in self.data_loader:
-    #             self.model.train()
-    #             self.optimizer.zero_grad()
-    #
-    #             if self.use_cuda:
-    #                 data = data.cuda()
-    #             x = data.x
-    #             adj = data.adj_t.to_torch_sparse_coo_tensor()
-    #
-    #             # data augmentation
-    #             data_neg = self.data_augment(data)
-    #
-    #             x_neg = data_neg.x
-    #             if self.use_cuda:
-    #                 x_neg = x_neg.cuda()
-    #             labels = self.get_label_pairs(batch_size=len(data), n_pos=len(x), n_neg=len(x))
-    #
-    #             if self.use_cuda:
-    #                 x_neg = x_neg.cuda()
-    #                 labels = labels.cuda()
-    #
-    #             # get loss
-    #             loss = self.get_loss(x=x, x_neg=x_neg, adj=adj, labels=labels)
-    #
-    #             # early stop
-    #             if loss < best:
-    #                 best = loss
-    #                 cnt_wait = 0
-    #                 self.save_model()
-    #                 self.save_encoder()
-    #             else:
-    #                 cnt_wait += 1
-    #
-    #             if cnt_wait == self.patience:
-    #                 print('Early stopped!')
-    #                 return
-    #
-    #             loss.backward()
-    #             self.optimizer.step()
+        s = self.readout(h_pos, keepdim=True)
+        s = self.sigmoid(s)
 
-    # troch_geometric
+        s = s.expand_as(h_pos)
+        # pos_pairs = torch.stack([s, h_pos], -1)
+        # neg_pairs = torch.stack([s, h_neg], -1)
 
-    def get_loss(self, data, data_neg, labels: Tensor):
-        logits = self.model(data, data_neg)
-        # logits = self.model(x, adj)
-        loss = self.b_xent(logits, labels)
+        loss = self.loss_function(x=s, y=h_pos, x_ind=s, y_ind=h_neg)
         return loss
 
-    def train(self):
-        cnt_wait = 0
-        best = 1e9
 
-        if self.use_cuda:
-            self.model = self.model.cuda()
-
-        for epoch in range(self.n_epochs):
-            for data in self.data_loader:
-                self.model.train()
-                self.optimizer.zero_grad()
-
-                if self.use_cuda:
-                    data = data.cuda()
-
-                # data augmentation
-                data_neg = self.data_augment(data)
-
-                # labels = get_label_pairs(batch_size=len(data), n_pos=data.num_nodes, n_neg=data.num_nodes) #old
-                labels = get_label_pairs(n_pos=data.num_nodes, n_neg=data.num_nodes)
-                if self.use_cuda:
-                    data_neg = data_neg.cuda()
-                    labels = labels.cuda()
-
-                # get loss
-                loss = self.get_loss(data=data, data_neg=data_neg, labels=labels)
-
-                # early stop
-                if loss < best:
-                    best = loss
-                    cnt_wait = 0
-                    self.save_model()
-                    self.save_encoder()
-                else:
-                    cnt_wait += 1
-
-                if cnt_wait == self.patience:
-                    print('Early stopped!')
-                    return
-
-                loss.backward()
-                self.optimizer.step()
-
-
-# def get_label_pairs(batch_size: int, n_pos: int, n_neg: int):
-#     r"""Get the positive and negative files."""
-#     label_pos = torch.ones(batch_size, n_pos)
-#     label_neg = torch.zeros(batch_size, n_neg)
-#     labels = torch.cat((label_pos, label_neg), 1)
-#     return labels
-
-# torch_geometric
-def get_label_pairs(n_pos: int, n_neg: int):
-    r"""Get the positive and negative files."""
-    label_pos = torch.ones(n_pos)
-    label_neg = torch.zeros(n_neg)
-    labels = torch.stack((label_pos, label_neg))
-    return labels
+# class DGI2(ContrastiveMethod):
+#     r""" Deep Graph Infomax (DGI).
+#
+#     Args:
+#         encoder (Optional[torch.nn.Module]): the encoder to be trained.
+#         hidden_channels (int): output dimension of the encoder.
+#         readout (Union[Callable, torch.nn.Module]): the readout function to obtain the summary emb. of the entire graph.
+#             (default: AvgReadout())
+#         data_augment (AugmentType): data augmentation to generate augmented data.
+#             (default: AugmentorDict({1: Echo(), 2: ShuffleNode()}))
+#         loss_function (Optional[torch.nn.Module]): the loss function. If None, then use the NegativeMI loss.
+#     """
+#     def __init__(self,
+#                  encoder: torch.nn.Module,
+#                  hidden_channels: int,
+#                  readout: Callable = AvgReadout(),
+#                  data_augment: AugmentType = AugmentorDict({1: Echo(), 2: ShuffleNode()}),
+#                  loss_function: Optional[torch.nn.Module] = None) -> None:
+#         loss_function = loss_function if loss_function else NegativeMI(hidden_channels)
+#         super().__init__(encoder=encoder, data_augment=data_augment, loss_function=loss_function)
+#
+#         # TODO: must assert the keys of the dictionary in the future.
+#
+#         self.readout = readout
+#         self.sigmoid = torch.nn.Sigmoid()
+#
+#     def get_data_pairs(self, view2emb):
+#         h1, h2 = view2emb[1], view2emb[2]
+#
+#         s = self.readout(h1, keepdim=True)
+#         s = self.sigmoid(s)
+#
+#         s = s.expand_as(h1)
+#         pos_pairs = torch.stack([s, h1], -1)
+#         neg_pairs = torch.stack([s, h2], -1)
+#         return pos_pairs, neg_pairs
