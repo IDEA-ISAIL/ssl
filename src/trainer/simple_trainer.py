@@ -36,7 +36,9 @@ class SimpleTrainer(BaseTrainer):
 
     def train(self):
         self.method = self.method.to(self.device)
-        self.data_loader = self.method.apply_data_augment_offline(self.data_loader)
+        new_loader = self.method.apply_data_augment_offline(self.data_loader)
+        if new_loader != None:
+            self.data_loader = new_loader
         for epoch in range(self.n_epochs):
             start_time = time.time()
 
