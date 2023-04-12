@@ -1,107 +1,120 @@
-import torch
-
-from src.loader import Loader
-# from .method import ContrastiveMethod
-from src.augment.collections import augment_dgi
-from .base import Method
+from .base import BaseMethod
 from torch_geometric.typing import *
-from src.typing import OptAugment
+from src.augment import RandomMask, ShuffleNode
+from typing import Optional, Callable, Union
+from src.typing import AugmentType
+from .utils import AvgReadout
+from src.losses import NegativeMI
+from src.loader import AugmentDataLoader
+from torch_geometric.nn.models import GCN
+import torch
+torch.manual_seed(0)
 
 
-class GraphCL(Method):
+class GraphCL(BaseMethod):
     r"""
     TODO: add descriptions
     """
     def __init__(self,
-                 model: torch.nn.Module,
-                 data_loader: Loader,
-                 data_augment: OptAugment = augment_dgi,
-                 emb_augment: OptAugment =None,
-                 lr: float = 0.001,
-                 weight_decay: float = 0.0,
-                 n_epochs: int = 10000,
-                 patience: int = 20,
-                 use_cuda: bool = True,
-                 is_sparse: bool = True,
-                 save_root: str = "",
-                 ):
-        super().__init__(model=model,
-                         data_loader=data_loader,
-                         data_augment=data_augment,
-                         emb_augment=emb_augment,
-                         save_root=save_root)
+                 encoder: torch.nn.Module,
+                 hidden_channels: int,
+                 readout: Union[Callable, torch.nn.Module] = AvgReadout(),
+                 corruption: AugmentType = RandomMask(),
+                 loss_function: Optional[torch.nn.Module] = None) -> None:
+        loss_function = loss_function if loss_function else NegativeMI(hidden_channels)
+        super().__init__(encoder=encoder, data_augment=corruption, loss_function=loss_function)
 
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
-        # self.optimizer_lr = torch.optim.Adam(self.classifier.parameters(), lr, weight_decay=weight_decay)
-        self.b_xent = torch.nn.BCEWithLogitsLoss()
+        self.readout = readout
+        self.sigmoid = torch.nn.Sigmoid()
 
-        self.n_epochs = n_epochs
-        self.patience = patience
+    def forward(self, batch):
+        pos_batch, neg_batch, neg_batch2 = batch
+        h_pos = self.encoder(pos_batch, pos_batch.adj_t)
+        if self.augment_type == 'edge':
+            # h_neg1 = self.encoder(pos_batch, neg_batch.adj_t.to(pos_batch.batch.device))
+            # h_neg2 = self.encoder(pos_batch, neg_batch2.adj_t.to(pos_batch.batch.device))
+            h_neg1 = self.encoder(pos_batch, neg_batch.edge_index)
+            h_neg2 = self.encoder(pos_batch, neg_batch2.edge_index)
+        elif self.augment_type == 'mask':
+            # h_neg1 = self.encoder(neg_batch, pos_batch.adj_t)
+            # h_neg2 = self.encoder(neg_batch2, pos_batch.adj_t)
+            h_neg1 = self.encoder(neg_batch, pos_batch.edge_index)
+            h_neg2 = self.encoder(neg_batch2, pos_batch.edge_index)
+        elif self.augment_type == 'node' or self.augment_type == 'subgraph':
+            # h_neg1 = self.encoder(neg_batch, neg_batch.adj_t.to(pos_batch.batch.device))
+            # h_neg2 = self.encoder(neg_batch2, neg_batch2.adj_t.to(pos_batch.batch.device))
+            h_neg1 = self.encoder(neg_batch, neg_batch.edge_index)
+            h_neg2 = self.encoder(neg_batch2, neg_batch2.edge_index)
+        else:
+            assert False
+        s1 = self.readout(h_neg1, keepdim=True)
+        s1 = self.sigmoid(s1)
+        s2 = self.readout(h_neg2, keepdim=True)
+        s2 = self.sigmoid(s2)
+        s1 = s1.expand_as(h_pos)
+        s2 = s2.expand_as(h_pos)
 
-        self.use_cuda = use_cuda
-        self.is_sparse = is_sparse
+        augmentation = ShuffleNode()
+        neg_batch3 = augmentation(pos_batch).to(self._device)
+        h_neg = self.encoder(neg_batch3, pos_batch.adj_t)
 
-    def get_loss(self, x: Tensor, x_neg: Tensor, adj: Adj, labels: Tensor):
-        logits = self.model(x, x_neg, adj, self.is_sparse, None, None, None)
-        loss = self.b_xent(logits, labels)
-        return loss
+        loss1 = self.loss_function(x=s1, y=h_pos, x_ind=s1, y_ind=h_neg)
+        loss2 = self.loss_function(x=s2, y=h_pos, x_ind=s2, y_ind=h_neg)
+        return loss1 + loss2
 
-    def get_label_pairs(self, batch_size: int, n_pos: int, n_neg: int):
-        r"""Get the positive and negative files."""
-        label_pos = torch.ones(batch_size, n_pos)
-        label_neg = torch.zeros(batch_size, n_neg)
-        labels = torch.cat((label_pos, label_neg), 1)
-        return labels
+    def apply_data_augment_offline(self, dataloader):
+        batch_list = []
+        for i, batch in enumerate(dataloader):
+            batch = batch.to(self._device)
+            batch_aug = self.data_augment(batch)
+            batch_aug2 = self.data_augment(batch)
+            batch_list.append((batch, batch_aug, batch_aug2))
+        new_loader = AugmentDataLoader(batch_list=batch_list)
+        return new_loader
 
-    def train(self):
-        cnt_wait = 0
-        best = 1e9
 
-        data = self.data_loader.data
+class GraphCLEncoder(torch.nn.Module):
+    def __init__(self,
+                 in_channels: int,
+                 hidden_channels: int = 512,
+                 act: torch.nn = torch.nn.PReLU(),
+                 num_layers=1):
+        super(GraphCLEncoder, self).__init__()
+        # self.dim_out = hidden_channels
+        # self.fc = torch.nn.Linear(in_channels, hidden_channels, bias=False)
+        # self.act = act
+        #
+        # if bias:
+        #     self.bias = torch.nn.Parameter(torch.FloatTensor(hidden_channels))
+        #     self.bias.data.fill_(0.0)
+        # else:
+        #     self.register_parameter('bias', None)
+        #
+        # for m in self.modules():
+        #     self._weights_init(m)
+        # self.fc = torch.nn.Linear(in_channels, hidden_channels, bias=False)
+        self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=act)
+        self.act = act
+        for m in self.modules():
+            self._weights_init(m)
 
-        batch_size = self.data_loader.batch_size
-        # data augmentation
-        data_neg = self.data_augment(data)
-        data_pos = data_neg
-        adj = data_neg.adj
-        x_pos = data_pos.x
-        x_neg = data_neg.x
-        n_nodes = data_neg.n_nodes
+    def _weights_init(self, m):
+        if isinstance(m, torch.nn.Linear):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.fill_(0.0)
 
-        if self.use_cuda:
-            self.model = self.model.cuda()
-            adj = adj.cuda()
-            x_pos = x_pos.cuda()
-            x_neg = x_neg.cuda()
-
-        for epoch in range(self.n_epochs):
-            self.model.train()
-            self.optimizer.zero_grad()
-
-            labels = self.get_label_pairs(batch_size=batch_size, n_pos=n_nodes, n_neg=n_nodes)
-
-            if self.use_cuda:
-                x_neg = x_neg.cuda()
-                labels = labels.cuda()
-
-            # get loss
-            loss = self.get_loss(x=x_pos, x_neg=x_neg, adj=adj, labels=labels)
-
-            # early stop
-            if loss < best:
-                best = loss
-                cnt_wait = 0
-                self.save_model()
-                self.save_encoder()
-            else:
-                cnt_wait += 1
-
-            if cnt_wait == self.patience:
-                print('Early stopping!')
-                break
-
-            loss.backward()
-            self.optimizer.step()
-
-        # get embeddings
-        # embeds = self.model.get_embs(x_pos, adj, self.is_sparse)
+    def forward(self, batch, edge_index, is_sparse=True):
+        edge_weight = batch.edge_weight if "edge_weight" in batch else None
+        return self.act(self.gcn(x=batch.x, edge_index=edge_index, edge_weight=edge_weight))
+        # x = batch.x
+        # adj = adj.to_dense()
+        # seq_fts = self.fc(x)
+        # if is_sparse:
+        #     out = torch.mm(adj, torch.squeeze(seq_fts, 0))
+        # else:
+        #     out = torch.bmm(adj, seq_fts)
+        # if self.bias is not None:
+        #     out += self.bias
+        #
+        # return self.act(out)

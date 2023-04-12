@@ -5,9 +5,15 @@ import torch
 
 from .base import *
 from .positive import Echo
-from .negative import ComputePPR, ComputeHeat, RandomDropEdge, NeighborSearch_AFGRL, RandomMask
 from .shuffle_node import ShuffleNode
-from src.transforms import Compose
+from .augment_subgraph import AugmentSubgraph
+from .random_drop_node import RandomDropNode
+from .random_mask import RandomMask
+from .random_drop_edge import RandomDropEdge
+from .augment_afgrl import NeighborSearch_AFGRL
+from .negative import ComputePPR, ComputeHeat
+from .shuffle_node import ShuffleNode
+
 __all__ = [
     "augment_dgi",
     "augment_mvgrl_ppr",
@@ -21,6 +27,6 @@ __all__ = [
 augment_dgi = ShuffleNode()
 augment_mvgrl_ppr = ComputePPR()
 augment_mvgrl_heat = ComputeHeat()
-augment_bgrl_1 = Compose([RandomMask(), RandomDropEdge()])
-augment_bgrl_2 = Compose([RandomMask(), RandomDropEdge()])
+augment_bgrl_1 = RandomDropEdge()
+augment_bgrl_2 = RandomDropEdge()
 augment_afgrl = NeighborSearch_AFGRL()
