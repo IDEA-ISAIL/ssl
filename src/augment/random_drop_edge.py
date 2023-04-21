@@ -6,14 +6,15 @@ import torch
 
 
 class RandomDropEdge(Augmentor):
-    def __init__(self, is_x: bool = True, is_adj: bool = False):
+    def __init__(self, is_x: bool = True, is_adj: bool = False, drop_percent=0.2):
         super().__init__()
         self.is_x = is_x
         self.is_adj = is_adj
+        self.drop_percent = drop_percent
 
-    def __call__(self, data: HomoData, drop_percent=0.2):
+    def __call__(self, data: HomoData):
         data_tmp = copy.deepcopy(data)
-        percent = drop_percent / 2
+        percent = self.drop_percent / 2
         row_idx, col_idx = data.x.nonzero().T
 
         index_list = []

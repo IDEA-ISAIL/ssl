@@ -3,18 +3,20 @@ from src.methods import GraphCL, GraphCLEncoder
 from src.trainer import SimpleTrainer
 from torch_geometric.loader import DataLoader
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
-from src.datasets import Planetoid
+from src.datasets import Planetoid, Entities
 from src.evaluation import LogisticRegression
-import torch 
+import torch
+
 
 torch.manual_seed(0)
 # data
 pre_transforms = Compose([NormalizeFeatures(ord=1), Edge2Adj(norm=GCNNorm(add_self_loops=1))])
-dataset = Planetoid(root="pyg_data", name="cora", pre_transform=pre_transforms)
+# dataset = Planetoid(root="pyg_data", name="cora", pre_transform=pre_transforms)
+dataset = Entities(root="pyg_data", name="mutag", pre_transform=pre_transforms)
 data_loader = DataLoader(dataset)
 
 # Augmentation
-aug_type = 'edge'
+aug_type = 'mask'
 if aug_type == 'edge':
     augment_neg = RandomDropEdge()
 elif aug_type == 'mask':
@@ -25,7 +27,7 @@ elif aug_type == 'subgraph':
     augment_neg = AugmentSubgraph()
 else:
     assert False
-# augment_neg = AugmentorList([RandomDropEdge(), RandomMask()])
+augment_neg = AugmentorList([RandomDropEdge(), RandomMask()])
 
 
 # ------------------- Method -----------------

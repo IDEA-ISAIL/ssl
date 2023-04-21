@@ -4,7 +4,6 @@ from torch_geometric.loader import DataLoader
 from src.methods import BaseMethod
 from .base import BaseTrainer
 from .utils import EarlyStopper
-
 from typing import Union
 
 
@@ -40,7 +39,6 @@ class SimpleTrainer(BaseTrainer):
         new_loader = self.method.apply_data_augment_offline(self.data_loader)
         if new_loader != None:
             self.data_loader = new_loader
-
         for epoch in range(self.n_epochs):
             start_time = time.time()
 
@@ -48,7 +46,9 @@ class SimpleTrainer(BaseTrainer):
                 self.method.train()
                 self.optimizer.zero_grad()
 
+                data = self.push_batch_to_device(data)
                 loss = self.method(data)
+
                 loss.backward()
                 self.optimizer.step()
 
@@ -61,3 +61,11 @@ class SimpleTrainer(BaseTrainer):
                 self.save()
             if self.early_stopper.stop:
                 return
+
+    # push data to device
+    def push_batch_to_device(self, batch):
+        if type(batch) is tuple:
+            f = lambda x: tuple(x_.to(self.device) for x_ in batch)
+            return f(batch)
+        else:
+            return batch.to(self.device)
