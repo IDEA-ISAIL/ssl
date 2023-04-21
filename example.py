@@ -67,7 +67,7 @@ trainer.train()
 data_pyg = data_pyg.to(method.device)
 embs = method.get_embs(x=data_pyg.x, adj=data_pyg.adj_t.to_torch_sparse_coo_tensor(), is_numpy=False)
 
-lg = RandomForestClassifier()
+lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=50, device="cuda")ç
 lg(embs=embs, dataset=data_pyg)
 
 # plot_embedding2D(embs=embs, dataset=data_pyg)
