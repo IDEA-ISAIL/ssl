@@ -5,7 +5,13 @@ import torch
 
 from .base import *
 from .positive import Echo
-from .negative import ComputePPR, ComputeHeat, RandomDropEdge, NeighborSearch_AFGRL
+from .shuffle_node import ShuffleNode
+from .augment_subgraph import AugmentSubgraph
+from .random_drop_node import RandomDropNode
+from .random_mask import RandomMask
+from .random_drop_edge import RandomDropEdge
+from .negative import ComputePPR, ComputeHeat, NeighborSearch_AFGRL
+
 from .shuffle_node import ShuffleNode
 
 __all__ = [

@@ -46,7 +46,7 @@ class BaseMethod(torch.nn.Module):
 
     def apply_data_augment_offline(self, *args, **kwargs):
         r"""Apply offline data augmentation."""
-        raise NotImplementedError
+        return None
 
     def apply_emb_augment(self, *args, **kwargs) -> Any:
         r"""Apply online embedding augmentation."""

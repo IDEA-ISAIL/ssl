@@ -1,27 +1,20 @@
-from src.data import DatasetDGI
-from src.loader import FullLoader
+from src.augment import RandomMask, RandomDropEdge, RandomDropNode, AugmentSubgraph, AugmentorList
+from src.methods import GraphCL, GraphCLEncoder
+from src.trainer import SimpleTrainer
+from torch_geometric.loader import DataLoader
+from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
+from src.datasets import Planetoid
+from src.evaluation import LogisticRegression
+import torch 
 
-from src.augment import RandomMask, RandomDropEdge, RandomDropNode, AugmentSubgraph
-
-from src.nn.encoders import GCNDGI
-from src.nn.utils import DiscriminatorDGI
-from src.nn.models import ModelDGI
-from src.methods import GraphCL
-
+torch.manual_seed(0)
 # data
-dataset = DatasetDGI()
-dataset.load(path="datasets/cora_dgi")
-data = dataset.to_data()
-data_loader = FullLoader(data)
+pre_transforms = Compose([NormalizeFeatures(ord=1), Edge2Adj(norm=GCNNorm(add_self_loops=1))])
+dataset = Planetoid(root="pyg_data", name="cora", pre_transform=pre_transforms)
+data_loader = DataLoader(dataset)
 
-# neural networks
-encoder = GCNDGI(dim_in=1433)
-discriminator = DiscriminatorDGI(dim_h=512)
-model = ModelDGI(encoder=encoder, discriminator=discriminator)
-
-aug_type = 'subgraph'
-
-# trainer
+# Augmentation
+aug_type = 'edge'
 if aug_type == 'edge':
     augment_neg = RandomDropEdge()
 elif aug_type == 'mask':
@@ -32,10 +25,23 @@ elif aug_type == 'subgraph':
     augment_neg = AugmentSubgraph()
 else:
     assert False
+# augment_neg = AugmentorList([RandomDropEdge(), RandomMask()])
 
-GraphCL = GraphCL(model=model, data_loader=data_loader, data_augment=augment_neg, emb_augment=None,
-                  save_root="./results", n_epochs=10)
-GraphCL.train()
 
-# embeds = GraphCL.model.get_embs(x_pos, adj, self.is_sparse)
+# ------------------- Method -----------------
+encoder = GraphCLEncoder(in_channels=1433, hidden_channels=512)
+method = GraphCL(encoder=encoder, corruption=augment_neg, hidden_channels=512)
+method.augment_type = aug_type
 
+
+# ------------------ Trainer --------------------
+trainer = SimpleTrainer(method=method, data_loader=data_loader, device="cuda:0")
+trainer.train()
+
+
+# ------------------ Evaluator -------------------
+data_pyg = dataset.data.to(method.device)
+embs = method.get_embs(data_pyg, data_pyg.adj_t).detach()
+
+lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=50, device="cuda")
+lg(embs=embs, dataset=data_pyg)

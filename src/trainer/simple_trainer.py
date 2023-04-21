@@ -1,8 +1,6 @@
 import time
-
 import torch
 from torch_geometric.loader import DataLoader
-
 from src.methods import BaseMethod
 from .base import BaseTrainer
 from .utils import EarlyStopper
@@ -21,7 +19,7 @@ class SimpleTrainer(BaseTrainer):
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
-                 patience: int = 20,
+                 patience: int = 50,
                  device: Union[str, int] = "cuda:0",
                  save_root: str = "./ckpt"):
         super().__init__(method=method,
@@ -39,6 +37,10 @@ class SimpleTrainer(BaseTrainer):
 
     def train(self):
         self.method = self.method.to(self.device)
+        new_loader = self.method.apply_data_augment_offline(self.data_loader)
+        if new_loader != None:
+            self.data_loader = new_loader
+
         for epoch in range(self.n_epochs):
             start_time = time.time()
 
@@ -46,9 +48,7 @@ class SimpleTrainer(BaseTrainer):
                 self.method.train()
                 self.optimizer.zero_grad()
 
-                data = data.to(self.device)
                 loss = self.method(data)
-
                 loss.backward()
                 self.optimizer.step()
 

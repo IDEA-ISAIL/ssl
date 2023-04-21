@@ -1,14 +1,11 @@
 """TODO: create a separate file for each class."""
 
-
 import copy
 import random
 from scipy.linalg import fractional_matrix_power
-
 import torch
 from torch.linalg import inv
 from torch_geometric.data import Data
-
 from .base import Augmentor
 from src.data import HomoData
 
@@ -180,6 +177,7 @@ class AugmentSubgraph(Augmentor):
 
         return data_tmp
 
+
 import faiss
 import torch
 import numpy as np
@@ -275,5 +273,4 @@ class NeighborSearch_AFGRL(Augmentor):
         assert len(similar) == len(index)
         indices = torch.tensor([index.cpu().numpy().tolist(), similar.cpu().numpy().tolist()]).to(self.device)
         result = torch.sparse_coo_tensor(indices, torch.ones(len(index)).to(self.device), [n_data, n_data], dtype=torch.float).to(self.device)
-
         return result

@@ -5,7 +5,7 @@ from torch_geometric.nn.models import GCN
 from src.datasets import Planetoid
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.methods import DGI
-from src.methods.dgi import DGI2
+# from src.methods.dgi import DGI2
 from src.trainer import SimpleTrainer
 from src.evaluation import LogisticRegression
 
@@ -29,8 +29,8 @@ class Encoder(torch.nn.Module):
 
 
 encoder = Encoder(in_channels=1433, hidden_channels=512)
-# method = DGI(encoder=encoder, hidden_channels=512)
-method = DGI2(encoder=encoder, hidden_channels=512)
+method = DGI(encoder=encoder, hidden_channels=512)
+# method = DGI2(encoder=encoder, hidden_channels=512)
 
 # ------------------ Trainer --------------------
 trainer = SimpleTrainer(method=method, data_loader=data_loader, device="cuda:0")
