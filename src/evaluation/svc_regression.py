@@ -54,10 +54,12 @@ class SVCRegression(BaseEvaluator):
         TODO: maybe we need to return something.
         """
         val_accs, test_accs = [], []
+        embs, labels = embs.detach().cpu().numpy(), dataset.y.detach().cpu().numpy()
 
         for n in range(self.n_run):
             n_splits, train_mask, val_mask, test_mask = process_split(dataset=dataset)
             test_mask = dataset.test_mask
+            train_mask, val_mask, test_mask = train_mask.detach().cpu().numpy(), val_mask.detach().cpu().numpy(), test_mask.detach().cpu().numpy()
             for i in range(n_splits):
                 train_msk = train_mask[i]
                 val_msk = val_mask[i]
@@ -65,7 +67,7 @@ class SVCRegression(BaseEvaluator):
                 test_msk = test_mask if len(test_mask.shape) == 1 else test_mask[i]
 
                 val_acc, test_acc = self.single_run(
-                    embs=embs, labels=dataset.y, train_mask=train_msk, val_mask=val_msk, test_mask=test_msk)
+                    embs=embs, labels=labels, train_mask=train_msk, val_mask=val_msk, test_mask=test_msk)
 
                 val_accs.append(val_acc * 100)
                 test_accs.append(test_acc * 100)
@@ -81,7 +83,7 @@ class SVCRegression(BaseEvaluator):
 
     def single_run(self, embs, labels, train_mask, val_mask, test_mask) -> (np.ndarray, np.ndarray):
         val_accs, test_accs = [], []
-        emb_dim, num_class = embs.shape[1], labels.unique().shape[0]
+        # emb_dim, num_class = embs.shape[1], labels.unique().shape[0]
 
         # embs, labels = embs.detach().cpu().numpy(), labels.detach().cpu().numpy()
         if self.search:
@@ -93,10 +95,10 @@ class SVCRegression(BaseEvaluator):
             classifier = SVC(C=self.C, kernel=self.kernel, degree=self.degree, gamma=self.gamma, coef0=self.coef0, shrinking=self.shirinking, probability=self.probability,
                         tol=self.tol, cache_size=self.cache_size, class_weight=self.class_weight, verbose=self.verbose, max_iter=self.max_iter, 
                         decision_function_shape=self.decision_function_shape,random_state=self.random_state)
-        classifier.fit(embs[train_mask].detach().cpu().numpy(), labels[train_mask].detach().cpu().numpy())
+        classifier.fit(embs[train_mask], labels[train_mask])
 
-        val_accs.append(accuracy_score(labels[val_mask].detach().cpu().numpy(), classifier.predict(embs[val_mask].detach().cpu().numpy())))
-        test_accs.append(accuracy_score(labels[test_mask].detach().cpu().numpy(), classifier.predict(embs[test_mask].detach().cpu().numpy())))
+        val_accs.append(accuracy_score(labels[val_mask], classifier.predict(embs[val_mask])))
+        test_accs.append(accuracy_score(labels[test_mask], classifier.predict(embs[test_mask])))
     
         return np.mean(val_accs), np.mean(test_accs)
     

@@ -61,10 +61,12 @@ class RandomForestClassifier(BaseEvaluator):
         TODO: maybe we need to return something.
         """
         val_accs, test_accs = [], []
+        embs, labels = embs.detach().cpu().numpy(), dataset.y.detach().cpu().numpy()
 
         for n in range(self.n_run):
             n_splits, train_mask, val_mask, test_mask = process_split(dataset=dataset)
             test_mask = dataset.test_mask
+            train_mask, val_mask, test_mask = train_mask.detach().cpu().numpy(), val_mask.detach().cpu().numpy(), test_mask.detach().cpu().numpy()
             for i in range(n_splits):
                 train_msk = train_mask[i]
                 val_msk = val_mask[i]
@@ -72,7 +74,7 @@ class RandomForestClassifier(BaseEvaluator):
                 test_msk = test_mask if len(test_mask.shape) == 1 else test_mask[i]
 
                 val_acc, test_acc = self.single_run(
-                    embs=embs, labels=dataset.y, train_mask=train_msk, val_mask=val_msk, test_mask=test_msk)
+                    embs=embs, labels=labels, train_mask=train_msk, val_mask=val_msk, test_mask=test_msk)
 
                 val_accs.append(val_acc * 100)
                 test_accs.append(test_acc * 100)
@@ -88,7 +90,7 @@ class RandomForestClassifier(BaseEvaluator):
 
     def single_run(self, embs, labels, train_mask, val_mask, test_mask) -> (np.ndarray, np.ndarray):
         val_accs, test_accs = [], []
-        emb_dim, num_class = embs.shape[1], labels.unique().shape[0]
+        # emb_dim, num_class = embs.shape[1], labels.unique().shape[0]
 
         # embs, labels = embs.detach().cpu().numpy(), labels.detach().cpu().numpy()
         if self.search:
@@ -100,10 +102,10 @@ class RandomForestClassifier(BaseEvaluator):
             classifier = rf_cl(n_estimators=self.n_estimators, criterion=self.criterion, max_depth=self.max_depth, min_samples_split=self.min_samples_split, min_samples_leaf=self.min_samples_leaf, min_weight_fraction_leaf=self.min_weight_fraction_leaf, 
                                                 max_features=self.max_features, max_leaf_nodes=self.max_leaf_nodes, min_impurity_decrease=self.min_impurity_decrease, bootstrap=self.bootstrap, oob_score=self.obb_score, 
                                                 n_jobs=self.n_jobs, random_state=self.random_state, verbose=self.verbose, warm_start=self.warm_start, class_weight=self.class_weight)
-        classifier.fit(embs[train_mask].detach().cpu().numpy(), labels[train_mask].detach().cpu().numpy())
+        classifier.fit(embs[train_mask], labels[train_mask])
 
-        val_accs.append(accuracy_score(labels[val_mask].detach().cpu().numpy(), classifier.predict(embs[val_mask].detach().cpu().numpy())))
-        test_accs.append(accuracy_score(labels[test_mask].detach().cpu().numpy(), classifier.predict(embs[test_mask].detach().cpu().numpy())))
+        val_accs.append(accuracy_score(labels[val_mask], classifier.predict(embs[val_mask])))
+        test_accs.append(accuracy_score(labels[test_mask], classifier.predict(embs[test_mask])))
     
         return np.mean(val_accs), np.mean(test_accs)
     
