@@ -4,6 +4,7 @@ from torch_geometric.loader import DataLoader
 from src.methods import BaseMethod
 from .base import BaseTrainer
 from .utils import EarlyStopper
+
 from typing import Union
 
 
@@ -39,6 +40,7 @@ class SimpleTrainer(BaseTrainer):
         new_loader = self.method.apply_data_augment_offline(self.data_loader)
         if new_loader != None:
             self.data_loader = new_loader
+
         for epoch in range(self.n_epochs):
             start_time = time.time()
 
@@ -47,7 +49,6 @@ class SimpleTrainer(BaseTrainer):
                 self.optimizer.zero_grad()
 
                 loss = self.method(data)
-
                 loss.backward()
                 self.optimizer.step()
 

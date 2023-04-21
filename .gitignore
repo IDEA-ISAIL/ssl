@@ -141,3 +141,4 @@ ckpt*/
 # others
 results/
 .vscode/
+pyg_data/

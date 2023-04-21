@@ -48,3 +48,4 @@ Note: The performance of DGI on Cora can be reproduced by using the `spectral` c
 ### 2023.04.04: Add evaluation & the 1st overall framework test. <span style="color:blue">``v0.2.1``</span>
 1. Add AugmentDataLoader, enable offline graph augmentation and put the function to 'src/loader/augment_data_loader.py'.
 2. Generalize the training process to simple_trainer and put it to 'src/trainer/simple_trainer.py'.
+

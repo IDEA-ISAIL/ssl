@@ -30,7 +30,6 @@ class Encoder(torch.nn.Module):
 
 encoder = Encoder(in_channels=1433, hidden_channels=512)
 method = DGI(encoder=encoder, hidden_channels=512)
-
 # method = DGI2(encoder=encoder, hidden_channels=512)
 
 # ------------------ Trainer --------------------
