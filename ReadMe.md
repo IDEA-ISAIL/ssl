@@ -75,7 +75,7 @@
 * [SGCL: Contrastive Representation Learning for Signed Graphs, CIKM'2021](https://dl.acm.org/doi/pdf/10.1145/3459637.3482478), no public code
 
 ## Molecure
-* InfoGraph:[InfoGraph: Unsupervised and Semi-supervised Graph-Level Representation Learning via Mutual Information Maximization](https://openreview.net/pdf?id=r1lfF2NYvH), [(Github)](https://github.com/sunfanyunn/InfoGraph)[lecheng]
+* InfoGraph: [InfoGraph: Unsupervised and Semi-supervised Graph-Level Representation Learning via Mutual Information Maximization](https://openreview.net/pdf?id=r1lfF2NYvH), [(Github)](https://github.com/sunfanyunn/InfoGraph)[lecheng]
 * JOAO
 * GraphMAE
 
