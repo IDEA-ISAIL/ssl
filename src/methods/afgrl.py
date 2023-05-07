@@ -6,12 +6,13 @@ from src.loader import Loader, FullLoader
 from .base import BaseMethod
 from torch_geometric.nn.models import GCN
 from torch_geometric.typing import *
-
+from torch_geometric.nn import GCNConv
 import copy
 from .utils import EMA, update_moving_average
 import torch.nn.functional as F
 from src.loader import AugmentDataLoader
 import torch.nn as nn
+
 
 class AFGRL(BaseMethod):
     r"""The full model to train the encoder.
@@ -74,13 +75,39 @@ def set_requires_grad(model, val):
     for p in model.parameters():
         p.requires_grad = val
 
-class AFGRLEncoder(torch.nn.Module):
+
+class AFGRLEncoder(nn.Module):
+
+    def __init__(self, in_channel, hidden_channels, **kwargs):
+        super().__init__()
+        self.hidden_channels = hidden_channels[-1]
+        self.conv1 = GCNConv(in_channel, hidden_channels[0])
+        self.bn1 = nn.BatchNorm1d(hidden_channels[0], momentum = 0.01)
+        self.prelu1 = nn.PReLU()
+        self.num_layer = len(hidden_channels)
+        self.conv_list, self.bn_list, self.act_list = nn.ModuleList([]), nn.ModuleList([]), nn.ModuleList([])
+        for i in range(self.num_layer-1):
+            self.conv_list.append(GCNConv(hidden_channels[i],hidden_channels[i+1]))
+            self.bn_list.append(nn.BatchNorm1d(hidden_channels[i+1], momentum = 0.01))
+            self.act_list.append(nn.PReLU())
+
+    def forward(self, data, edge_index, edge_weight=None):
+        x = data.x
+        x = self.conv1(x, edge_index, edge_weight=edge_weight)
+        x = self.prelu1(self.bn1(x))
+        for i in range(self.num_layer-1):
+            x = self.conv_list[i](x, edge_index, edge_weight=edge_weight)
+            x = self.act_list[i](self.bn_list[i](x))
+        return x
+    
+
+class AFGRLEncoder_old(torch.nn.Module):
     def __init__(self,
                  in_channels: int,
                  hidden_channels: int = 512,
                  act: torch.nn = torch.nn.PReLU(),
                  num_layers=1):
-        super(AFGRLEncoder, self).__init__()
+        super(AFGRLEncoder_old, self).__init__()
         self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=act)
         self.act = act
         self.hidden_channels = hidden_channels

@@ -7,7 +7,7 @@ from .utils import EarlyStopper
 from typing import Union
 import numpy as np
 from src.methods.utils import EMA, update_moving_average
-
+from src.evaluation import LogisticRegression
 class SimpleTrainer(BaseTrainer):
     r"""
     TODO: 1. Add descriptions.
@@ -23,14 +23,15 @@ class SimpleTrainer(BaseTrainer):
                  device: Union[str, int] = "cuda:0",
                  use_ema: bool = False,
                  moving_average_decay: float = 0.9,
-                 save_root: str = "./ckpt"):
+                 save_root: str = "./ckpt",
+                 dataset=None):
         super().__init__(method=method,
                          data_loader=data_loader,
                          save_root=save_root,
                          device=device)
 
-        self.optimizer = torch.optim.Adam(self.method.parameters(), lr, weight_decay=weight_decay)
-
+        self.optimizer = torch.optim.AdamW(self.method.parameters(), lr, weight_decay=weight_decay)
+        self.dataset = dataset
         self.n_epochs = n_epochs
         self.patience = patience
         self.device = device
@@ -64,6 +65,12 @@ class SimpleTrainer(BaseTrainer):
 
             end_time = time.time()
             info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
+            if epoch%50==0:
+                self.method.eval()
+                data_pyg = self.dataset.data.to(self.method.device)
+                embs = self.method.get_embs(data_pyg, data_pyg.edge_index).detach()
+                lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=50, device=self.device)
+                lg(embs=embs, dataset=data_pyg)
             print(info)
             self.early_stopper.update(loss)  # update the status
             if self.early_stopper.save:

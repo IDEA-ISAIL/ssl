@@ -3,7 +3,7 @@ import torch
 import numpy as np
 from .base import Augmentor
 class NeighborSearch_AFGRL(Augmentor):
-    def __init__(self, device="cuda", num_centroids=20, num_kmeans=5, clus_num_iters=20):
+    def __init__(self, device="cuda", num_centroids=100, num_kmeans=5, clus_num_iters=20):
         super(NeighborSearch_AFGRL, self).__init__()
         self.device = device
         self.num_centroids = num_centroids

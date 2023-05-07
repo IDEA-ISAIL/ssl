@@ -11,6 +11,7 @@ from torch_geometric.typing import *
 import torch.nn.functional as F
 from src.loader import AugmentDataLoader
 import torch.nn as nn
+from torch_geometric.nn import GCNConv
 
 def loss_fn(x, y):
     x = F.normalize(x, dim=-1, p=2)
@@ -35,14 +36,16 @@ class BGRL(BaseMethod):
         encoder (torch.nn.Module): the encoder to be trained.
         discriminator (torch.nn.Module): the discriminator for contrastive learning.
     """
-    def __init__(self, student_encoder: torch.nn.Module, teacher_encoder: torch.nn.Module, data_augment = None):
+    def __init__(self, student_encoder: torch.nn.Module, teacher_encoder: torch.nn.Module, data_augment = None, pred_dim=None):
         super().__init__(encoder=student_encoder, data_augment=data_augment, loss_function=loss_fn)
         self.encoder = student_encoder
         self.teacher_encoder = teacher_encoder
         set_requires_grad(self.teacher_encoder, False)
         rep_dim = self.encoder.hidden_channels
-        pred_hid = rep_dim*2
-        self.student_predictor = nn.Sequential(nn.Linear(rep_dim, pred_hid), nn.PReLU(), nn.Linear(pred_hid, rep_dim))
+        if pred_dim==None:
+            pred_dim = rep_dim*2
+        # self.student_predictor = nn.Sequential(nn.Linear(rep_dim, pred_dim), nn.PReLU(), nn.Linear(pred_dim, rep_dim))
+        self.student_predictor = nn.Sequential(nn.Linear(rep_dim, rep_dim))
         self.student_predictor.apply(init_weights)
 
     # def forward(self, x1: Tensor, x2: Tensor, adj1: Adj, adj2: Adj, is_sparse: bool = True):
@@ -73,15 +76,41 @@ class BGRL(BaseMethod):
         new_loader = AugmentDataLoader(batch_list=batch_list)
         return new_loader
 
-class BGRLEncoder(torch.nn.Module):
+
+class BGRLEncoder(nn.Module):
+
+    def __init__(self, in_channel, hidden_channels, **kwargs):
+        super().__init__()
+        self.hidden_channels = hidden_channels[-1]
+        self.conv1 = GCNConv(in_channel, hidden_channels[0])
+        self.bn1 = nn.BatchNorm1d(hidden_channels[0], momentum = 0.01)
+        self.prelu1 = nn.PReLU()
+        self.num_layer = len(hidden_channels)
+        self.conv_list, self.bn_list, self.act_list = nn.ModuleList([]), nn.ModuleList([]), nn.ModuleList([])
+        for i in range(self.num_layer-1):
+            self.conv_list.append(GCNConv(hidden_channels[i],hidden_channels[i+1]))
+            self.bn_list.append(nn.BatchNorm1d(hidden_channels[i+1], momentum = 0.01))
+            self.act_list.append(nn.PReLU())
+
+    def forward(self, data, edge_index, edge_weight=None):
+        x = data.x
+        x = self.conv1(x, edge_index, edge_weight=edge_weight)
+        x = self.prelu1(self.bn1(x))
+        for i in range(self.num_layer-1):
+            x = self.conv_list[i](x, edge_index, edge_weight=edge_weight)
+            x = self.act_list[i](self.bn_list[i](x))
+        return x
+
+
+class BGRLEncoder_old(torch.nn.Module):
     def __init__(self,
-                 in_channels: int,
+                 in_channel: int,
                  hidden_channels: int = 512,
                  act: torch.nn = torch.nn.PReLU(),
                  num_layers=1):
-        super(BGRLEncoder, self).__init__()
+        super(BGRLEncoder_old, self).__init__()
         self.hidden_channels=hidden_channels
-        self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=act)
+        self.gcn = GCN(in_channels=in_channel, hidden_channels=hidden_channels, num_layers=num_layers, act=act)
         self.act = act
         for m in self.modules():
             self._weights_init(m)
