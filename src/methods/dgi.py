@@ -34,6 +34,7 @@ class DGI(BaseMethod):
         self.sigmoid = torch.nn.Sigmoid()
 
     def forward(self, batch):
+        batch = batch.to(self.device)
         batch2 = self.data_augment(batch).to(self._device)
 
         h_pos = self.encoder(batch)

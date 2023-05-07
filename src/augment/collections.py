@@ -11,6 +11,7 @@ from .random_drop_node import RandomDropNode
 from .random_mask import RandomMask
 from .random_drop_edge import RandomDropEdge
 from .negative import ComputePPR, ComputeHeat, NeighborSearch_AFGRL
+
 from .shuffle_node import ShuffleNode
 
 __all__ = [
