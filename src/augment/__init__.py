@@ -6,6 +6,7 @@ from .augment_subgraph import AugmentSubgraph
 from .random_drop_node import RandomDropNode
 from .random_mask import RandomMask
 from .random_drop_edge import RandomDropEdge
+from .diff_matrix import ComputeHeat, ComputePPR
 
 
 # __all__ = [

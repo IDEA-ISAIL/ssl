@@ -35,7 +35,7 @@ method.augment_type = aug_type
 
 
 # ------------------ Trainer --------------------
-trainer = SimpleTrainer(method=method, data_loader=data_loader, device="cuda:0")
+trainer = SimpleTrainer(method=method, data_loader=data_loader, device="cpu")
 trainer.train()
 
 

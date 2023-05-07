@@ -6,6 +6,7 @@ from src.typing import AugmentType
 from .utils import AvgReadout
 from src.losses import NegativeMI
 from src.loader import AugmentDataLoader
+import torch
 
 
 class GraphCL(BaseMethod):
