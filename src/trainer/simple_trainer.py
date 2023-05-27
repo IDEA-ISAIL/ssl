@@ -4,7 +4,6 @@ from torch_geometric.loader import DataLoader
 from src.methods import BaseMethod
 from .base import BaseTrainer
 from .utils import EarlyStopper
-
 from typing import Union
 
 
@@ -21,26 +20,33 @@ class SimpleTrainer(BaseTrainer):
                  n_epochs: int = 10000,
                  patience: int = 50,
                  device: Union[str, int] = "cuda:0",
-                 save_root: str = "./ckpt"):
+                 save_root: str = "./ckpt", config=None):
         super().__init__(method=method,
                          data_loader=data_loader,
                          save_root=save_root,
                          device=device)
+        if config:
+            self.optimizer = torch.optim.Adam(self.method.parameters(), lr, weight_decay=config.optim.weight_decay)
 
-        self.optimizer = torch.optim.Adam(self.method.parameters(), lr, weight_decay=weight_decay)
+            self.n_epochs = n_epochs
+            self.patience = patience
+            self.device = device
 
-        self.n_epochs = n_epochs
-        self.patience = patience
-        self.device = device
+            self.early_stopper = EarlyStopper(patience=self.patience)
+        else:
+            self.optimizer = torch.optim.Adam(self.method.parameters(), lr, weight_decay=weight_decay)
 
-        self.early_stopper = EarlyStopper(patience=self.patience)
+            self.n_epochs = n_epochs
+            self.patience = patience
+            self.device = device
+
+            self.early_stopper = EarlyStopper(patience=self.patience)
 
     def train(self):
         self.method = self.method.to(self.device)
         new_loader = self.method.apply_data_augment_offline(self.data_loader)
         if new_loader != None:
             self.data_loader = new_loader
-
         for epoch in range(self.n_epochs):
             start_time = time.time()
 
@@ -49,6 +55,7 @@ class SimpleTrainer(BaseTrainer):
                 self.optimizer.zero_grad()
 
                 loss = self.method(data)
+
                 loss.backward()
                 self.optimizer.step()
 
