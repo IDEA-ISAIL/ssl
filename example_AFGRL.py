@@ -22,7 +22,7 @@ data_name = "photo"
 # dataset = Amazon(root="pyg_data", name="Photo", pre_transform=pre_transforms)
 # dataset = WikiCS(root="pyg_data", pre_transform=pre_transforms, is_undirected=False)
 
-dataset = Dataset(root="data", name=data_name)
+dataset = Dataset(root="data_", name=data_name)
 if not hasattr(dataset, "adj_t"):
     data = dataset.data
     dataset.data.adj_t = torch.sparse.FloatTensor(data.edge_index, torch.ones_like(data.edge_index[0]), [data.x.shape[0], data.x.shape[0]])

@@ -15,7 +15,7 @@ class RandomDropEdge(Augmentor):
     def __call__(self, data: HomoData, drop_percent=None):
         drop_percent = drop_percent if drop_percent else self.drop_percent
         data_tmp = copy.deepcopy(data)
-        percent = drop_percent / 2
+        percent = self.drop_percent / 2
         row_idx, col_idx = data.x.nonzero().T
 
         index_list = []

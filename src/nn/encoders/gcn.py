@@ -55,6 +55,4 @@ class GCN(torch.nn.Module):
         out = self.out_fc(h)
         out = F.log_softmax(out, dim=1)
         return out
-
-
     

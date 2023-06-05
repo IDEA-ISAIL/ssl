@@ -10,8 +10,7 @@ from .augment_subgraph import AugmentSubgraph
 from .random_drop_node import RandomDropNode
 from .random_mask import RandomMask
 from .random_drop_edge import RandomDropEdge
-from .augment_afgrl import NeighborSearch_AFGRL
-from .negative import ComputePPR, ComputeHeat
+from .negative import ComputePPR, ComputeHeat, NeighborSearch_AFGRL
 from .shuffle_node import ShuffleNode
 
 __all__ = [

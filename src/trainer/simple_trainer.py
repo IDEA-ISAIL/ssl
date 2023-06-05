@@ -29,6 +29,8 @@ class SimpleTrainer(BaseTrainer):
                          data_loader=data_loader,
                          save_root=save_root,
                          device=device)
+        if config:
+            self.optimizer = torch.optim.Adam(self.method.parameters(), lr, weight_decay=config.optim.weight_decay)
 
         self.optimizer = torch.optim.AdamW(self.method.parameters(), lr, weight_decay=weight_decay)
         self.dataset = dataset
