@@ -29,8 +29,8 @@ class SimpleTrainer(BaseTrainer):
                          data_loader=data_loader,
                          save_root=save_root,
                          device=device)
-        if config:
-            self.optimizer = torch.optim.Adam(self.method.parameters(), lr, weight_decay=config.optim.weight_decay)
+        # if config:
+        #     self.optimizer = torch.optim.Adam(self.method.parameters(), lr, weight_decay=config.optim.weight_decay)
 
         self.optimizer = torch.optim.AdamW(self.method.parameters(), lr, weight_decay=weight_decay)
         self.dataset = dataset
@@ -67,11 +67,11 @@ class SimpleTrainer(BaseTrainer):
 
             end_time = time.time()
             info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
-            if epoch%50==0:
+            if epoch%200==0:
                 self.method.eval()
                 data_pyg = self.dataset.data.to(self.method.device)
                 embs = self.method.get_embs(data_pyg, data_pyg.edge_index).detach()
-                lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=50, device=self.device)
+                lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=20, device=self.device)
                 lg(embs=embs, dataset=data_pyg)
             print(info)
             self.early_stopper.update(loss)  # update the status
