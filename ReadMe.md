@@ -59,7 +59,7 @@
 
 ## Heterogeneous/Multiplex/Multiview
 * [Unsupervised Attributed Multiplex Network Embedding, AAAI'2020](https://arxiv.org/pdf/1911.06750.pdf), [(Github)](https://github.com/pcy1302/DMGI)
-* [Contrastive Multi-View Representation Learning on Graphs, ICML'2020](https://arxiv.org/pdf/2006.05582.pdf), [(Github)](https://github.com/kavehhassani/mvgrl)
+* [Contrastive Multi-View Representation Learning on Graphs, ICML'2020](https://arxiv.org/pdf/2006.05582.pdf), [(Github)](https://github.com/kavehhassani/mvgrl) [Dongqi]
 * [Self-supervised Heterogeneous Graph Neural Network with Co-contrastive Learning, KDD'2021](https://arxiv.org/pdf/2105.09111.pdf), [(Github)](https://github.com/liun-online/HeCo)
 * [Multi-view Contrastive Graph Clustering, NeurIPS'2021](https://proceedings.neurips.cc/paper/2021/file/10c66082c124f8afe3df4886f5e516e0-Paper.pdf), [(Github)](https://github.com/Panern/MCGC)
 
