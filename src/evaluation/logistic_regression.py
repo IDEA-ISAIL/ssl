@@ -34,7 +34,7 @@ class LogisticRegression(BaseEvaluator):
                 train_msk = train_mask[i]
                 val_msk = val_mask[i]
                 # some datasets (e.g., wikics) with multiple splits only has one test mask
-                test_msk = test_mask if len(test_mask) == 1 else test_mask[i]
+                test_msk = test_mask if len(test_mask.shape) == 1 else test_mask[i]
 
                 val_acc, test_acc = self.single_run(
                     embs=embs, labels=dataset.y, train_mask=train_msk, val_mask=val_msk, test_mask=test_msk)
@@ -106,26 +106,6 @@ def process_split(dataset):
     r"""If the dataset only has one split, then add an additional dimension to the train_mask and val_mask.
         If the dataset has multiple splits, then return the number of splits, original train_mask and val_mask.
     """
-    if not hasattr(dataset, 'train_mask'):
-        from sklearn.model_selection import StratifiedKFold
-        kf = StratifiedKFold(n_splits=10, shuffle=True, random_state=0)
-        dataset.train_mask = []
-        dataset.val_mask = []
-        dataset.test_mask = []
-        for train_index, test_index in kf.split(dataset.x.cpu(), dataset.y.cpu()):
-            # train_mask = torch.zeros_like(dataset.y, device=dataset.y.device)
-            # test_mask = torch.zeros_like(dataset.y, device=dataset.y.device)
-            # train_mask[train_index] = 1
-            # test_mask[test_index] = 1
-            # dataset.train_mask.append(train_mask)
-            # dataset.test_mask.append(test_mask)
-            # dataset.val_mask.append(train_mask)
-            dataset.train_mask.append(torch.LongTensor(train_index))
-            dataset.test_mask.append(torch.LongTensor(test_index))
-            dataset.val_mask.append(torch.LongTensor(train_index))
-        dataset.train_mask = torch.stack(dataset.train_mask, dim=0)
-        dataset.test_mask = torch.stack(dataset.test_mask, dim=0)
-        dataset.val_mask = torch.stack(dataset.val_mask, dim=0)
     train_mask = dataset.train_mask
     val_mask = dataset.val_mask
     test_mask = dataset.test_mask
