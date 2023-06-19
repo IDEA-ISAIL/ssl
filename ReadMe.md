@@ -48,7 +48,7 @@
 ](https://arxiv.org/abs/2010.14945), [(Github)](https://github.com/CRIPAC-DIG/GCA) [Dongqi]
 * AD-GCL: [Adversarial Graph Augmentation to Improve Graph Contrastive Learning github](https://openreview.net/forum?id=ioyq7NsR1KJ), [(Github)](https://github.com/susheels/adgcl)
 * JOAO: [Graph Contrastive Learning Automated](https://proceedings.mlr.press/v139/you21a.html), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)
-* SUGRL: [SUGRL: Simple Unsupervised Graph Representation Learning](https://ojs.aaai.org/index.php/AAAI/article/view/20748),[(Github)](https://github.com/YujieMo/SUGRL)
+* SUGRL: [SUGRL: Simple Unsupervised Graph Representation Learning](https://ojs.aaai.org/index.php/AAAI/article/view/20748),[(Github)](https://github.com/YujieMo/SUGRL) [Zhichen]
 * MERIT: [Multi-scale contrastive siamese networks for self-supervised graph representation learning](https://www.ijcai.org/proceedings/2021/0204.pdf), [(Github)](https://github.com/GRAND-Lab/MERIT)
 
 ### non-contrastive
