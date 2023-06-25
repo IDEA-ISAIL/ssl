@@ -6,8 +6,9 @@ from src.typing import AugmentType
 from .utils import AvgReadout
 from src.losses import NegativeMI
 from src.loader import AugmentDataLoader
-from torch_geometric.nn.models import GCN
 from torch_geometric.nn import GCNConv
+import torch
+
 
 torch.manual_seed(0)
 np.random.seed(0)
@@ -128,7 +129,7 @@ class GraphCLEncoder(torch.nn.Module):
 
     def forward(self, batch, edge_index, is_sparse=True):
         x = batch.x
-        adj = batch.adj_t.to_dense()
+        adj = batch.adj_t.to_dense().to(x.device)
         seq_fts = self.fc(x)
         if is_sparse:
             out = torch.mm(adj, torch.squeeze(seq_fts, 0))
