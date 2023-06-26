@@ -51,7 +51,7 @@
 
 ### non-contrastive
 * BGRL: [Large-Scale Representation Learning on Graphs via Bootstrapping
-](https://arxiv.org/abs/2102.06514), [(Github)](https://github.com/Namkyeong/BGRL_Pytorch)
+](https://arxiv.org/abs/2102.06514), [(Github)](https://github.com/Namkyeong/BGRL_Pytorch) [Tianxin]
 * AFGRL: [Augmentation-Free Self-Supervised Learning on Graphs
 ](https://arxiv.org/abs/2112.02472), [(Github)](https://github.com/Namkyeong/AFGRL) [Tianxin]
 
