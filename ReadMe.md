@@ -74,7 +74,8 @@
 
 ## Molecure
 * InfoGraph: [InfoGraph: Unsupervised and Semi-supervised Graph-Level Representation Learning via Mutual Information Maximization](https://openreview.net/pdf?id=r1lfF2NYvH), [(Github)](https://github.com/sunfanyunn/InfoGraph)[lecheng]
-* AD-GCL: [Adversarial Graph Augmentation to Improve Graph Contrastive Learning github](https://openreview.net/forum?id=ioyq7NsR1KJ), [(Github)](https://github.com/susheels/adgcl)
+* GraphCL: [Graph Contrastive Learning with Augmentations](https://proceedings.nips.cc/paper/2020/file/3fe230348e9a12c13120749e3f9fa4cd-Paper.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL) [Lecheng]
+* AD-GCL: [Adversarial Graph Augmentation to Improve Graph Contrastive Learning github](https://openreview.net/forum?id=ioyq7NsR1KJ), [(Github)](https://github.com/susheels/adgcl)[Tianxin]
 * JOAO [Graph Contrastive Learning Automated](https://proceedings.mlr.press/v139/you21a.html), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)  [Tianxin]
 * GraphMAE [GraphMAE: Self-Supervised Masked Graph Autoencoders](https://arxiv.org/pdf/2205.10803.pdf)[(Github)(https://github.com/THUDM/GraphMAE)] [lecheng]
 
