@@ -4,6 +4,7 @@ from .dgi import DGI
 # from .afgrl import AFGRL
 # from .mvgrl import MVGRL
 from .graphcl import GraphCL, GraphCLEncoder
+from .sugrl import SUGRL, SugrlGCN, SugrlMLP
 
 
 # __all__ = [

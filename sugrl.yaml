@@ -1,0 +1,103 @@
+dataset: "wikics"
+
+
+black_list: []
+lr: 0.01
+out_heads: 8
+task_type: Node_Transductive
+val_interval: 1
+num_hidden_features: 8
+
+l2_lambda: 0.0005
+epochs: 1000
+w_loss1: 20
+w_loss2: 20
+w_loss3: 1
+margin1: 0.5
+margin2: 0.5
+NewATop: 5
+dim: 128
+dim_x: 4
+NN: 3
+cfg : [512, 128]
+num1: 200
+wd: 0.01
+weight_decay: 0.0001
+dropout: 0.4
+
+
+
+# dataset: "coauthor"
+
+# black_list: [4,5,6]
+# lr: 0.01
+# out_heads: 1
+# task_type: Node_Transductive
+# val_interval: 1
+# num_hidden_features: 8
+# epochs: 500
+# to_undirected_at_neg: True
+# epochs: 1000
+# w_loss1: 100
+# w_loss2: 100
+# w_loss3: 1
+# margin1: 0.9
+# margin2: 0.9
+# dim: 128
+# cfg: [512, 128]
+# NewATop: 0
+# dropout: 0.1
+# NN: 1
+# num1: 200
+# wd: 0.0
+# weight_decay: 0.0001
+
+# dataset: "photo"
+
+# black_list: [4,5,6]
+# lr: 0.01
+# out_heads: 1
+# task_type: Node_Transductive
+# val_interval: 1
+# num_hidden_features: 8
+# epochs: 500
+# to_undirected_at_neg: True
+# epochs: 1000
+# w_loss1: 100
+# w_loss2: 100
+# w_loss3: 1
+# margin1: 0.9
+# margin2: 0.9
+# dim: 128
+# cfg: [512, 128]
+# NewATop: 0
+# dropout: 0.1
+# NN: 1
+# num1: 200
+# wd: 0.0
+# weight_decay: 0.0001
+
+# dataset: "wikics"
+
+# black_list: [4,5,6]
+# lr: 0.01
+# out_heads: 1
+# task_type: Node_Transductive
+# val_interval: 1
+# num_hidden_features: 8
+# epochs: 500
+# to_undirected_at_neg: True
+# epochs: 1000
+# w_loss1: 100
+# w_loss2: 100
+# w_loss3: 2
+# margin1: 0.4
+# margin2: 0.6
+# dim: 128
+# cfg: [512, 128]
+# NewATop: 0
+# dropout: 0.1
+# NN: 5
+# num1: 300
+# wd: 0.0
+# weight_decay: 0.0001
