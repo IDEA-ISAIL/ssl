@@ -27,11 +27,11 @@ data_name = config['dataset']
 
 if data_name=="cora":
     dataset = Planetoid(root="pyg_data", name="cora", pre_transform=pre_transforms)
-if data_name=="photo":
+if data_name=="photo": #92.9267
     dataset = Amazon(root="pyg_data", name="photo", pre_transform=pre_transforms) 
-elif data_name=="coauthor":
+elif data_name=="coauthor": # 92.0973
     dataset = Coauthor(root="pyg_data", name='cs', transform=pre_transforms)
-elif data_name=="wikics":
+elif data_name=="wikics": #82.0109
     dataset = WikiCS(root="pyg_data", transform=T.NormalizeFeatures())
     dataset = add_adj_t(dataset)
     nan_mask = torch.isnan(dataset[0].x)
