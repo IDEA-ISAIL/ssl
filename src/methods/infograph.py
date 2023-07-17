@@ -99,6 +99,7 @@ class Encoder(torch.nn.Module):
         self.num_layers = num_layers
         self.convs = torch.nn.ModuleList()
         self.bns = torch.nn.ModuleList()
+        self.in_channels = in_channels
 
         for i in range(num_layers):
             if i:
@@ -115,6 +116,8 @@ class Encoder(torch.nn.Module):
 
     def forward(self, data):
         x = data.x
+        if x is None:
+            x = torch.ones((data.num_nodes, self.in_channels)).to(data.y.device)
         edge_index = data.edge_index
         batch = data.batch
         xs = []

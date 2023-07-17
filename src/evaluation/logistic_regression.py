@@ -34,7 +34,7 @@ class LogisticRegression(BaseEvaluator):
                 train_msk = train_mask[i]
                 val_msk = val_mask[i]
                 # some datasets (e.g., wikics) with multiple splits only has one test mask
-                test_msk = test_mask if len(test_mask) == 1 else test_mask[i]
+                test_msk = test_mask if type(test_mask) == torch.Tensor and len(test_mask.shape) == 1 else test_mask[i]
                 val_acc, test_acc = self.single_run(
                     embs=embs, labels=dataset.y, train_mask=train_msk, val_mask=val_msk, test_mask=test_msk)
 
@@ -121,11 +121,14 @@ def process_split(dataset):
     train_mask = dataset.train_mask
     val_mask = dataset.val_mask
     test_mask = dataset.test_mask
-    if len(dataset.train_mask.shape) > 1:
+    if type(train_mask) == torch.Tensor and len(train_mask.shape) > 1:
         n_splits = dataset.train_mask.shape[0]
+    elif type(dataset.train_mask) == list and len(dataset.train_mask) > 1:
+        n_splits = len(dataset.train_mask)
     else:
         n_splits = 1
         train_mask = torch.unsqueeze(dataset.train_mask, 0)
         val_mask = torch.unsqueeze(dataset.val_mask, 0)
         test_mask = torch.unsqueeze(dataset.test_mask, 0)
     return n_splits, train_mask, val_mask, test_mask
+

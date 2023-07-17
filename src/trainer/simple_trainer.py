@@ -56,6 +56,16 @@ class SimpleTrainer(BaseTrainer):
             info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
             print(info)
 
+            # # ------------------ Evaluator -------------------
+            # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            # data_pyg = self.data_loader.dataset.data.to(device)
+            # y, embs = self.method.get_embs(self.data_loader)
+            # data_pyg.x = embs
+            # from src.evaluation import LogisticRegression
+            # lg = LogisticRegression(lr=0.001, weight_decay=0, max_iter=100, n_run=1, device=device)
+            # lg(embs=embs, dataset=data_pyg)
+
+
             self.early_stopper.update(loss)  # update the status
             if self.early_stopper.save:
                 self.save()
@@ -69,3 +79,8 @@ class SimpleTrainer(BaseTrainer):
             return f(batch)
         else:
             return batch.to(self.device)
+
+    def check_dataloader(self, dataloader):
+        assert hasattr(dataloader, 'x'), 'The dataset does not have attributes x.'
+        # assert hasattr(dataloader, 'train_mask'), 'T'
+        # return 0
