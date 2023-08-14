@@ -1,7 +1,10 @@
 import torch
+import numpy as np
 from torch_geometric.loader import DataLoader
 
-from src.datasets import Planetoid, DBLP
+from torch_geometric.data.datapipes import functional_transform
+from torch_geometric.transforms import BaseTransform
+from src.datasets import DBLP
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.methods import HeCo, Sc_encoder, Mp_encoder
 from src.trainer import SimpleTrainer
@@ -9,14 +12,26 @@ from src.evaluation import LogisticRegression
 
 import pdb
 
+# Transform of heterogeneous dataset needs to be written dataset-specifically, since the attribute names might differ.
+# ----------------- Transform ------------------
+@functional_transform('heco_transform_ssl')
+class HeCoTransform(BaseTransform):
+
+    def __init__(self):
+        pass
+
+    def __call__(self, data):
+        data['try'] = np.ones(2)
+        return data
+
+
+
 
 # -------------------- Data --------------------
-# TODO: only Heterogeneous transforms are supported by DBLP
-# pre_transforms = Compose([NormalizeFeatures(ord=1), Edge2Adj(norm=GCNNorm(add_self_loops=1))])
-dataset = DBLP(root="DBLP_data")
+dataset = DBLP(root="DBLP_data", pre_transform=HeCoTransform())
 data_loader = DataLoader(dataset)
 
-
+pdb.set_trace()
 
 
 
