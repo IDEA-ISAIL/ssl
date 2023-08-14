@@ -92,3 +92,4 @@ https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/d
 - [PyGCL](https://github.com/PyGCL/PyGCL)
 - [Solo-Learn](https://github.com/vturrisi/solo-learn)
 - [Lightly](https://github.com/lightly-ai/lightly)
+- [Faiss](https://github.com/facebookresearch/faiss)
