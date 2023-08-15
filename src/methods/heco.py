@@ -334,7 +334,7 @@ class HeCo(BaseMethod):
                  hidden_channels: int = 64,
                  feat_drop: float = 0.3,
                  attn_drop: float = 0.5,
-                 tau: float = 0.8,
+                 tau: float = 0.9,
                  lam: float = 0.5,
                  ) -> None:
         loss_function = loss_function if loss_function else Contrast(hidden_channels, tau, lam)
@@ -371,6 +371,14 @@ class HeCo(BaseMethod):
         z_sc = self.sc(h_all, nei_index)
         loss = self.loss_function(z_mp, z_sc, pos)
         return loss
+    
+
+    def get_embs(self, feats, mps):
+        for i in range(len(mps)):
+            mps[i] = mps[i].to(self.device)
+        z_mp = F.elu(self.fc_list[0](feats[0].to('cpu'))).to(self.device)
+        z_mp = self.mp(z_mp, mps)
+        return z_mp.detach()
 
 
 
