@@ -378,7 +378,7 @@ class HeCo(BaseMethod):
     def get_embs(self, feats, mps):
         for i in range(len(mps)):
             mps[i] = mps[i].to(self.device)
-        z_mp = F.elu(self.fc_list[0](feats[0].to('cpu'))).to(self.device)
+        z_mp = F.elu(self.fc_list[0](feats[0])).to(self.device)
         z_mp = self.mp(z_mp, mps)
         return z_mp.detach()
 
