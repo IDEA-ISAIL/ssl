@@ -5,12 +5,115 @@ import numpy as np
 import scipy.sparse as sp
 from .base import BaseMethod
 
+from torch_geometric.data.datapipes import functional_transform
+from torch_geometric.transforms import BaseTransform
 from .utils import AvgReadout
 from typing import Optional, Callable, Union
 
 import pdb
 
 # TODO add comment about Args
+
+
+
+
+
+
+# Dataset Transform
+# Transform of heterogeneous dataset needs to be written dataset-specifically, since the attribute names might differ.
+# ----------------- Transform ------------------
+@functional_transform('heco_transform_ssl')
+class HeCoTransform(BaseTransform):
+
+    def __init__(self):
+        pass
+
+    def __call__(self, data):
+        # load feature matrices
+        batch = data
+        type_num = [4057, 14328, 7723, 20]
+        feat_a = torch.FloatTensor(preprocess_features(sp.csr_matrix(batch['author'].x.to('cpu').numpy())))
+        feat_p = sp.eye(type_num[1])
+        feat_p = torch.FloatTensor(preprocess_features(feat_p))
+        feats = [feat_a, feat_p]
+        data['feats'] = feats
+
+        # generate meta paths
+        pa = batch['paper', 'to', 'author'].edge_index.to('cpu').numpy().T
+        pc = batch['paper', 'to', 'conference'].edge_index.to('cpu').numpy().T
+        pt = batch['paper', 'to', 'term'].edge_index.to('cpu').numpy().T
+
+        A = type_num[0]
+        P = type_num[1]
+        T = type_num[2]
+        C = type_num[3]
+
+        pa_ = sp.coo_matrix((np.ones(pa.shape[0]),(pa[:,0], pa[:, 1])),shape=(P,A)).toarray()
+        pc_ = sp.coo_matrix((np.ones(pc.shape[0]),(pc[:,0], pc[:, 1])),shape=(P,C)).toarray()
+        pt_ = sp.coo_matrix((np.ones(pt.shape[0]),(pt[:,0], pt[:, 1])),shape=(P,T)).toarray()
+
+        apa = np.matmul(pa_.T, pa_) > 0
+        apa = sp.coo_matrix(apa)
+
+        apc = np.matmul(pa_.T, pc_) > 0
+        apcpa = np.matmul(apc, apc.T) > 0
+        apcpa = sp.coo_matrix(apcpa)
+
+        apt = np.matmul(pa_.T, pt_) > 0
+        aptpa = np.matmul(apt, apt.T) > 0
+        aptpa = sp.coo_matrix(aptpa)
+
+        apa_mp = sparse_mx_to_torch_sparse_tensor(normalize_adj(apa))
+        apcpa_mp = sparse_mx_to_torch_sparse_tensor(normalize_adj(apcpa))
+        aptpa_mp = sparse_mx_to_torch_sparse_tensor(normalize_adj(aptpa))
+
+        mps = [apa_mp, apcpa_mp, aptpa_mp]
+        data['mps'] = mps
+
+        # generate positive set
+        pos_num = 1000
+        p = A
+        apa = apa/apa.sum(axis=-1).reshape(-1, 1)
+        apcpa = apcpa/apcpa.sum(axis=-1).reshape(-1, 1)
+        aptpa = aptpa/aptpa.sum(axis=-1).reshape(-1, 1)
+        all = (apa + apcpa + aptpa).A.astype("float32")
+
+        pos = np.zeros((p,p))
+        k=0
+        for i in range(len(all)):
+            one = all[i].nonzero()[0]
+            if len(one) > pos_num:
+                oo = np.argsort(-all[i, one])
+                sele = one[oo[:pos_num]]
+                pos[i, sele] = 1
+                k+=1
+            else:
+                pos[i, one] = 1
+        pos = sp.coo_matrix(pos)
+        pos = sparse_mx_to_torch_sparse_tensor(pos)
+        data['pos'] = pos
+
+        # generate neighboring information
+        pa2 = batch['paper', 'to', 'author'].edge_index.to('cpu').numpy().T
+        a_n = {}
+        for i in pa2:
+            if i[1] not in a_n:
+                a_n[int(i[1])]=[]
+                a_n[int(i[1])].append(int(i[0]))
+            else:
+                a_n[int(i[1])].append(int(i[0]))
+            
+        keys =  sorted(a_n.keys())
+        a_n = [a_n[i] for i in keys]
+        a_m = []
+        for i in a_n:
+            a_m.append(np.array(i, dtype=np.int64))
+        nei_index = np.array(a_m, dtype=object)
+        nei_index = [torch.LongTensor(i) for i in nei_index]
+        
+        data['nei_index'] = nei_index
+
+        return data
 
 
 # Network Schema View Guided Encoder
@@ -85,11 +188,9 @@ class Sc_encoder(nn.Module):
             sample_num = self.sample_rate[i]
             for per_node_nei in nei_index[i]:
                 if len(per_node_nei) >= sample_num:
-                    select_one = torch.tensor(np.random.choice(per_node_nei, sample_num,
-                                                               replace=False))[np.newaxis]
+                    select_one = torch.tensor(np.random.choice(per_node_nei, sample_num, replace=False))[np.newaxis]
                 else:
-                    select_one = torch.tensor(np.random.choice(per_node_nei, sample_num,
-                                                               replace=True))[np.newaxis]
+                    select_one = torch.tensor(np.random.choice(per_node_nei, sample_num, replace=True))[np.newaxis]
                 sele_nei.append(select_one)
             sele_nei = torch.cat(sele_nei, dim=0).cuda()
             one_type_emb = F.elu(self.intra[i](sele_nei, nei_h[i + 1], nei_h[0]))
@@ -220,23 +321,6 @@ class Contrast(nn.Module):
 
 
 
-class  HeColoss(torch.nn.Module):
-
-    def __init__(self):
-        super().__init__()
-
-
-    def foward(self, mp, sc, feats, pos, mps, nei_index):
-        h_all = []
-        for i in range(len(feats)):
-            h_all.append(F.elu(self.feat_drop(self.fc_list[i](feats[i]))))
-        z_mp = mp(h_all[0], mps)
-        z_sc = sc(h_all, nei_index)
-        loss = self.contrast(z_mp, z_sc, pos)
-        return loss
-
-
-
 
 # The HeCo Algorithm
 class HeCo(BaseMethod):
@@ -265,96 +349,24 @@ class HeCo(BaseMethod):
         self.hidden_channels = hidden_channels
 
     def forward(self, batch):
-        batch = batch.to(self.device)
         # TODO: DBLP-specific to heterogeneous datasets
-        # load feature matrices
-        type_num = [4057, 14328, 7723, 20]
-        feat_a = torch.FloatTensor(preprocess_features(sp.csr_matrix(batch['author'].x.to('cpu').numpy())))
-        feat_p = sp.eye(type_num[1])
-        feat_p = torch.FloatTensor(preprocess_features(feat_p))
-        feats = [feat_a, feat_p]
+        feats = batch['feats']
         feats_dim_list = [i.shape[1] for i in feats]
         self.fc_list = nn.ModuleList([nn.Linear(feats_dim, self.hidden_channels, bias=True)
                                       for feats_dim in feats_dim_list])
 
+        mps = batch['mps']
+        for i in range(len(mps)):
+            mps[i] = mps[i].to(self.device)
 
-        # generate meta paths
-        pa = batch['paper', 'to', 'author'].edge_index.to('cpu').numpy().T
-        pc = batch['paper', 'to', 'conference'].edge_index.to('cpu').numpy().T
-        pt = batch['paper', 'to', 'term'].edge_index.to('cpu').numpy().T
+        pos = batch['pos'].to(self.device)
 
-        A = type_num[0]
-        P = type_num[1]
-        T = type_num[2]
-        C = type_num[3]
-    
-        pa_ = sp.coo_matrix((np.ones(pa.shape[0]),(pa[:,0], pa[:, 1])),shape=(P,A)).toarray()
-        pc_ = sp.coo_matrix((np.ones(pc.shape[0]),(pc[:,0], pc[:, 1])),shape=(P,C)).toarray()
-        pt_ = sp.coo_matrix((np.ones(pt.shape[0]),(pt[:,0], pt[:, 1])),shape=(P,T)).toarray()
-
-        apa = np.matmul(pa_.T, pa_) > 0
-        apa = sp.coo_matrix(apa)
-
-        apc = np.matmul(pa_.T, pc_) > 0
-        apcpa = np.matmul(apc, apc.T) > 0
-        apcpa = sp.coo_matrix(apcpa)
-
-        apt = np.matmul(pa_.T, pt_) > 0
-        aptpa = np.matmul(apt, apt.T) > 0
-        aptpa = sp.coo_matrix(aptpa)
-
-        apa_mp = sparse_mx_to_torch_sparse_tensor(normalize_adj(apa)).to(self.device)
-        apcpa_mp = sparse_mx_to_torch_sparse_tensor(normalize_adj(apcpa)).to(self.device)
-        aptpa_mp = sparse_mx_to_torch_sparse_tensor(normalize_adj(aptpa)).to(self.device)
-
-        mps = [apa_mp, apcpa_mp, aptpa_mp]
-
-
-        # generate neighboring information
-        pa2 = batch['paper', 'to', 'author'].edge_index.to('cpu').numpy().T
-        a_n = {}
-        for i in pa2:
-            if i[1] not in a_n:
-                a_n[int(i[1])]=[]
-                a_n[int(i[1])].append(int(i[0]))
-            else:
-                a_n[int(i[1])].append(int(i[0]))
-            
-        keys =  sorted(a_n.keys())
-        a_n = [a_n[i] for i in keys]
-        a_m = []
-        for i in a_n:
-            a_m.append(np.array(i, dtype=np.int64))
-        nei_index = [np.array(a_m, dtype=object)]
-
-
-        # generate positive set
-        pos_num = 1000
-        p = A
-        apa = apa/apa.sum(axis=-1).reshape(-1, 1)
-        apcpa = apcpa/apcpa.sum(axis=-1).reshape(-1, 1)
-        aptpa = aptpa/aptpa.sum(axis=-1).reshape(-1, 1)
-        all = (apa + apcpa + aptpa).A.astype("float32")
-
-        pos = np.zeros((p,p))
-        k=0
-        for i in range(len(all)):
-            one = all[i].nonzero()[0]
-            if len(one) > pos_num:
-                oo = np.argsort(-all[i, one])
-                sele = one[oo[:pos_num]]
-                pos[i, sele] = 1
-                k+=1
-            else:
-                pos[i, one] = 1
-        pos = sp.coo_matrix(pos)
-        pos = sparse_mx_to_torch_sparse_tensor(pos).to(self.device)
+        nei_index = [batch['nei_index']]
 
         # compute loss
         h_all = []
         for i in range(len(feats)):
             h_all.append(F.elu(self.feat_drop(self.fc_list[i](feats[i]))).to(self.device))
-
         z_mp = self.mp(h_all[0], mps)
         z_sc = self.sc(h_all, nei_index)
         loss = self.loss_function(z_mp, z_sc, pos)
