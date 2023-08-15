@@ -328,6 +328,7 @@ class HeCo(BaseMethod):
     def __init__(self,
                  encoder1: torch.nn.Module,
                  encoder2: torch.nn.Module,
+                 feats_dim_list,
                  readout: Union[Callable, torch.nn.Module] = AvgReadout(),
                  loss_function: Optional[torch.nn.Module] = None,
                  data_argument: None = None,
@@ -339,6 +340,9 @@ class HeCo(BaseMethod):
                  ) -> None:
         loss_function = loss_function if loss_function else Contrast(hidden_channels, tau, lam)
         super().__init__(encoder=encoder1, data_augment=data_argument, loss_function=loss_function)
+        self.hidden_channels = hidden_channels
+        self.fc_list = nn.ModuleList([nn.Linear(feats_dim, self.hidden_channels, bias=True)
+                                      for feats_dim in feats_dim_list])
 
         if feat_drop > 0:
             self.feat_drop = nn.Dropout(feat_drop)
@@ -346,27 +350,25 @@ class HeCo(BaseMethod):
             self.feat_drop = lambda x: x
         self.mp = encoder1
         self.sc = encoder2
-        self.hidden_channels = hidden_channels
 
     def forward(self, batch):
         # TODO: DBLP-specific to heterogeneous datasets
         feats = batch['feats']
-        feats_dim_list = [i.shape[1] for i in feats]
-        self.fc_list = nn.ModuleList([nn.Linear(feats_dim, self.hidden_channels, bias=True)
-                                      for feats_dim in feats_dim_list])
+
 
         mps = batch['mps']
-        for i in range(len(mps)):
-            mps[i] = mps[i].to(self.device)
+        # for i in range(len(mps)):
+        #     mps[i] = mps[i].to(self.device)
 
-        pos = batch['pos'].to(self.device)
+        # pos = batch['pos'].to(self.device)
+        pos = batch['pos']
 
         nei_index = [batch['nei_index']]
-
         # compute loss
         h_all = []
         for i in range(len(feats)):
             h_all.append(F.elu(self.feat_drop(self.fc_list[i](feats[i]))).to(self.device))
+        
         z_mp = self.mp(h_all[0], mps)
         z_sc = self.sc(h_all, nei_index)
         loss = self.loss_function(z_mp, z_sc, pos)
