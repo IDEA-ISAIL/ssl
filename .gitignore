@@ -147,3 +147,4 @@ pyg_data/
 
 # local datasets downloaded from torch_geometric
 DBLP_data
+Aminer_data

@@ -4,7 +4,7 @@ from .dgi import DGI
 # from .afgrl import AFGRL
 # from .mvgrl import MVGRL
 from .graphcl import GraphCL, GraphCLEncoder
-from .heco import HeCo, Sc_encoder, Mp_encoder, HeCoTransform
+from .heco import HeCo, Sc_encoder, Mp_encoder, HeCoDBLPTransform
 
 # __all__ = [
 #     'Method'

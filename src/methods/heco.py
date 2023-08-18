@@ -23,7 +23,7 @@ import pdb
 # Transform of heterogeneous dataset needs to be written dataset-specifically, since the attribute names might differ.
 # ----------------- Transform ------------------
 @functional_transform('heco_transform_ssl')
-class HeCoTransform(BaseTransform):
+class HeCoDBLPTransform(BaseTransform):
 
     def __init__(self):
         pass
@@ -35,7 +35,7 @@ class HeCoTransform(BaseTransform):
         feat_a = torch.FloatTensor(preprocess_features(sp.csr_matrix(batch['author'].x.to('cpu').numpy())))
         feat_p = sp.eye(type_num[1])
         feat_p = torch.FloatTensor(preprocess_features(feat_p))
-        feats = [feat_a, feat_p]
+        feats = [feat_a.cuda(), feat_p.cuda()]
         data['feats'] = feats
 
         # generate meta paths
@@ -67,7 +67,7 @@ class HeCoTransform(BaseTransform):
         apcpa_mp = sparse_mx_to_torch_sparse_tensor(normalize_adj(apcpa))
         aptpa_mp = sparse_mx_to_torch_sparse_tensor(normalize_adj(aptpa))
 
-        mps = [apa_mp, apcpa_mp, aptpa_mp]
+        mps = [apa_mp.cuda(), apcpa_mp.cuda(), aptpa_mp.cuda()]
         data['mps'] = mps
 
         # generate positive set
@@ -91,7 +91,7 @@ class HeCoTransform(BaseTransform):
                 pos[i, one] = 1
         pos = sp.coo_matrix(pos)
         pos = sparse_mx_to_torch_sparse_tensor(pos)
-        data['pos'] = pos
+        data['pos'] = pos.cuda()
 
         # generate neighboring information
         pa2 = batch['paper', 'to', 'author'].edge_index.to('cpu').numpy().T
@@ -111,7 +111,7 @@ class HeCoTransform(BaseTransform):
         nei_index = np.array(a_m, dtype=object)
         nei_index = [torch.LongTensor(i) for i in nei_index]
         
-        data['nei_index'] = nei_index
+        data['nei_index'] = [nei_index]
 
         return data
 
@@ -354,16 +354,9 @@ class HeCo(BaseMethod):
     def forward(self, batch):
         # TODO: DBLP-specific to heterogeneous datasets
         feats = batch['feats']
-
-
         mps = batch['mps']
-        # for i in range(len(mps)):
-        #     mps[i] = mps[i].to(self.device)
-
-        # pos = batch['pos'].to(self.device)
         pos = batch['pos']
-
-        nei_index = [batch['nei_index']]
+        nei_index = batch['nei_index'][0]
         # compute loss
         h_all = []
         for i in range(len(feats)):
