@@ -89,6 +89,10 @@ class ACM(InMemoryDataset):
         data['nei_index'] = [nei_a, nei_s]
 
 
+        y = np.load(osp.join(self.raw_dir, 'labels.npy'))
+        data['paper'].y = torch.from_numpy(y).to(torch.long)
+
+
         torch.save(self.collate([data]), self.processed_paths[0])
 
 

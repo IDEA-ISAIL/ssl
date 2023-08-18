@@ -148,3 +148,6 @@ pyg_data/
 # local datasets downloaded from torch_geometric
 DBLP_data
 Aminer_data
+datasets/acm/processed/data.pt
+datasets/acm/processed/pre_filter.pt
+datasets/acm/processed/pre_transform.pt
