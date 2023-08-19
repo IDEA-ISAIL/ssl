@@ -334,7 +334,6 @@ class HeCo(BaseMethod):
                  data_argument: None = None,
                  hidden_channels: int = 64,
                  feat_drop: float = 0.3,
-                 attn_drop: float = 0.5,
                  tau: float = 0.9,
                  lam: float = 0.5,
                  ) -> None:
