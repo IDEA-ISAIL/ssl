@@ -38,6 +38,7 @@ params['dblp']['attn_drop'] = 0.35
 params['dblp']['eva_lr'] = 0.01
 
 
+
 # -------------------- Data --------------------
 # dataset = DBLP(root="DBLP_data", pre_transform=HeCoDBLPTransform())
 dataset_name = 'acm'
@@ -45,8 +46,6 @@ if dataset_name == 'acm':
     dataset = ACM(root=osp.join("./datasets", dataset_name))
 elif dataset_name == 'dblp':
     dataset = DBLP(root=osp.join("./datasets", dataset_name), pre_transform=HeCoDBLPTransform())
-elif dataset_name == 'freebase_movies':
-    dataset = FreebaseMovies(root=osp.join("./datasets", dataset_name))
 
 data_loader = DataLoader(dataset)
 
