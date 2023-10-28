@@ -1,8 +1,11 @@
+import torch
+import numpy as np
 import os.path as osp
 from torch_geometric.loader import DataLoader
 
 
-from src.datasets import DBLP, ACM
+from src.datasets import DBLP, AMiner, ACM, FreebaseMovies
+from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.methods import HeCo, Sc_encoder, Mp_encoder, HeCoDBLPTransform
 from src.trainer import SimpleTrainer
 from src.evaluation import LogisticRegression
@@ -33,7 +36,17 @@ params['dblp']['tau'] = 0.9
 params['dblp']['feat_drop'] = 0.4
 params['dblp']['attn_drop'] = 0.35
 params['dblp']['eva_lr'] = 0.01
-
+    
+params['freebase_movies'] = {}
+params['freebase_movies']['P'] = 3
+params['freebase_movies']['sample_rate'] = [1, 18, 2]
+params['freebase_movies']['nei_num'] = 3
+params['freebase_movies']['target_type'] = 'movie'
+params['freebase_movies']['patience'] = 20
+params['freebase_movies']['tau'] = 0.5
+params['freebase_movies']['feat_drop'] = 0.1
+params['freebase_movies']['attn_drop'] = 0.3
+params['freebase_movies']['eva_lr'] = 0.01
 
 
 # -------------------- Data --------------------
@@ -43,6 +56,8 @@ if dataset_name == 'acm':
     dataset = ACM(root=osp.join("./datasets", dataset_name))
 elif dataset_name == 'dblp':
     dataset = DBLP(root=osp.join("./datasets", dataset_name), pre_transform=HeCoDBLPTransform())
+elif dataset_name == 'freebase_movies':
+    dataset = FreebaseMovies(root=osp.join("./datasets", dataset_name))
 
 data_loader = DataLoader(dataset)
 
