@@ -9,9 +9,6 @@ from torch_geometric.data.datapipes import functional_transform
 from torch_geometric.transforms import BaseTransform
 from .utils import AvgReadout
 from typing import Optional, Callable, Union
-
-import pdb
-
 # TODO add comment about Args
 
 
@@ -127,7 +124,7 @@ class inter_att(nn.Module):
         self.att = nn.Parameter(torch.empty(size=(1, hidden_dim)), requires_grad=True)
         nn.init.xavier_normal_(self.att.data, gain=1.414)
 
-        self.softmax = nn.Softmax()
+        self.softmax = nn.Softmax(dim=0)
         if attn_drop:
             self.attn_drop = nn.Dropout(attn_drop)
         else:
@@ -244,7 +241,7 @@ class Attention(nn.Module):
         self.att = nn.Parameter(torch.empty(size=(1, hidden_dim)), requires_grad=True)
         nn.init.xavier_normal_(self.att.data, gain=1.414)
 
-        self.softmax = nn.Softmax()
+        self.softmax = nn.Softmax(dim=0)
         if attn_drop:
             self.attn_drop = nn.Dropout(attn_drop)
         else:
