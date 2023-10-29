@@ -90,17 +90,17 @@ class FreebaseMovies(InMemoryDataset):
         data['pos'] = sparse_mx_to_torch_sparse_tensor(pos).cuda()
 
         # nei_index
-        nei_a = np.load(osp.join(self.raw_dir, "nei_a.npy"), allow_pickle=True)
         nei_d = np.load(osp.join(self.raw_dir, "nei_d.npy"), allow_pickle=True)
+        nei_a = np.load(osp.join(self.raw_dir, "nei_a.npy"), allow_pickle=True)
         nei_w = np.load(osp.join(self.raw_dir, "nei_w.npy"), allow_pickle=True)
-        nei_a = [torch.LongTensor(i) for i in nei_a]
         nei_d = [torch.LongTensor(i) for i in nei_d]
+        nei_a = [torch.LongTensor(i) for i in nei_a]
         nei_w = [torch.LongTensor(i) for i in nei_w]
-        data['nei_index'] = [nei_a, nei_d, nei_w]
+        data['nei_index'] = [nei_d, nei_a, nei_w]
 
 
         y = np.load(osp.join(self.raw_dir, 'labels.npy'))
-        data['paper'].y = torch.from_numpy(y).to(torch.long)
+        data['movie'].y = torch.from_numpy(y).to(torch.long)
 
 
         torch.save(self.collate([data]), self.processed_paths[0])

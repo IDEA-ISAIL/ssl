@@ -11,8 +11,6 @@ from src.trainer import SimpleTrainer
 from src.evaluation import LogisticRegression
 from src.utils import create_data
 
-import pdb
-
 # pre-tuned parameters
 params = {}
 params['acm'] = {}
@@ -62,7 +60,7 @@ params['aminer']['eva_lr'] = 0.01
 
 # -------------------- Data --------------------
 # dataset = DBLP(root="DBLP_data", pre_transform=HeCoDBLPTransform())
-dataset_name = 'freebase_movies'
+dataset_name = 'acm'
 if dataset_name == 'acm':
     dataset = ACM(root=osp.join("./datasets", dataset_name))
 elif dataset_name == 'dblp':
