@@ -35,6 +35,9 @@ elif config.dataset.name == 'coauthor':
     dataset = Coauthor(root='pyg_data', name='CS', pre_transform=pre_transforms)
 else:
     raise 'please specify the correct dataset root'
+if config.dataset.name in ['Amazon', 'WikiCS', 'coauthor']:
+    dataset.data = create_masks(dataset.data, config.dataset.name)
+dataset = add_adj_t(dataset)
 data_loader = DataLoader(dataset, batch_size=config.model.batch_size)
 
 # Augmentation
