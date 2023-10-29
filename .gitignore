@@ -159,3 +159,4 @@ datasets/freebase_movies/processed/pre_filter.pt
 datasets/freebase_movies/processed/pre_transform.pt
 datasets/dblp
 test.ipynb
+*.pkl
