@@ -40,16 +40,16 @@ class MVGRL(BaseMethod):
 
         lbl_1 = torch.ones(batch_size, self.sample_size * 2)
         lbl_2 = torch.zeros(batch_size, self.sample_size * 2)
-        lbl = torch.cat((lbl_1, lbl_2), 1)
+        lbl = torch.cat((lbl_1, lbl_2), 1).to(self._device)
 
         # if self.use_cuda:
         #     self.model = self.model.cuda()
         #     lbl = lbl.cuda()
 
         idx = np.random.randint(0, adj.shape[-1] - self.sample_size + 1, batch_size)
-        ba = torch.zeros((batch_size, self.sample_size, self.sample_size))
-        bd = torch.zeros((batch_size, self.sample_size, self.sample_size))
-        bf = torch.zeros((batch_size, self.sample_size, ft_size))
+        ba = torch.zeros((batch_size, self.sample_size, self.sample_size)).to(self._device)
+        bd = torch.zeros((batch_size, self.sample_size, self.sample_size)).to(self._device)
+        bf = torch.zeros((batch_size, self.sample_size, ft_size)).to(self._device)
         for i in range(len(idx)):
             ba[i] = adj[idx[i]: idx[i] + self.sample_size, idx[i]: idx[i] + self.sample_size]
             bd[i] = diff[idx[i]: idx[i] + self.sample_size, idx[i]: idx[i] + self.sample_size]
