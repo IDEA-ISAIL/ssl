@@ -4,7 +4,7 @@ import os.path as osp
 from torch_geometric.loader import DataLoader
 
 
-from src.datasets import DBLP, AMiner, ACM, FreebaseMovies
+from src.datasets import DBLP, aminer, ACM, FreebaseMovies
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.methods import HeCo, Sc_encoder, Mp_encoder, HeCoDBLPTransform
 from src.trainer import SimpleTrainer
@@ -48,16 +48,29 @@ params['freebase_movies']['feat_drop'] = 0.1
 params['freebase_movies']['attn_drop'] = 0.3
 params['freebase_movies']['eva_lr'] = 0.01
 
+params['aminer'] = {}
+params['aminer']['P'] = 2
+params['aminer']['sample_rate'] = [3, 8]
+params['aminer']['nei_num'] = 2
+params['aminer']['target_type'] = 'paper'
+params['aminer']['patience'] = 40
+params['aminer']['tau'] = 0.5
+params['aminer']['feat_drop'] = 0.5
+params['aminer']['attn_drop'] = 0.5
+params['aminer']['eva_lr'] = 0.01
+
 
 # -------------------- Data --------------------
 # dataset = DBLP(root="DBLP_data", pre_transform=HeCoDBLPTransform())
-dataset_name = 'acm'
+dataset_name = 'freebase_movies'
 if dataset_name == 'acm':
     dataset = ACM(root=osp.join("./datasets", dataset_name))
 elif dataset_name == 'dblp':
     dataset = DBLP(root=osp.join("./datasets", dataset_name), pre_transform=HeCoDBLPTransform())
 elif dataset_name == 'freebase_movies':
     dataset = FreebaseMovies(root=osp.join("./datasets", dataset_name))
+elif dataset_name == 'aminer':
+    dataset = aminer(root=osp.join("./datasets", dataset_name))
 
 data_loader = DataLoader(dataset)
 
