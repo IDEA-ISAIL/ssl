@@ -13,7 +13,9 @@ from src.config import load_yaml
 torch.manual_seed(0)
 np.random.seed(0)
 torch.cuda.manual_seed_all(0)
-config = load_yaml('./configuration/bgrl.yml')
+# config = load_yaml('./configuration/bgrl_photo.yml')
+config = load_yaml('./configuration/bgrl_cs.yml')
+# config = load_yaml('./configuration/bgrl_wikics.yml')
 device = torch.device("cuda:{}".format(config.gpu_idx) if torch.cuda.is_available() and config.use_cuda else "cpu")
 # WikiCS, cora, citeseer, pubmed, photo, computers, cs, and physics
 data_name = config.dataset.name
@@ -51,7 +53,7 @@ elif data_name=="photo":
     student_encoder = BGRLEncoder(in_channel=dataset.x.shape[1], hidden_channels=[512, 256])
 elif data_name=="wikics":
     student_encoder = BGRLEncoder(in_channel=dataset.x.shape[1], hidden_channels=[512, 256])
-elif data_name=="coauthorcs":
+elif data_name=="cs":
     student_encoder = BGRLEncoder(in_channel=dataset.x.shape[1], hidden_channels=[256])
 
 teacher_encoder = copy.deepcopy(student_encoder)

@@ -16,7 +16,8 @@ from src.config import load_yaml
 torch.manual_seed(0)
 np.random.seed(0)
 torch.cuda.manual_seed_all(0)
-config = load_yaml('./configuration/afgrl.yml')
+config = load_yaml('./configuration/afgrl_cs.yml')
+# config = load_yaml('./configuration/afgrl_wikics.yml')
 device = torch.device("cuda:{}".format(config.gpu_idx) if torch.cuda.is_available() and config.use_cuda else "cpu")
 
 # WikiCS, cora, citeseer, pubmed, photo, computers, cs, and physics
@@ -47,11 +48,11 @@ augment = NeighborSearch_AFGRL(device=device, num_centroids=config.model.num_cen
 if data_name=="cora":
     student_encoder = AFGRLEncoder(in_channel=dataset.x.shape[1], hidden_channels=[2048])
 elif data_name=="photo":
+    student_encoder = AFGRLEncoder(in_channel=dataset.x.shape[1], hidden_channels=[512, 512])
+elif data_name=="wikics":
     student_encoder = AFGRLEncoder(in_channel=dataset.x.shape[1], hidden_channels=[512, 256])
-elif data_name=="WikiCS":
-    student_encoder = AFGRLEncoder(in_channel=dataset.x.shape[1], hidden_channels=[1024])
-elif data_name=="coauthorcs":
-    student_encoder = AFGRLEncoder(in_channel=dataset.x.shape[1], hidden_channels=[256])
+elif data_name=="cs":
+    student_encoder = AFGRLEncoder(in_channel=dataset.x.shape[1], hidden_channels=[512, 256])
 teacher_encoder = copy.deepcopy(student_encoder)
 
 method = AFGRL(student_encoder=student_encoder, teacher_encoder = teacher_encoder, data_augment=augment, adj_ori = adj_ori_sparse, topk=config.model.topk)

@@ -15,7 +15,7 @@ optim:
   max_epoch : 5000
   patience : 1000
   weight_decay : 0.00001
-  moving_average_decay: 0.99
+  moving_average_decay: 0.9
 dataset:
   name : photo
   root : data_

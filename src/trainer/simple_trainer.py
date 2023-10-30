@@ -8,6 +8,8 @@ from typing import Union
 import numpy as np
 from src.methods.utils import EMA, update_moving_average
 from src.evaluation import LogisticRegression
+from tqdm import tqdm
+
 class SimpleTrainer(BaseTrainer):
     r"""
     TODO: 1. Add descriptions.
@@ -50,7 +52,7 @@ class SimpleTrainer(BaseTrainer):
         new_loader = self.method.apply_data_augment_offline(self.data_loader)
         if new_loader != None:
             self.data_loader = new_loader
-        for epoch in range(self.n_epochs):
+        for epoch in tqdm(range(self.n_epochs)):
             start_time = time.time()
 
             for data in self.data_loader:
@@ -67,6 +69,7 @@ class SimpleTrainer(BaseTrainer):
 
             end_time = time.time()
             info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
+            
             if epoch%200==0:
                 print(info)
                 self.method.eval()

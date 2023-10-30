@@ -12,12 +12,12 @@ model:
 optim:
   base_lr: 0.0001
   name : adam
-  max_epoch : 6000
+  max_epoch : 4000
   patience : 1000
   weight_decay : 0.00001
   moving_average_decay: 0.99
 dataset:
-  name : photo
+  name : cs
   root : data_
 output:
   verbose : True
