@@ -92,3 +92,12 @@ https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/d
 - [PyGCL](https://github.com/PyGCL/PyGCL)
 - [Solo-Learn](https://github.com/vturrisi/solo-learn)
 - [Lightly](https://github.com/lightly-ai/lightly)
+- 
+
+# Paper Writing:
+JMLR Paper: https://jmlr.org/papers/volume23/21-1155/21-1155.pdf
+JMLR requirements: https://www.jmlr.org/mloss/mloss-info.html
+Pytorch Package document: https://pytorch-geometric.readthedocs.io/en/latest/ 
+https://pytorch-geometric-temporal.readthedocs.io/en/latest/notes/installation.html 
+https://pytorch-geometric-temporal.readthedocs.io/en/latest/modules/root.html
+
