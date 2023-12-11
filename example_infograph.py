@@ -10,14 +10,17 @@ import torch
 import numpy as np
 
 
-config = load_yaml('./configuration/infograph_mutag.yml')
+# config = load_yaml('./configuration/infograph_mutag.yml')
 # config = load_yaml('./configuration/infograph_imdb_b.yml')
-# config = load_yaml('./configuration/infograph_imdb_m.yml')
+config = load_yaml('./configuration/infograph_imdb_m.yml')
 torch.manual_seed(config.torch_seed)
 np.random.seed(config.torch_seed)
 device = torch.device("cuda:{}".format(config.gpu_idx) if torch.cuda.is_available() and config.use_cuda else "cpu")
 
 # -------------------- Data --------------------
+print(os.path.dirname(os.path.realpath(__file__)))
+current_folder = os.path.abspath('')
+print(current_folder)
 path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.dataset.root, config.dataset.name)
 if config.dataset.name in ['IMDB-B', 'IMDB-M', 'mutag', 'COLLAB', 'PROTEINS']:
     # dataset = TUDataset(path, name=config.dataset.name).shuffle()
@@ -37,7 +40,8 @@ method = InfoGraph(encoder=encoder, hidden_channels=config.model.hidden_channels
                    prior=False)
 
 # # # ------------------ Trainer --------------------
-trainer = SimpleTrainer(method=method, data_loader=data_loader, device=device, n_epochs=config.optim.max_epoch)
+trainer = SimpleTrainer(method=method, data_loader=data_loader, device=device, n_epochs=config.optim.max_epoch,
+                        lr=config.optim.base_lr)
 trainer.train()
 
 # ------------------ Evaluator -------------------

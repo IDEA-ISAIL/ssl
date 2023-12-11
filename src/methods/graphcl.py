@@ -8,7 +8,7 @@ from src.losses import NegativeMI
 from src.loader import AugmentDataLoader
 from torch_geometric.nn.models import GCN
 from torch_geometric.nn import GCNConv
-
+import torch
 torch.manual_seed(0)
 np.random.seed(0)
 
