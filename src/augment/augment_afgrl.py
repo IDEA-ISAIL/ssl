@@ -1,53 +1,9 @@
-"""TODO: create a separate file for each class."""
-import copy
-import random
-from scipy.linalg import fractional_matrix_power
-import torch
-from torch.linalg import inv
-from torch_geometric.data import Data
-from .base import Augmentor
-from src.data import HomoData
 import faiss
-
-class ComputePPR(Augmentor):
-    def __init__(self, alpha=0.2, self_loop=True):
-        super().__init__()
-        self.alpha = alpha
-        self.self_loop = self_loop
-
-    def __call__(self, data: HomoData):
-        data_tmp = copy.deepcopy(data)
-        a = data_tmp.adj
-        if self.self_loop:
-            a = torch.eye(a.shape[0]) + a
-        d = torch.diag(torch.sum(a, 1))
-        dinv = torch.from_numpy(fractional_matrix_power(d, -0.5))
-        at = torch.matmul(torch.matmul(dinv, a), dinv)
-        data_tmp.adj = self.alpha * inv((torch.eye(a.shape[0]) - (1 - self.alpha) * at))
-        return data_tmp
-
-
-class ComputeHeat(Augmentor):
-    def __init__(self, t=5, self_loop=True):
-        super().__init__()
-        self.t = t
-        self.self_loop = self_loop
-
-    def __call__(self, data: HomoData):
-        data_tmp = copy.deepcopy(data)
-        a = data_tmp.adj
-        if self.self_loop:
-            a = torch.eye(a.shape[0]) + a
-        d = torch.diag(torch.sum(a, 1))
-        data_tmp.adj = torch.exp(self.t * (torch.matmul(a, inv(d)) - 1))
-        return data_tmp
-
-
-# import faiss
 import torch
 import numpy as np
+from .base import Augmentor
 class NeighborSearch_AFGRL(Augmentor):
-    def __init__(self, device="cuda", num_centroids=20, num_kmeans=5, clus_num_iters=20):
+    def __init__(self, device="cuda", num_centroids=100, num_kmeans=5, clus_num_iters=20):
         super(NeighborSearch_AFGRL, self).__init__()
         self.device = device
         self.num_centroids = num_centroids
@@ -67,18 +23,19 @@ class NeighborSearch_AFGRL(Augmentor):
         return t.unsqueeze(1).expand(-1, num_reps)
 
     def __call__(self, adj, student, teacher, top_k):
-        n_data, d = student.shape
+        n_data, d = student.shape        
         similarity = torch.matmul(student, torch.transpose(teacher, 1, 0).detach())
         similarity += torch.eye(n_data, device=self.device) * 10
 
         _, I_knn = similarity.topk(k=top_k, dim=1, largest=True, sorted=True)
-        tmp = torch.LongTensor(np.arange(n_data)).unsqueeze(-1).to(self.device)
+        
         knn_neighbor = self.create_sparse(I_knn)
         locality = knn_neighbor * adj
 
+
         ncentroids = self.num_centroids
         niter = self.clus_num_iters
-
+        tmp = torch.LongTensor(np.arange(n_data)).unsqueeze(-1).to(self.device)
         pred_labels = []
 
         for seed in range(self.num_kmeans):
@@ -91,7 +48,7 @@ class NeighborSearch_AFGRL(Augmentor):
             pred_labels.append(clust_labels)
 
         pred_labels = np.stack(pred_labels, axis=0)
-        cluster_labels = torch.from_numpy(pred_labels).long()
+        cluster_labels = torch.from_numpy(pred_labels).long().to(self.device)
 
         all_close_nei_in_back = None
         with torch.no_grad():

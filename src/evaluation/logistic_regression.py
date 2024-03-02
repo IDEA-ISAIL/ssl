@@ -51,7 +51,7 @@ class LogisticRegression(BaseEvaluator):
         print('Evaluate node classification results')
         print('** Val: {:.4f} ({:.4f}) | Test: {:.4f} ({:.4f}) **'.format(val_acc, val_std, test_acc, test_std))
 
-    def single_run(self, embs, labels, train_mask, val_mask, test_mask) -> (np.ndarray, np.ndarray):
+    def single_run(self, embs, labels, train_mask, val_mask, test_mask):
         emb_dim, num_class = embs.shape[1], labels.unique().shape[0]
 
         embs, labels = embs.to(self.device), labels.to(self.device)

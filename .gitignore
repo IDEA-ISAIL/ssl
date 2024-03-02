@@ -142,3 +142,5 @@ ckpt*/
 results/
 .vscode/
 pyg_data/
+data_/
+data/
