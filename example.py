@@ -43,7 +43,7 @@ trainer.train()
 data_pyg = dataset.data.to(method.device)
 embs = method.get_embs(data_pyg).detach()
 
-lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=50, device="cuda")ç
+lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=50, device="cuda")
 lg(embs=embs, dataset=data_pyg)
 
 # plot_embedding2D(embs=embs, dataset=data_pyg)
