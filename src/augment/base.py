@@ -14,7 +14,7 @@ class Augmentor:
 class AugmentorList:
     r"""A wrapper for a list of augmentors. Sequentially apply each augmentor to inputs."""
     def __init__(self, augmentors: Union[Augmentor, List[Augmentor]]):
-        if type(augmentors) == List:
+        if type(augmentors) == list:
             self.augmentors = augmentors
         else:
             self.augmentors = [augmentors]
@@ -24,6 +24,8 @@ class AugmentorList:
             inputs = augmentor(inputs)
         return inputs
 
+    # def append(self, item):
+    #     return self.augmentors.append(item)
 
 class AugmentorDict(UserDict):
     r"""Base class for augmentation. A dictionary of augmentors."""
