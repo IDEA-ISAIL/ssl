@@ -40,28 +40,25 @@
 # Reference files
 ## General
 * DGI: [Deep Graph Infomax, ICLR'2019](https://arxiv.org/pdf/1809.10341.pdf), [(Github)](https://github.com/PetarV-/DGI) [Baoyu]
-* GCC: [GCC: Graph Contrastive Coding for Graph Neural Network Pre-Training, KDD'2020](https://arxiv.org/pdf/2006.09963.pdf), [(Github)](https://github.com/THUDM/GCC) [Lihui]
+* GCC: [GCC: Graph Contrastive Coding for Graph Neural Network Pre-Training, KDD'2020](https://arxiv.org/pdf/2006.09963.pdf), [(Github)](https://github.com/THUDM/GCC) []
 * GraphCL: [Graph Contrastive Learning with Augmentations](https://proceedings.nips.cc/paper/2020/file/3fe230348e9a12c13120749e3f9fa4cd-Paper.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL) [Lecheng]
-* [Graph Contrastive Learning Automated, ICML'2021](https://arxiv.org/pdf/2106.07594.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)
 * MVGRL: [Contrastive Multi-View Representation Learning on Graphs](https://proceedings.mlr.press/v119/hassani20a/hassani20a.pdf), [(Github)](https://github.com/kavehhassani/mvgrl) [Zhichen]
 * GCA: [Graph Contrastive Learning with Adaptive Augmentation
 ](https://arxiv.org/abs/2010.14945), [(Github)](https://github.com/CRIPAC-DIG/GCA) [Dongqi]
-* AD-GCL: [Adversarial Graph Augmentation to Improve Graph Contrastive Learning github](https://openreview.net/forum?id=ioyq7NsR1KJ), [(Github)](https://github.com/susheels/adgcl)
-* JOAO: [Graph Contrastive Learning Automated](https://proceedings.mlr.press/v139/you21a.html), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)
-* SUGRL: [SUGRL: Simple Unsupervised Graph Representation Learning](https://ojs.aaai.org/index.php/AAAI/article/view/20748),[(Github)](https://github.com/YujieMo/SUGRL)
-* MERIT: [Multi-scale contrastive siamese networks for self-supervised graph representation learning](https://www.ijcai.org/proceedings/2021/0204.pdf), [(Github)](https://github.com/GRAND-Lab/MERIT)
+* JOAO: [Graph Contrastive Learning Automated](https://proceedings.mlr.press/v139/you21a.html), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated) [Tianxin]
+* SUGRL: [SUGRL: Simple Unsupervised Graph Representation Learning](https://ojs.aaai.org/index.php/AAAI/article/view/20748),[(Github)](https://github.com/YujieMo/SUGRL) [Xinrui]
+* MERIT: [Multi-scale contrastive siamese networks for self-supervised graph representation learning](https://www.ijcai.org/proceedings/2021/0204.pdf), [(Github)](https://github.com/GRAND-Lab/MERIT) [Xinrui]
 
 ### non-contrastive
 * BGRL: [Large-Scale Representation Learning on Graphs via Bootstrapping
-](https://arxiv.org/abs/2102.06514), [(Github)](https://github.com/Namkyeong/BGRL_Pytorch)
+](https://arxiv.org/abs/2102.06514), [(Github)](https://github.com/Namkyeong/BGRL_Pytorch) [Tianxin]
 * AFGRL: [Augmentation-Free Self-Supervised Learning on Graphs
 ](https://arxiv.org/abs/2112.02472), [(Github)](https://github.com/Namkyeong/AFGRL) [Tianxin]
 
 ## Heterogeneous/Multiplex/Multiview
-* [Unsupervised Attributed Multiplex Network Embedding, AAAI'2020](https://arxiv.org/pdf/1911.06750.pdf), [(Github)](https://github.com/pcy1302/DMGI)
-* [Contrastive Multi-View Representation Learning on Graphs, ICML'2020](https://arxiv.org/pdf/2006.05582.pdf), [(Github)](https://github.com/kavehhassani/mvgrl)
-* [Self-supervised Heterogeneous Graph Neural Network with Co-contrastive Learning, KDD'2021](https://arxiv.org/pdf/2105.09111.pdf), [(Github)](https://github.com/liun-online/HeCo)
-* [Multi-view Contrastive Graph Clustering, NeurIPS'2021](https://proceedings.neurips.cc/paper/2021/file/10c66082c124f8afe3df4886f5e516e0-Paper.pdf), [(Github)](https://github.com/Panern/MCGC)
+* [Unsupervised Attributed Multiplex Network Embedding, AAAI'2020](https://arxiv.org/pdf/1911.06750.pdf), [(Github)](https://github.com/pcy1302/DMGI) [Lihui]
+* [Self-supervised Heterogeneous Graph Neural Network with Co-contrastive Learning, KDD'2021](https://arxiv.org/pdf/2105.09111.pdf), [(Github)](https://github.com/liun-online/HeCo) [Zihao]
+* [Multi-view Contrastive Graph Clustering, NeurIPS'2021](https://proceedings.neurips.cc/paper/2021/file/10c66082c124f8afe3df4886f5e516e0-Paper.pdf), [(Github)](https://github.com/Panern/MCGC) [Zhichen]
 
 ## Temporal/Dynamic
 * [Self-supervised Representation Learning on Dynamic Graphs, CIKM'2021](https://dl.acm.org/doi/pdf/10.1145/3459637.3482389), no public code
@@ -75,9 +72,11 @@
 * [SGCL: Contrastive Representation Learning for Signed Graphs, CIKM'2021](https://dl.acm.org/doi/pdf/10.1145/3459637.3482478), no public code
 
 ## Molecure
-* InfoGraph
-* JOAO
-* GraphMAE
+* InfoGraph: [InfoGraph: Unsupervised and Semi-supervised Graph-Level Representation Learning via Mutual Information Maximization](https://openreview.net/pdf?id=r1lfF2NYvH), [(Github)](https://github.com/sunfanyunn/InfoGraph)[lecheng]
+* GraphCL: [Graph Contrastive Learning with Augmentations](https://proceedings.nips.cc/paper/2020/file/3fe230348e9a12c13120749e3f9fa4cd-Paper.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL) [Lecheng]
+* AD-GCL: [Adversarial Graph Augmentation to Improve Graph Contrastive Learning github](https://openreview.net/forum?id=ioyq7NsR1KJ), [(Github)](https://github.com/susheels/adgcl)[Tianxin]
+* JOAO [Graph Contrastive Learning Automated](https://proceedings.mlr.press/v139/you21a.html), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)  [Tianxin]
+* GraphMAE [GraphMAE: Self-Supervised Masked Graph Autoencoders](https://arxiv.org/pdf/2205.10803.pdf)[(Github)(https://github.com/THUDM/GraphMAE)] [lecheng]
 
 ## dataset
 https://github.com/dmlc/dgl/blob/master/python/dgl/data/dgl_dataset.py
@@ -93,3 +92,12 @@ https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/d
 - [PyGCL](https://github.com/PyGCL/PyGCL)
 - [Solo-Learn](https://github.com/vturrisi/solo-learn)
 - [Lightly](https://github.com/lightly-ai/lightly)
+- 
+
+# Paper Writing:
+JMLR Paper: https://jmlr.org/papers/volume23/21-1155/21-1155.pdf
+JMLR requirements: https://www.jmlr.org/mloss/mloss-info.html
+Pytorch Package document: https://pytorch-geometric.readthedocs.io/en/latest/ 
+https://pytorch-geometric-temporal.readthedocs.io/en/latest/notes/installation.html 
+https://pytorch-geometric-temporal.readthedocs.io/en/latest/modules/root.html
+
