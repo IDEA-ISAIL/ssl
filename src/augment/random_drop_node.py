@@ -6,12 +6,14 @@ import torch
 
 
 class RandomDropNode(Augmentor):
-    def __init__(self, is_x: bool = True, is_adj: bool = False):
+    def __init__(self, is_x: bool = True, is_adj: bool = False, drop_percent=0.2):
         super().__init__()
         self.is_x = is_x
         self.is_adj = is_adj
-
-    def __call__(self, data: HomoData, drop_percent=0.2):
+        self.drop_percent = drop_percent
+        
+    def __call__(self, data: HomoData, drop_percent=None):
+        drop_percent = drop_percent if drop_percent else self.drop_percent
         data_tmp = copy.deepcopy(data)
         input_adj = torch.tensor(data_tmp.adj_t.to_dense().tolist())
         input_fea = data_tmp.x.squeeze(0)
