@@ -8,7 +8,7 @@ torch.backends.cudnn.benchmark = False
 import torch.nn as nn
 import pdb
 import math
-
+from tqdm import tqdm
 
 class Attention(nn.Module):
     def __init__(self, args):
@@ -180,9 +180,9 @@ class LogReg(nn.Module):
         return ret
 
 
-class modeler(nn.Module):
+class DMGI(nn.Module):
     def __init__(self, args):
-        super(modeler, self).__init__()
+        super(DMGI, self).__init__()
         self.args = args
         self.gcn = nn.ModuleList([GCN(args.ft_size, args.hid_units, args.activation, args.drop_prob, args.isBias) for _ in range(args.nb_graphs)])
 
@@ -204,7 +204,7 @@ class modeler(nn.Module):
         h_1_all = []; h_2_all = []; c_all = []; logits = []
         result = {}
 
-        for i in range(self.args.nb_graphs):
+        for i in tqdm(range(self.args.nb_graphs)):
             h_1 = self.gcn[i](feature[i], adj[i], sparse)
 
             # how to readout positive summary vector
