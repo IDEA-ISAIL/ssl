@@ -133,12 +133,12 @@ dmypy.json
 __pychache__
 
 # check points
-*ckpt/
-*ckpt*/
-ckpt*/
-.ckpt
+#*ckpt/
+#*ckpt*/
+#ckpt*/
+#.ckpt
 
 # others
-results/
+#results/
 .vscode/
-pyg_data/
+#pyg_data/
