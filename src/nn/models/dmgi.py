@@ -86,9 +86,36 @@ class Discriminator(nn.Module):
 
 
 
-class GCN(nn.Module):
+class AvgReadout(nn.Module):
+    def __init__(self):
+        super(AvgReadout, self).__init__()
+
+    def forward(self, seq):
+        return torch.mean(seq, 1)
+
+
+
+class LogReg(nn.Module):
+    def __init__(self, ft_in, nb_classes):
+        super(LogReg, self).__init__()
+        self.fc = nn.Linear(ft_in, nb_classes)
+
+        for m in self.modules():
+            self.weights_init(m)
+
+    def weights_init(self, m):
+        if isinstance(m, nn.Linear):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            if m.bias is not None:
+                m.bias.data.fill_(0.0)
+
+    def forward(self, seq):
+        ret = self.fc(seq)
+        return ret
+    
+class GCN_Encoder(nn.Module):
     def __init__(self, in_ft, out_ft, act, drop_prob, isBias=False):
-        super(GCN, self).__init__()
+        super(GCN_Encoder, self).__init__()
 
         self.fc_1 = nn.Linear(in_ft, out_ft, bias=False)
 
@@ -150,104 +177,4 @@ class GCN(nn.Module):
             seq += self.bias_1
 
         return self.act(seq)
-
-
-class AvgReadout(nn.Module):
-    def __init__(self):
-        super(AvgReadout, self).__init__()
-
-    def forward(self, seq):
-        return torch.mean(seq, 1)
-
-
-
-class LogReg(nn.Module):
-    def __init__(self, ft_in, nb_classes):
-        super(LogReg, self).__init__()
-        self.fc = nn.Linear(ft_in, nb_classes)
-
-        for m in self.modules():
-            self.weights_init(m)
-
-    def weights_init(self, m):
-        if isinstance(m, nn.Linear):
-            torch.nn.init.xavier_uniform_(m.weight.data)
-            if m.bias is not None:
-                m.bias.data.fill_(0.0)
-
-    def forward(self, seq):
-        ret = self.fc(seq)
-        return ret
-
-
-class DMGI(nn.Module):
-    def __init__(self, args):
-        super(DMGI, self).__init__()
-        self.args = args
-        self.gcn = nn.ModuleList([GCN(args.ft_size, args.hid_units, args.activation, args.drop_prob, args.isBias) for _ in range(args.nb_graphs)])
-
-        self.disc = Discriminator(args.hid_units)
-        self.H = nn.Parameter(torch.FloatTensor(1, args.nb_nodes, args.hid_units))
-        self.readout_func = self.args.readout_func
-        if args.isAttn:
-            self.attn = nn.ModuleList([Attention(args) for _ in range(args.nheads)])
-
-        if args.isSemi:
-            self.logistic = LogReg(args.hid_units, args.nb_classes).to(args.device)
-
-        self.init_weight()
-
-    def init_weight(self):
-        nn.init.xavier_normal_(self.H)
-
-    def forward(self, feature, adj, shuf, sparse, msk, samp_bias1, samp_bias2):
-        h_1_all = []; h_2_all = []; c_all = []; logits = []
-        result = {}
-
-        for i in tqdm(range(self.args.nb_graphs)):
-            h_1 = self.gcn[i](feature[i], adj[i], sparse)
-
-            # how to readout positive summary vector
-            c = self.readout_func(h_1)
-            c = self.args.readout_act_func(c)  # equation 9
-            h_2 = self.gcn[i](shuf[i], adj[i], sparse)
-            logit = self.disc(c, h_1, h_2, samp_bias1, samp_bias2)
-
-            h_1_all.append(h_1)
-            h_2_all.append(h_2)
-            c_all.append(c)
-            logits.append(logit)
-
-        result['logits'] = logits
-
-        # Attention or not
-        if self.args.isAttn:
-            h_1_all_lst = []; h_2_all_lst = []; c_all_lst = []
-
-            for h_idx in range(self.args.nheads):
-                h_1_all_, h_2_all_, c_all_ = self.attn[h_idx](h_1_all, h_2_all, c_all)
-                h_1_all_lst.append(h_1_all_); h_2_all_lst.append(h_2_all_); c_all_lst.append(c_all_)
-
-            h_1_all = torch.mean(torch.cat(h_1_all_lst, 0), 0).unsqueeze(0)
-            h_2_all = torch.mean(torch.cat(h_2_all_lst, 0), 0).unsqueeze(0)
-
-        else:
-            h_1_all = torch.mean(torch.cat(h_1_all), 0).unsqueeze(0)
-            h_2_all = torch.mean(torch.cat(h_2_all), 0).unsqueeze(0)
-
-
-        # consensus regularizer
-        pos_reg_loss = ((self.H - h_1_all) ** 2).sum()
-        neg_reg_loss = ((self.H - h_2_all) ** 2).sum()
-        reg_loss = pos_reg_loss - neg_reg_loss
-        result['reg_loss'] = reg_loss
-
-        # semi-supervised module
-        if self.args.isSemi:
-            semi = self.logistic(self.H).squeeze(0)
-            result['semi'] = semi
-
-
-
-        return result
 

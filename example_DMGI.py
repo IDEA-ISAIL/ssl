@@ -10,10 +10,10 @@ import numpy as np
 np.random.seed(0)
 
 
-from src.methods.dmgi import DMGIDataset, DMGITrainer
+from src.methods.dmgi import DMGIDataset
+from src.trainer.dmgi_trainer import DMGITrainer
 import torch.nn as nn
-from src.nn.models.dmgi import LogReg
-from src.nn.models.dmgi import DMGI
+from src.methods.dmgi import DMGI
 
 
 ##############################################################################################
@@ -59,7 +59,9 @@ def main():
     
     dataset = DMGIDataset(args)
     # ------------------- Method -----------------
-    method = DMGI(args).to(args.device)
+    b_xent = nn.BCEWithLogitsLoss()
+    xent = nn.CrossEntropyLoss()
+    method = DMGI(args, b_xent, xent).to(args.device)
     # ------------------ Trainer --------------------
     trainer = DMGITrainer(args, method, dataset)
     trainer.training()
