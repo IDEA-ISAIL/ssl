@@ -2,6 +2,7 @@ from src.augment import RandomMask, RandomDropEdge, RandomDropNode, AugmentSubgr
 from src.methods import GCN, Merit
 from src.trainer import SimpleTrainer
 from torch_geometric.loader import DataLoader
+import torch_geometric.transforms as T
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.datasets import Planetoid, Amazon, WikiCS,Coauthor
 from src.utils.create_data import create_masks

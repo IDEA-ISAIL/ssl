@@ -1,4 +1,4 @@
-dataset: "coauthor"
+dataset: "wikics"
 torch_seed: 0
 drop_edge: 0.4
 drop_feat1: 0.4
