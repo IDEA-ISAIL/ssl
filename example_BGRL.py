@@ -1,6 +1,6 @@
 from src.augment import RandomMask, RandomDropEdge, RandomDropNode, AugmentSubgraph, AugmentorList, AugmentorDict, RandomMaskChannel
 from src.methods import BGRL, BGRLEncoder
-from src.trainer import SimpleTrainer
+from src.trainer import NonContrastTrainer
 from torch_geometric.loader import DataLoader
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.evaluation import LogisticRegression
@@ -13,8 +13,8 @@ from src.config import load_yaml
 torch.manual_seed(0)
 np.random.seed(0)
 torch.cuda.manual_seed_all(0)
-# config = load_yaml('./configuration/bgrl_photo.yml')
-config = load_yaml('./configuration/bgrl_cs.yml')
+config = load_yaml('./configuration/bgrl_photo.yml')
+# config = load_yaml('./configuration/bgrl_cs.yml')
 # config = load_yaml('./configuration/bgrl_wikics.yml')
 device = torch.device("cuda:{}".format(config.gpu_idx) if torch.cuda.is_available() and config.use_cuda else "cpu")
 # WikiCS, cora, citeseer, pubmed, photo, computers, cs, and physics
@@ -61,7 +61,7 @@ teacher_encoder = copy.deepcopy(student_encoder)
 method = BGRL(student_encoder=student_encoder, teacher_encoder = teacher_encoder, data_augment=augment)
 
 # ------------------ Trainer --------------------
-trainer = SimpleTrainer(method=method, data_loader=data_loader, device=device, use_ema=True, \
+trainer = NonContrastTrainer(method=method, data_loader=data_loader, device=device, use_ema=True, \
                         moving_average_decay=config.optim.moving_average_decay, lr=config.optim.base_lr, 
                         weight_decay=config.optim.weight_decay, dataset=dataset, n_epochs=config.optim.max_epoch,\
                         patience=config.optim.patience)

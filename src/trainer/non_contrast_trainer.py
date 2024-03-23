@@ -10,7 +10,7 @@ from src.methods.utils import EMA, update_moving_average
 from src.evaluation import LogisticRegression
 from tqdm import tqdm
 
-class SimpleTrainer(BaseTrainer):
+class NonContrastTrainer(BaseTrainer):
     r"""
     TODO: 1. Add descriptions.
           2. Do we need to support more arguments?
@@ -23,6 +23,8 @@ class SimpleTrainer(BaseTrainer):
                  n_epochs: int = 10000,
                  patience: int = 50,
                  device: Union[str, int] = "cuda:0",
+                 use_ema: bool = False,
+                 moving_average_decay: float = 0.9,
                  save_root: str = "./ckpt",
                  dataset=None):
         super().__init__(method=method,
@@ -40,6 +42,9 @@ class SimpleTrainer(BaseTrainer):
         # scheduler = lambda epoch: epoch / 1000 if epoch < 1000 \
         #             else ( 1 + np.cos((epoch-1000) * np.pi / (n_epochs - 1000))) * 0.5
         # self.scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda = scheduler)
+        self.use_ema = use_ema
+        if self.use_ema:
+            self.ema_updater = EMA(moving_average_decay, n_epochs)
         self.early_stopper = EarlyStopper(patience=self.patience)
 
     def train(self):
@@ -59,11 +64,13 @@ class SimpleTrainer(BaseTrainer):
                 loss.backward()
                 self.optimizer.step()
                 # self.scheduler.step()
+                if self.use_ema:
+                    update_moving_average(self.ema_updater, self.method.teacher_encoder, self.method.encoder)
 
             end_time = time.time()
             info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
             
-            if epoch%200==0:
+            if (epoch+1)%200==0:
                 print(info)
                 self.method.eval()
                 data_pyg = self.dataset.data.to(self.method.device)

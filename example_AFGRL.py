@@ -1,6 +1,6 @@
 from src.augment import RandomMask, RandomDropEdge, RandomDropNode, AugmentSubgraph, AugmentorList, AugmentorDict, NeighborSearch_AFGRL
 from src.methods import AFGRLEncoder, AFGRL
-from src.trainer import SimpleTrainer
+from src.trainer import NonContrastTrainer
 from torch_geometric.loader import DataLoader
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.datasets import Planetoid, Amazon, WikiCS
@@ -59,7 +59,7 @@ method = AFGRL(student_encoder=student_encoder, teacher_encoder = teacher_encode
 
 
 # ------------------ Trainer --------------------
-trainer = SimpleTrainer(method=method, data_loader=data_loader, device=device, use_ema=True, 
+trainer = NonContrastTrainer(method=method, data_loader=data_loader, device=device, use_ema=True, 
                         moving_average_decay=config.optim.moving_average_decay, lr=config.optim.base_lr, 
                         weight_decay=config.optim.weight_decay, n_epochs=config.optim.max_epoch, dataset=dataset,
                         patience=config.optim.patience)
