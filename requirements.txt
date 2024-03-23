@@ -1,56 +1,25 @@
-appdirs==1.4.4
-brotlipy==0.7.0
-certifi @ file:///croot/certifi_1671487769961/work/certifi
-cffi @ file:///tmp/abs_98z5h56wf8/croots/recipe/cffi_1659598650955/work
-charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
-cryptography @ file:///croot/cryptography_1677533068310/work
-Cython==0.29.34
-dgl==1.0.1
+certifi==2022.9.24
+charset-normalizer==2.1.1
 faiss-gpu==1.7.2
-flit_core @ file:///croot/flit-core_1679397103445/work/source/flit_core
-future==0.18.3
-googledrivedownloader==0.4
-GraKeL==0.1.9
-idna @ file:///croot/idna_1666125576474/work
-Jinja2 @ file:///croot/jinja2_1666908132255/work
-joblib @ file:///croot/joblib_1666298844297/work
-littleutils==0.2.2
-MarkupSafe @ file:///opt/conda/conda-bld/markupsafe_1654597864307/work
-mkl-fft==1.3.1
-mkl-random @ file:///tmp/build/80754af9/mkl_random_1626186066731/work
-mkl-service==2.4.0
-networkx @ file:///croot/networkx_1678964333703/work
-numpy @ file:///croot/numpy_and_numpy_base_1672336185480/work
-ogb==1.3.6
-outdated==0.2.2
-packaging @ file:///croot/packaging_1678965309396/work
-pandas==2.0.0
-Pillow==9.4.0
-pooch @ file:///tmp/build/80754af9/pooch_1623324770023/work
-psutil @ file:///opt/conda/conda-bld/psutil_1656431268089/work
-pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
-pyg-lib==0.2.0+pt113cu117
-pyOpenSSL @ file:///croot/pyopenssl_1677607685877/work
-pyparsing @ file:///opt/conda/conda-bld/pyparsing_1661452539315/work
-PySocks @ file:///tmp/build/80754af9/pysocks_1605305812635/work
-python-dateutil==2.8.2
-pytz==2023.3
-PyYAML==6.0
-requests @ file:///croot/requests_1678709721434/work
-scikit-learn @ file:///croot/scikit-learn_1676911643119/work
-scipy==1.10.0
-six @ file:///tmp/build/80754af9/six_1644875935023/work
-threadpoolctl @ file:///Users/ktietz/demo/mc3/conda-bld/threadpoolctl_1629802263681/work
-torch==1.13.1
-torch-cluster==1.6.1+pt113cu117
-torch-geometric @ file:///usr/share/miniconda/envs/test/conda-bld/pyg_1679555438938/work
-torch-scatter==2.1.1+pt113cu117
-torch-sparse==0.6.17+pt113cu117
-torch-spline-conv==1.2.2+pt113cu117
-torchaudio==0.13.1
-torchvision==0.14.1
-tqdm @ file:///croot/tqdm_1679561862951/work
-typing_extensions @ file:///croot/typing_extensions_1669924550328/work
-tzdata==2023.3
-urllib3 @ file:///croot/urllib3_1673575502006/work
-yacs==0.1.8
+idna==3.4
+Jinja2==3.1.2
+joblib==1.2.0
+MarkupSafe==2.1.1
+networkx==2.8.8
+numpy==1.23.5
+Pillow==9.3.0
+pyg-lib==0.1.0+pt113cu116
+pyparsing==3.0.9
+requests==2.28.1
+scikit-learn==1.1.3
+scipy==1.9.3
+threadpoolctl==3.1.0
+torch==1.13.0+cu116
+torch-geometric==2.1.0.post1
+torch-scatter==2.1.0+pt113cu116
+torch-sparse==0.6.15+pt113cu116
+torchaudio==0.13.0+cu116
+torchvision==0.14.0+cu116
+tqdm==4.64.1
+typing_extensions==4.4.0
+urllib3==1.26.13
