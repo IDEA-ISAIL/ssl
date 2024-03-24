@@ -31,9 +31,6 @@ class DGI(BaseMethod):
         batch2 = self.corrupt(batch).to(self._device)
         return batch, batch2
 
-    def get_embs(self, batch):
-        return self.encoder(batch)
-
     def apply_emb_augment(self, h_pos):
         s = self.readout(h_pos, keepdim=True)
         s = self.sigmoid(s)
@@ -49,8 +46,8 @@ class DGI(BaseMethod):
         batch, batch2 = self.apply_data_augment(batch)
 
         # 2. get embeddings
-        h_pos = self.get_embs(batch)
-        h_neg = self.get_embs(batch2)
+        h_pos = self.encoder(batch)
+        h_neg = self.encoder(batch2)
 
         # 3. emb augmentation
         s = self.apply_emb_augment(h_pos)

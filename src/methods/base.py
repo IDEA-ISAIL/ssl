@@ -50,11 +50,13 @@ class BaseMethod(torch.nn.Module):
         raise NotImplementedError
 
     def apply_data_augment(self, *args, **kwargs) -> Any:
-        r"""Apply online data augmentation."""
+        r"""Apply online data augmentation. 
+            These augmentations are used online within methods."""
         raise NotImplementedError
 
     def apply_data_augment_offline(self, *args, **kwargs):
-        r"""Apply offline data augmentation."""
+        r"""Apply offline data augmentation. 
+            These augmentations are used offline in the trainer."""
         return None
 
     def apply_emb_augment(self, *args, **kwargs) -> Any:
