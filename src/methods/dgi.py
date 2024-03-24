@@ -4,8 +4,6 @@ from .base import BaseMethod
 from src.augment import ShuffleNode, GlobalSum
 from src.losses import NegativeMI
 
-from src.typing import AugmentType, Tensor
-
 
 class DGI(BaseMethod):
     r""" Deep Graph Infomax (DGI).

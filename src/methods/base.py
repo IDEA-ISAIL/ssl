@@ -98,6 +98,7 @@ class BaseMethod(torch.nn.Module):
 
 
 class ContrastiveMethod(BaseMethod):
+    """ To be removed. """
     def __init__(self,
                  encoder: torch.nn.Module,
                  loss_function: Union[Callable, torch.nn.Module],
