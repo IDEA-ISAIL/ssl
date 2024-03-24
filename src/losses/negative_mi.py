@@ -3,7 +3,7 @@ import torch
 from typing import Optional
 from torch_geometric.typing import Tensor
 
-from src.utils import BilinearSim
+from src.similarity_functions import Bilinear
 
 
 class NegativeMI(torch.nn.Module):
@@ -16,20 +16,20 @@ class NegativeMI(torch.nn.Module):
     Args:
         in_channels (Optional[int]): input channels to the neural mutual information estimator.
 
-        sim_function (Optional[torch.nn.Module]): the neural similarity measuring function.
+        sim_func (Optional[torch.nn.Module]): the neural similarity measuring function.
         The default is the bilinear similarity function used by DGI.
     """
     def __init__(self,
                  in_channels: Optional[int] = None,
-                 sim_function: Optional[torch.nn.Module] = None):
+                 sim_func: Optional[torch.nn.Module] = None):
         super().__init__()
-        self.loss = torch.nn.BCEWithLogitsLoss()
+        self.loss_func = torch.nn.BCEWithLogitsLoss()
 
-        self.sim = sim_function
+        self.sim = sim_func
         if self.sim is None:
             assert in_channels is not None, \
                 "If use the default bilinear discriminator, then hidden_channels must be set."
-            self.sim = BilinearSim(in_channels=in_channels)
+            self.sim = Bilinear(in_channels=in_channels)
 
     def forward(self, x: Tensor, y: Tensor, x_ind: Tensor, y_ind: Tensor):
         r"""
@@ -48,4 +48,4 @@ class NegativeMI(torch.nn.Module):
         label_pos = torch.ones(logits_pos.shape[0])
         label_neg = torch.zeros(logits_neg.shape[0])
         labels = torch.stack((label_pos, label_neg), -1).to(x.device)
-        return self.loss(logits, labels)
+        return self.loss_func(logits, labels)
