@@ -7,7 +7,7 @@ from torch.linalg import inv
 from torch_geometric.data import Data
 from .base import Augmentor
 from src.data import HomoData
-
+import faiss
 
 class ComputePPR(Augmentor):
     def __init__(self, alpha=0.2, self_loop=True):
