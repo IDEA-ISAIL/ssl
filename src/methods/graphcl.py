@@ -6,6 +6,7 @@ from src.typing import AugmentType
 from .utils import AvgReadout
 from src.losses import NegativeMI
 from src.loader import AugmentDataLoader
+from torch_geometric.nn.models import GCN
 from torch_geometric.nn import GCNConv
 import torch
 

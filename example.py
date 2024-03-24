@@ -7,7 +7,10 @@ from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.methods import DGI
 # from src.methods.dgi import DGI2
 from src.trainer import SimpleTrainer
-from src.evaluation import LogisticRegression
+from src.augment import ShuffleNode
+
+from src.evaluation import LogisticRegression, SVCRegression, RandomForestClassifier, TSNEVisulization, SimSearch, K_Means
+
 
 
 # -------------------- Data --------------------
@@ -42,3 +45,5 @@ embs = method.get_embs(data_pyg).detach()
 
 lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=50, device="cuda")
 lg(embs=embs, dataset=data_pyg)
+
+# plot_embedding2D(embs=embs, dataset=data_pyg)
