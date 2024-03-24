@@ -3,23 +3,41 @@ from src.methods import GraphCL, GraphCLEncoder
 from src.trainer import SimpleTrainer
 from torch_geometric.loader import DataLoader
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
-from src.datasets import Planetoid, Entities
+from src.datasets import Planetoid, Entities, Amazon, WikiCS, Coauthor
 from src.evaluation import LogisticRegression
 import torch
 from src.config import load_yaml
+from src.utils.create_data import create_masks
+from src.utils.add_adj import add_adj_t
 
 # load the configuration file
-config = load_yaml('./configuration/graphcl.yml')
+# config = load_yaml('./configuration/graphcl_amazon.yml')
+# config = load_yaml('./configuration/graphcl_coauthor.yml')
+config = load_yaml('./configuration/graphcl_wikics.yml')
+# config = load_yaml('./configuration/graphcl_cora.yml')
 torch.manual_seed(config.torch_seed)
 device = torch.device("cuda:{}".format(config.gpu_idx) if torch.cuda.is_available() and config.use_cuda else "cpu")
 
 # data
-pre_transforms = Compose([NormalizeFeatures(ord=1), Edge2Adj(norm=GCNNorm(add_self_loops=1))])
-if config.dataset.root == 'pyg_data':
-    dataset = Planetoid(root=config.dataset.root, name=config.dataset.name, pre_transform=pre_transforms)
+
+if config.dataset.name == 'pyg_data':
+    pre_transforms = Compose([NormalizeFeatures(ord=1), Edge2Adj(norm=GCNNorm(add_self_loops=1))])
+    # dataset = Planetoid(root=config.dataset.root, name=config.dataset.name, pre_transform=pre_transforms)
+    dataset = Planetoid(root='pyg_data', name=config.dataset.name)
+elif config.dataset.name == 'Amazon':
+    pre_transforms = NormalizeFeatures(ord=1)
+    dataset = Amazon(root='pyg_data', name='Photo', pre_transform=pre_transforms)
+elif config.dataset.name == 'WikiCS':
+    pre_transforms = NormalizeFeatures(ord=1)
+    dataset = WikiCS(root='pyg_data', pre_transform=pre_transforms)
+elif config.dataset.name == 'coauthor':
+    pre_transforms = NormalizeFeatures(ord=1)
+    dataset = Coauthor(root='pyg_data', name='CS', pre_transform=pre_transforms)
 else:
     raise 'please specify the correct dataset root'
-# dataset = Entities(root="pyg_data", name="mutag", pre_transform=pre_transforms)
+if config.dataset.name in ['Amazon', 'WikiCS', 'coauthor']:
+    dataset.data = create_masks(dataset.data, config.dataset.name)
+dataset = add_adj_t(dataset)
 data_loader = DataLoader(dataset)
 
 # Augmentation
@@ -42,7 +60,9 @@ method.augment_type = aug_type
 
 
 # ------------------ Trainer --------------------
-trainer = SimpleTrainer(method=method, data_loader=data_loader, device=device)
+trainer = SimpleTrainer(method=method, data_loader=data_loader,
+                        device=device, n_epochs=config.optim.max_epoch,
+                        patience=config.optim.patience)
 trainer.train()
 
 
@@ -50,6 +70,6 @@ trainer.train()
 data_pyg = dataset.data.to(method.device)
 embs = method.get_embs(data_pyg, data_pyg.adj_t).detach()
 
-lg = LogisticRegression(lr=config.optim.base_lr, weight_decay=config.optim.weight_decay, max_iter=config.optim.max_epoch,
-                        n_run=config.optim.run, device=device)
+lg = LogisticRegression(lr=config.classifier.base_lr, weight_decay=config.classifier.weight_decay,
+                        max_iter=config.classifier.max_epoch, n_run=1, device=device)
 lg(embs=embs, dataset=data_pyg)

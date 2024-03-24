@@ -7,6 +7,7 @@ from .random_drop_node import RandomDropNode
 from .random_mask import RandomMask
 from .random_mask_channel import RandomMaskChannel
 from .random_drop_edge import RandomDropEdge
+from .concate_aug import concate_aug_type
 from .diff_matrix import ComputeHeat, ComputePPR
 from .augment_afgrl import NeighborSearch_AFGRL
 

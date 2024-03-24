@@ -3,7 +3,7 @@ gpu_idx : 0
 model:
   dropout: 0.5 
   n_layers: 2 
-  in_channels: 3703
+  in_channels: 1433
   hidden_channels: 512
   aug_type: 'mask'
 optim:
@@ -13,7 +13,7 @@ optim:
   patience : 1000
   weight_decay : 0.0005
 dataset:
-  name : citeseer
+  name : cora
   root : pyg_data
 output:
   verbose : True
