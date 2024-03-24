@@ -7,12 +7,14 @@ from src.augment.random_drop_node import delete_row_col
 # from torch_geometric.utils.convert import to_scipy_sparse_matrix
 
 class AugmentSubgraph(Augmentor):
-    def __init__(self, is_x: bool = True, is_adj: bool = False):
+    def __init__(self, is_x: bool = True, is_adj: bool = False, drop_percent=0.2):
         super().__init__()
         self.is_x = is_x
         self.is_adj = is_adj
+        self.drop_percent = drop_percent
 
-    def __call__(self, data: HomoData, drop_percent=0.2):
+    def __call__(self, data: HomoData, drop_percent=None):
+        drop_percent = drop_percent if drop_percent else self.drop_percent
         data_tmp = copy.deepcopy(data)
         input_adj = data_tmp.adj_t.to_dense()
         # input_adj = from_scipy_sparse_matrix(data_tmp.edge_index)

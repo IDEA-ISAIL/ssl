@@ -1,12 +1,10 @@
 import torch
 
-from .base import BaseMethod, ContrastiveMethod
-from .utils import AvgReadout
-from src.augment import ShuffleNode, Echo, AugmentorDict
+from .base import BaseMethod
+from src.augment import ShuffleNode, GlobalSum
 from src.losses import NegativeMI
 
-from typing import Optional, Callable, Union
-from src.typing import AugmentType
+from src.typing import AugmentType, Tensor
 
 
 class DGI(BaseMethod):
@@ -15,75 +13,50 @@ class DGI(BaseMethod):
     Args:
         encoder (Optional[torch.nn.Module]): the encoder to be trained.
         hidden_channels (int): output dimension of the encoder.
-        readout (Union[Callable, torch.nn.Module]): the readout function to obtain the summary emb. of the entire graph.
-            (default: AvgReadout())
-        corruption (OptAugment): data augmentation/corruption to generate negative node pairs.
-            (default: ShuffleNode())
-        loss_function (Optional[torch.nn.Module]): the loss function. If None, then use the NegativeMI loss.
+        readout (str): "avg" or "max": generate global embeddings.
+            (default: "avg")
     """
     def __init__(self,
                  encoder: torch.nn.Module,
                  hidden_channels: int,
-                 readout: Union[Callable, torch.nn.Module] = AvgReadout(),
-                 corruption: AugmentType = ShuffleNode(),
-                 loss_function: Optional[torch.nn.Module] = None) -> None:
-        loss_function = loss_function if loss_function else NegativeMI(hidden_channels)
-        super().__init__(encoder=encoder, data_augment=corruption, loss_function=loss_function)
+                 readout: str="avg") -> None:
+        super().__init__(encoder=encoder)
 
-        self.readout = readout
+        self.readout = GlobalSum(readout)
+        self.corrupt = ShuffleNode()
+        self.loss_func = NegativeMI(in_channels=hidden_channels)
+
         self.sigmoid = torch.nn.Sigmoid()
 
-    def forward(self, batch):
+    def apply_data_augment(self, batch):
         batch = batch.to(self.device)
-        batch2 = self.data_augment(batch).to(self._device)
+        batch2 = self.corrupt(batch).to(self._device)
+        return batch, batch2
 
-        h_pos = self.encoder(batch)
-        h_neg = self.encoder(batch2)
+    def get_embs(self, batch):
+        return self.encoder(batch)
 
+    def apply_emb_augment(self, h_pos):
         s = self.readout(h_pos, keepdim=True)
         s = self.sigmoid(s)
+        return s
 
+    def get_loss(self, h_pos, h_neg, s):
         s = s.expand_as(h_pos)
-        # pos_pairs = torch.stack([s, h_pos], -1)
-        # neg_pairs = torch.stack([s, h_neg], -1)
-
-        loss = self.loss_function(x=s, y=h_pos, x_ind=s, y_ind=h_neg)
+        loss = self.loss_func(x=s, y=h_pos, x_ind=s, y_ind=h_neg)
         return loss
 
+    def forward(self, batch):
+        # 1. data augmentation
+        batch, batch2 = self.apply_data_augment(batch)
 
-# class DGI2(ContrastiveMethod):
-#     r""" Deep Graph Infomax (DGI).
-#
-#     Args:
-#         encoder (Optional[torch.nn.Module]): the encoder to be trained.
-#         hidden_channels (int): output dimension of the encoder.
-#         readout (Union[Callable, torch.nn.Module]): the readout function to obtain the summary emb. of the entire graph.
-#             (default: AvgReadout())
-#         data_augment (AugmentType): data augmentation to generate augmented data.
-#             (default: AugmentorDict({1: Echo(), 2: ShuffleNode()}))
-#         loss_function (Optional[torch.nn.Module]): the loss function. If None, then use the NegativeMI loss.
-#     """
-#     def __init__(self,
-#                  encoder: torch.nn.Module,
-#                  hidden_channels: int,
-#                  readout: Callable = AvgReadout(),
-#                  data_augment: AugmentType = AugmentorDict({1: Echo(), 2: ShuffleNode()}),
-#                  loss_function: Optional[torch.nn.Module] = None) -> None:
-#         loss_function = loss_function if loss_function else NegativeMI(hidden_channels)
-#         super().__init__(encoder=encoder, data_augment=data_augment, loss_function=loss_function)
-#
-#         # TODO: must assert the keys of the dictionary in the future.
-#
-#         self.readout = readout
-#         self.sigmoid = torch.nn.Sigmoid()
-#
-#     def get_data_pairs(self, view2emb):
-#         h1, h2 = view2emb[1], view2emb[2]
-#
-#         s = self.readout(h1, keepdim=True)
-#         s = self.sigmoid(s)
-#
-#         s = s.expand_as(h1)
-#         pos_pairs = torch.stack([s, h1], -1)
-#         neg_pairs = torch.stack([s, h2], -1)
-#         return pos_pairs, neg_pairs
+        # 2. get embeddings
+        h_pos = self.get_embs(batch)
+        h_neg = self.get_embs(batch2)
+
+        # 3. emb augmentation
+        s = self.apply_emb_augment(h_pos)
+
+        # 4. get loss
+        loss = self.get_loss(h_pos, h_neg, s)
+        return loss

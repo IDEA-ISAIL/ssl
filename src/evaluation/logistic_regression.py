@@ -34,8 +34,7 @@ class LogisticRegression(BaseEvaluator):
                 train_msk = train_mask[i]
                 val_msk = val_mask[i]
                 # some datasets (e.g., wikics) with multiple splits only has one test mask
-                test_msk = test_mask if len(test_mask.shape) == 1 else test_mask[i]
-
+                test_msk = test_mask if type(test_mask) == torch.Tensor and len(test_mask.shape) == 1 else test_mask[i]
                 val_acc, test_acc = self.single_run(
                     embs=embs, labels=dataset.y, train_mask=train_msk, val_mask=val_msk, test_mask=test_msk)
 
@@ -51,14 +50,14 @@ class LogisticRegression(BaseEvaluator):
         print('Evaluate node classification results')
         print('** Val: {:.4f} ({:.4f}) | Test: {:.4f} ({:.4f}) **'.format(val_acc, val_std, test_acc, test_std))
 
-    def single_run(self, embs, labels, train_mask, val_mask, test_mask) -> (np.ndarray, np.ndarray):
+    def single_run(self, embs, labels, train_mask, val_mask, test_mask):
         emb_dim, num_class = embs.shape[1], labels.unique().shape[0]
 
         embs, labels = embs.to(self.device), labels.to(self.device)
         classifier = LogisticRegressionClassifier(emb_dim, num_class).to(self.device)
         optimizer = torch.optim.Adam(classifier.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 
-        for _ in range(self.max_iter):
+        for iter in range(self.max_iter):
             classifier.train()
             logits, loss = classifier(embs[train_mask], labels[train_mask])
             optimizer.zero_grad()
@@ -106,14 +105,30 @@ def process_split(dataset):
     r"""If the dataset only has one split, then add an additional dimension to the train_mask and val_mask.
         If the dataset has multiple splits, then return the number of splits, original train_mask and val_mask.
     """
+    if not hasattr(dataset, 'train_mask'):
+        from sklearn.model_selection import StratifiedKFold
+        n_splits = 10
+        kf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=None)
+        dataset.train_mask = []
+        dataset.val_mask = []
+        dataset.test_mask = []
+        for train_index, test_index in kf.split(dataset.x.cpu(), dataset.y.cpu()):
+            dataset.train_mask.append(torch.LongTensor(train_index))
+            dataset.test_mask.append(torch.LongTensor(test_index))
+            dataset.val_mask.append(torch.LongTensor(test_index))
+        n_splits = len(dataset.train_mask)
+        return n_splits, dataset.train_mask, dataset.val_mask, dataset.test_mask
     train_mask = dataset.train_mask
     val_mask = dataset.val_mask
     test_mask = dataset.test_mask
-    if len(dataset.train_mask.shape) > 1:
+    if type(train_mask) == torch.Tensor and len(train_mask.shape) > 1:
         n_splits = dataset.train_mask.shape[0]
+    elif type(dataset.train_mask) == list and len(dataset.train_mask) > 1:
+        n_splits = len(dataset.train_mask)
     else:
         n_splits = 1
         train_mask = torch.unsqueeze(dataset.train_mask, 0)
         val_mask = torch.unsqueeze(dataset.val_mask, 0)
         test_mask = torch.unsqueeze(dataset.test_mask, 0)
     return n_splits, train_mask, val_mask, test_mask
+

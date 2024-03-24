@@ -57,9 +57,8 @@
 
 ## Heterogeneous/Multiplex/Multiview
 * [Unsupervised Attributed Multiplex Network Embedding, AAAI'2020](https://arxiv.org/pdf/1911.06750.pdf), [(Github)](https://github.com/pcy1302/DMGI) [Lihui]
-* [Contrastive Multi-View Representation Learning on Graphs, ICML'2020](https://arxiv.org/pdf/2006.05582.pdf), [(Github)](https://github.com/kavehhassani/mvgrl) [Dongqi]
-* [Self-supervised Heterogeneous Graph Neural Network with Co-contrastive Learning, KDD'2021](https://arxiv.org/pdf/2105.09111.pdf), [(Github)](https://github.com/liun-online/HeCo)
-* [Multi-view Contrastive Graph Clustering, NeurIPS'2021](https://proceedings.neurips.cc/paper/2021/file/10c66082c124f8afe3df4886f5e516e0-Paper.pdf), [(Github)](https://github.com/Panern/MCGC)
+* [Self-supervised Heterogeneous Graph Neural Network with Co-contrastive Learning, KDD'2021](https://arxiv.org/pdf/2105.09111.pdf), [(Github)](https://github.com/liun-online/HeCo) [Zihao]
+* [Multi-view Contrastive Graph Clustering, NeurIPS'2021](https://proceedings.neurips.cc/paper/2021/file/10c66082c124f8afe3df4886f5e516e0-Paper.pdf), [(Github)](https://github.com/Panern/MCGC) [Zhichen]
 
 ## Temporal/Dynamic
 * [Self-supervised Representation Learning on Dynamic Graphs, CIKM'2021](https://dl.acm.org/doi/pdf/10.1145/3459637.3482389), no public code
@@ -93,3 +92,24 @@ https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/d
 - [PyGCL](https://github.com/PyGCL/PyGCL)
 - [Solo-Learn](https://github.com/vturrisi/solo-learn)
 - [Lightly](https://github.com/lightly-ai/lightly)
+- 
+
+# Paper Writing:
+JMLR Paper: https://jmlr.org/papers/volume23/21-1155/21-1155.pdf
+JMLR requirements: https://www.jmlr.org/mloss/mloss-info.html
+Pytorch Package document: https://pytorch-geometric.readthedocs.io/en/latest/ 
+https://pytorch-geometric-temporal.readthedocs.io/en/latest/notes/installation.html 
+https://pytorch-geometric-temporal.readthedocs.io/en/latest/modules/root.html
+
+# Requirements
+```
+python=3.10.14
+PyTorch=2.2.1+cu118
+PyG=2.5.2
+torch_sparse=0.6.18+pt22cu118
+torch_scatter=2.1.2+pt22cu118
+faiss-gpu=1.7.2
+matplotlib=3.8.3
+seaborn=0.13.2
+```
+
