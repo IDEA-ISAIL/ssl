@@ -54,7 +54,9 @@ class SimpleTrainer(BaseTrainer):
                 self.method.train()
                 self.optimizer.zero_grad()
 
+                data = self.push_batch_to_device(data)
                 loss = self.method(data)
+
 
                 loss.backward()
                 self.optimizer.step()
@@ -62,16 +64,33 @@ class SimpleTrainer(BaseTrainer):
 
             end_time = time.time()
             info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
-            
-            # if epoch%200==0:
-            #     print(info)
-            #     self.method.eval()
-            #     data_pyg = self.dataset.data.to(self.method.device)
-            #     embs = self.method.get_embs(data_pyg, data_pyg.edge_index).detach()
-            #     lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=20, device=self.device)
-            #     lg(embs=embs, dataset=data_pyg)
+            print(info)
+
+            # # ------------------ Evaluator -------------------
+            # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            # data_pyg = self.data_loader.dataset.data.to(device)
+            # y, embs = self.method.get_embs(self.data_loader)
+            # data_pyg.x = embs
+            # from src.evaluation import LogisticRegression
+            # lg = LogisticRegression(lr=0.001, weight_decay=0, max_iter=100, n_run=1, device=device)
+            # lg(embs=embs, dataset=data_pyg)
+
+
             self.early_stopper.update(loss)  # update the status
             if self.early_stopper.save:
                 self.save()
             if self.early_stopper.stop:
                 return
+
+    # push data to device
+    def push_batch_to_device(self, batch):
+        if type(batch) is tuple:
+            f = lambda x: tuple(x_.to(self.device) for x_ in batch)
+            return f(batch)
+        else:
+            return batch.to(self.device)
+
+    def check_dataloader(self, dataloader):
+        assert hasattr(dataloader, 'x'), 'The dataset does not have attributes x.'
+        # assert hasattr(dataloader, 'train_mask'), 'T'
+        # return 0

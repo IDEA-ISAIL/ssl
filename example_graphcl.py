@@ -67,9 +67,16 @@ trainer.train()
 
 
 # ------------------ Evaluator -------------------
+method.eval()
 data_pyg = dataset.data.to(method.device)
-embs = method.get_embs(data_pyg, data_pyg.adj_t).detach()
+y, embs = method.get_embs(data_loader)
 
 lg = LogisticRegression(lr=config.classifier.base_lr, weight_decay=config.classifier.weight_decay,
                         max_iter=config.classifier.max_epoch, n_run=1, device=device)
 lg(embs=embs, dataset=data_pyg)
+
+
+
+
+
+

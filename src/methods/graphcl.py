@@ -11,10 +11,6 @@ from torch_geometric.nn import GCNConv
 import torch
 
 
-torch.manual_seed(0)
-np.random.seed(0)
-
-
 class GraphCL(BaseMethod):
     r"""
     TODO: add descriptions
@@ -69,7 +65,6 @@ class GraphCL(BaseMethod):
     def apply_data_augment_offline(self, dataloader):
         batch_list = []
         for i, batch in enumerate(dataloader):
-            batch = batch.to(self._device)
             batch_aug = self.data_augment(batch)
             batch_aug2 = self.data_augment(batch)
             batch_list.append((batch, batch_aug, batch_aug2))
