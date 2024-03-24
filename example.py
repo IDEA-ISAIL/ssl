@@ -5,7 +5,6 @@ from torch_geometric.nn.models import GCN
 from src.datasets import Planetoid
 from src.transforms import NormalizeFeatures, GCNNorm, Edge2Adj, Compose
 from src.methods import DGI
-# from src.methods.dgi import DGI2
 from src.trainer import SimpleTrainer
 from src.augment import ShuffleNode
 

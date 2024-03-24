@@ -111,4 +111,5 @@ torch_scatter=2.1.2+pt22cu118
 faiss-gpu=1.7.2
 matplotlib=3.8.3
 seaborn=0.13.2
+dgl=2.1.0
 ```
