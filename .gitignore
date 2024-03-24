@@ -142,5 +142,23 @@ ckpt*/
 results/
 .vscode/
 pyg_data/
+
+# local datasets downloaded from torch_geometric
+DBLP_data
+Aminer_data
+datasets/acm/processed/data.pt
+datasets/acm/processed/pre_filter.pt
+datasets/acm/processed/pre_transform.pt
+datasets/aminer/processed/data.pt
+datasets/aminer/processed/pre_filter.pt
+datasets/aminer/processed/pre_transform.pt
+datasets/freebase_movies/processed/data.pt
+datasets/freebase_movies/processed/pre_filter.pt
+datasets/freebase_movies/processed/pre_transform.pt
+datasets/dblp
+test.ipynb
+*.pkl
+
 data_/
 data/
+datasets/

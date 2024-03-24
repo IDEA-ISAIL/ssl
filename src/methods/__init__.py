@@ -1,6 +1,7 @@
 from .base import BaseMethod
 from .dgi import DGI
 from .graphcl import GraphCL, GraphCLEncoder
+from .heco import HeCo, Sc_encoder, Mp_encoder, HeCoDBLPTransform
 from .infograph import InfoGraph
 from .graphmae import GraphMAE
 from .bgrl import BGRL, BGRLEncoder

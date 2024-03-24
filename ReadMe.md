@@ -92,7 +92,7 @@ https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/d
 - [PyGCL](https://github.com/PyGCL/PyGCL)
 - [Solo-Learn](https://github.com/vturrisi/solo-learn)
 - [Lightly](https://github.com/lightly-ai/lightly)
-- 
+- [Faiss](https://github.com/facebookresearch/faiss)
 
 # Paper Writing:
 JMLR Paper: https://jmlr.org/papers/volume23/21-1155/21-1155.pdf
@@ -112,4 +112,3 @@ faiss-gpu=1.7.2
 matplotlib=3.8.3
 seaborn=0.13.2
 ```
-
