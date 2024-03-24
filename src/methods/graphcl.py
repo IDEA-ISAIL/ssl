@@ -7,8 +7,8 @@ from .utils import AvgReadout
 from src.losses import NegativeMI
 from src.loader import AugmentDataLoader
 from torch_geometric.nn.models import GCN
+from torch_geometric.nn import GCNConv
 import torch
-torch.manual_seed(0)
 
 
 class GraphCL(BaseMethod):
@@ -65,7 +65,6 @@ class GraphCL(BaseMethod):
     def apply_data_augment_offline(self, dataloader):
         batch_list = []
         for i, batch in enumerate(dataloader):
-            batch = batch.to(self._device)
             batch_aug = self.data_augment(batch)
             batch_aug2 = self.data_augment(batch)
             batch_list.append((batch, batch_aug, batch_aug2))
@@ -73,30 +72,50 @@ class GraphCL(BaseMethod):
         return new_loader
 
 
+# class GraphCLEncoder(torch.nn.Module):
+#     def __init__(self,
+#                  in_channels: int,
+#                  hidden_channels: int = 512,
+#                  act: torch.nn = torch.nn.PReLU(),
+#                  num_layers=1):
+#         super(GraphCLEncoder, self).__init__()
+#         self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=None)
+#         self.act = act
+#         for m in self.modules():
+#             self._weights_init(m)
+#
+#     def _weights_init(self, m):
+#         if isinstance(m, torch.nn.Linear):
+#             torch.nn.init.xavier_uniform_(m.weight.data)
+#             if m.bias is not None:
+#                 m.bias.data.fill_(0.0)
+#
+#     def forward(self, batch, edge_index):
+#         edge_weight = batch.edge_weight if "edge_weight" in batch else None
+#         return self.act(self.gcn(x=batch.x, edge_index=edge_index, edge_weight=edge_weight))
+
+
 class GraphCLEncoder(torch.nn.Module):
     def __init__(self,
                  in_channels: int,
                  hidden_channels: int = 512,
                  act: torch.nn = torch.nn.PReLU(),
-                 num_layers=1):
+                 num_layers=1,
+                 bias=True):
         super(GraphCLEncoder, self).__init__()
-        # self.dim_out = hidden_channels
-        # self.fc = torch.nn.Linear(in_channels, hidden_channels, bias=False)
-        # self.act = act
-        #
-        # if bias:
-        #     self.bias = torch.nn.Parameter(torch.FloatTensor(hidden_channels))
-        #     self.bias.data.fill_(0.0)
-        # else:
-        #     self.register_parameter('bias', None)
-        #
-        # for m in self.modules():
-        #     self._weights_init(m)
-        # self.fc = torch.nn.Linear(in_channels, hidden_channels, bias=False)
-        self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=act)
+        self.dim_out = hidden_channels
         self.act = act
+
+        if bias:
+            self.bias = torch.nn.Parameter(torch.FloatTensor(hidden_channels))
+            self.bias.data.fill_(0.0)
+        else:
+            self.register_parameter('bias', None)
+
         for m in self.modules():
             self._weights_init(m)
+        self.fc = torch.nn.Linear(in_channels, hidden_channels, bias=False)
+        self.gcn = GCNConv(in_channels=in_channels, out_channels=hidden_channels, bias=True, act=None)
 
     def _weights_init(self, m):
         if isinstance(m, torch.nn.Linear):
@@ -105,16 +124,14 @@ class GraphCLEncoder(torch.nn.Module):
                 m.bias.data.fill_(0.0)
 
     def forward(self, batch, edge_index, is_sparse=True):
-        edge_weight = batch.edge_weight if "edge_weight" in batch else None
-        return self.act(self.gcn(x=batch.x, edge_index=edge_index, edge_weight=edge_weight))
-        # x = batch.x
-        # adj = adj.to_dense()
-        # seq_fts = self.fc(x)
-        # if is_sparse:
-        #     out = torch.mm(adj, torch.squeeze(seq_fts, 0))
-        # else:
-        #     out = torch.bmm(adj, seq_fts)
-        # if self.bias is not None:
-        #     out += self.bias
-        #
-        # return self.act(out)
+        x = batch.x
+        adj = batch.adj_t.to_dense().to(x.device)
+        seq_fts = self.fc(x)
+        if is_sparse:
+            out = torch.mm(adj, torch.squeeze(seq_fts, 0))
+        else:
+            out = torch.bmm(adj, seq_fts)
+        if self.bias is not None:
+            out += self.bias
+
+        return self.act(out)

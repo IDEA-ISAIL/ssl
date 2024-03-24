@@ -95,5 +95,5 @@ def decide_config(root, name):
                   "name": name, "class": WikiCS, "src": "pyg"}        
     else:
         raise Exception(
-            f"Unknown dataset name {name}, name has to be one of the following 'cora', 'citeseer', 'pubmed', 'photo', 'computers', 'cs', 'physics'")
+            f"Unknown dataset name {name}, name has to be one of the following 'cora', 'citeseer', 'pubmed', 'photo', 'computers', 'cs', 'physics' 'wikics'")
     return params

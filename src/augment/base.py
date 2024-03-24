@@ -24,6 +24,8 @@ class AugmentorList:
             inputs = augmentor(inputs)
         return inputs
 
+    # def append(self, item):
+    #     return self.augmentors.append(item)
 
 class AugmentorDict(UserDict):
     r"""Base class for augmentation. A dictionary of augmentors."""
