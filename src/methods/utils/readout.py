@@ -1,6 +1,9 @@
 import torch
 from torch_geometric.typing import Tensor
 
+"""
+To be removed.
+"""
 
 class AvgReadout(object):
     def __init__(self) -> None:

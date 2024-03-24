@@ -1,3 +1,4 @@
+import os
 import numpy
 import torch
 
@@ -18,20 +19,28 @@ class BaseMethod(torch.nn.Module):
         emb_augment (OptAugment): embedding augment to be used.
     """
 
+    # def __init__(self,
+    #              encoder: torch.nn.Module,
+    #              loss_function: Union[Callable, torch.nn.Module],
+    #              data_augment: OptAugment = None,
+    #              emb_augment: OptAugment = None):
+    #     super().__init__()
+
+    #     self.encoder = encoder
+    #     self.loss_function = loss_function
+    #     self.data_augment = data_augment
+    #     self.emb_augment = emb_augment
+
     def __init__(self,
                  encoder: torch.nn.Module,
-                 loss_function: Union[Callable, torch.nn.Module],
-                 data_augment: OptAugment = None,
-                 emb_augment: OptAugment = None):
+                 device: str="cuda",
+                 save_root: str="./",
+                 *args, **kwargs):
         super().__init__()
 
         self.encoder = encoder
-        self.loss_function = loss_function
-        self.data_augment = data_augment
-        self.emb_augment = emb_augment
-
-        self._device = None  # device: cuda or cpu
-        self._param_path = None  # record the latest path used by save() or load()
+        self.device = device  # device: cuda or cpu
+        self.save_root = save_root  # record the latest path used by save() or load()
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}()'
@@ -55,22 +64,27 @@ class BaseMethod(torch.nn.Module):
     def get_embs(self, *args, **kwargs) -> Tensor:
         embs = self.encoder(*args, **kwargs)
         return embs
+    
+    def get_embs(self, *args, **kwargs) -> Tensor:
+        r"""Get embeddings required by the loss."""
+        raise NotImplementedError
+
+    def get_loss(self, *args, **kwargs) -> Tensor:
+        r"""Get loss."""
+        raise NotImplementedError
 
     def save(self, path: Optional[str] = None) -> None:
         r"""Save the parameters of the entire model to the specified path."""
         if path is None:
             path = self.__class__.__name__ + ".ckpt"
-        self._param_path = path
-        torch.save(self.state_dict(), self._param_path)
+        path = os.path.join(self.save_root, path)
+        torch.save(self.state_dict(), path)
 
     def load(self, path: Optional[str] = None) -> None:
         r"""Load the parameters from the specified path."""
         if path is None:
-            path = self._param_path
-        if path is None:
             raise FileNotFoundError
-        self._param_path = path
-        state_dict = torch.load(self._param_path)
+        state_dict = torch.load(path)
         self.model.load_state_dict(state_dict)
 
     @property
