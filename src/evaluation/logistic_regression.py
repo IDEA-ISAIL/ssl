@@ -131,4 +131,3 @@ def process_split(dataset):
         val_mask = torch.unsqueeze(dataset.val_mask, 0)
         test_mask = torch.unsqueeze(dataset.test_mask, 0)
     return n_splits, train_mask, val_mask, test_mask
-
