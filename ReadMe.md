@@ -101,3 +101,15 @@ Pytorch Package document: https://pytorch-geometric.readthedocs.io/en/latest/
 https://pytorch-geometric-temporal.readthedocs.io/en/latest/notes/installation.html 
 https://pytorch-geometric-temporal.readthedocs.io/en/latest/modules/root.html
 
+# Requirements
+```
+python=3.10.14
+PyTorch=2.2.1+cu118
+PyG=2.5.2
+torch_sparse=0.6.18+pt22cu118
+torch_scatter=2.1.2+pt22cu118
+faiss-gpu=1.7.2
+matplotlib=3.8.3
+seaborn=0.13.2
+```
+
