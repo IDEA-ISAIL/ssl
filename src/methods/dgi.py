@@ -19,10 +19,10 @@ class DGI(BaseMethod):
                  encoder: torch.nn.Module,
                  hidden_channels: int,
                  readout: str="avg",
-                 act: Callable=torch.nn.Sigmoid()) -> None:
+                 readout_act: Callable=torch.nn.Sigmoid()) -> None:
         super().__init__(encoder=encoder)
 
-        self.readout = SumEmb(readout, act)
+        self.readout = SumEmb(readout, readout_act)
         self.corrupt = ShuffleNode()
         self.loss_func = NegativeMI(in_channels=hidden_channels)
 
