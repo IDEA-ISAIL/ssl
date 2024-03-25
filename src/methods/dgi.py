@@ -1,8 +1,9 @@
 import torch
 
 from .base import BaseMethod
-from src.augment import ShuffleNode, GlobalSum
+from src.augment import ShuffleNode, SumEmb
 from src.losses import NegativeMI
+from typing import Callable
 
 
 class DGI(BaseMethod):
@@ -17,14 +18,13 @@ class DGI(BaseMethod):
     def __init__(self,
                  encoder: torch.nn.Module,
                  hidden_channels: int,
-                 readout: str="avg") -> None:
+                 readout: str="avg",
+                 act: Callable=torch.nn.Sigmoid()) -> None:
         super().__init__(encoder=encoder)
 
-        self.readout = GlobalSum(readout)
+        self.readout = SumEmb(readout, act)
         self.corrupt = ShuffleNode()
         self.loss_func = NegativeMI(in_channels=hidden_channels)
-
-        self.sigmoid = torch.nn.Sigmoid()
 
     def apply_data_augment(self, batch):
         batch = batch.to(self.device)
@@ -33,7 +33,6 @@ class DGI(BaseMethod):
 
     def apply_emb_augment(self, h_pos):
         s = self.readout(h_pos, keepdim=True)
-        s = self.sigmoid(s)
         return s
 
     def get_loss(self, h_pos, h_neg, s):

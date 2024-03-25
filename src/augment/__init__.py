@@ -10,4 +10,4 @@ from .random_drop_edge import RandomDropEdge
 from .concate_aug import concate_aug_type
 from .diff_matrix import ComputeHeat, ComputePPR
 from .augment_afgrl import NeighborSearch_AFGRL
-from .sum_emb import GlobalSum
+from .sum_emb import SumEmb
