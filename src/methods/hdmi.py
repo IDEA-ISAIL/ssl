@@ -1,118 +1,173 @@
 import torch
-
-import numpy as np
-from src.loader import Loader, FullLoader
-from .base import BaseMethod
-import torch.nn.functional as F
-from src.loader import AugmentDataLoader
 import torch.nn as nn
 
-from src.augment import ShuffleNode, Echo, AugmentorDict
+from .base import BaseMethod
+from src.augment import ShuffleNode, SumEmb
 from src.losses import NegativeMI
 
-from typing import Optional, Callable, Union
-from src.typing import AugmentType
+from typing import Callable
 
 
 class HDMI(BaseMethod):
-    r"""The full model to train the encoder.
-
-    Args:
-        encoder (torch.nn.Module): the encoder to be trained.
-        feature_size (int): the number of input features.
-        hidden_channels (int): the channel of the hidden dimension.
-        discriminator (torch.nn.Module): the discriminator for contrastive learning.
-    """
     def __init__(self, 
-                 encoder, 
-                 feature_size: int, 
+                 encoder: torch.nn.Module, 
+                 in_channels: int, 
                  hidden_channels: int, 
-                 corruption: AugmentType = ShuffleNode(), 
-                 same_discriminator=True):
-        super().__init__(encoder=encoder, data_augment=data_augment)
+                 n_layers: int,
+                 w_extrinsic: float=1.0,
+                 w_intrinsic: float=1.0,
+                 w_joint: float=1.0,
+                 readout: str="avg",
+                 readout_act: Callable=torch.nn.Sigmoid(),
+                 proj_act: Callable=torch.nn.Sigmoid(),
+                 same_discriminator: bool=True):
+        r"""The full model to train the encoder.
+            Args:
+                encoder (torch.nn.Module): the encoder to be trained.
+                in_channels (int): the number of input features.
+                hidden_channels (int): the channel of the hidden dimension.
+                n_layers (int): the number of layers of the heterogeneous multiplex graph.
+                readout (str): "avg" or "sum". Sum emebddings.
+                readout_act (Callable): the activation function for readout.
+                proj_act (Callable): the activation function for proj embeddings.
+                same_discriminator (bool): use the same discriminator for local (layers/views) and the final emebeddings or not.
+                discriminator (torch.nn.Module): the discriminator for contrastive learning.
+        """
+        super().__init__(encoder=encoder)
+        # augments
+        self.corrupt = ShuffleNode()
+        self.readout = SumEmb(readout, readout_act)
+        
+        # losses
+        self.loss_layer_e, self.loss_layer_i, self._loss_layer_j = self._init_loss(in_channels, hidden_channels)
+        self.s_layer_proj, self.f_layer_proj, self.sf_layer_proj = self._init_proj(in_channels, hidden_channels, proj_act)
 
-        self.disc_layers = InterDiscriminator(hidden_channels, feature_size)
         if same_discriminator:
-            self.disc_fusion = self.disc_layers
+            self.loss_final_e, self.loss_final_i, self._loss_final_j  = self.loss_layer_e, self.loss_layer_i, self._loss_layer_j
+            self.s_final_proj, self.f_final_proj, self.sf_final_proj = self.s_layer_proj, self.f_layer_proj, self.sf_layer_proj
         else:
-            self.disc_fusion = InterDiscriminator(hidden_channels, feature_size)
+            self.loss_final_e, self.loss_final_i, self._loss_final_j = self._init_loss(in_channels, hidden_channels)
+            self.s_final_proj, self.f_final_proj, self.sf_final_proj = self._init_proj(in_channels, hidden_channels, proj_act)
 
-    def forward(self, batch):
-        h_1_list = []
-        h_2_list = []
-        c_list = []
+        # weights
+        self.w_e = w_extrinsic
+        self.w_i = w_intrinsic
+        self.w_j = w_joint
 
-        logits_e_list = []
-        logits_i_list = []
-        logits_j_list = []
-        for i, adj in enumerate(adj_list):
-            # real samples
-            h_1 = torch.squeeze(self.gcn_list[i](seq1, adj, sparse))
-            h_1_list.append(h_1)
-            c = torch.squeeze(torch.mean(h_1, 0))   # readout
-            c_list.append(c)
+        # others
+        self.n_layers = n_layers
 
-            # negative samples
-            h_2 = torch.squeeze(self.gcn_list[i](seq2, adj, sparse))
-            h_2_list.append(h_2)
-
-            # discriminator
-            logits_e, logits_i, logits_j = self.disc_layers(c, h_1, h_2, seq1, seq2)
-            logits_e_list.append(logits_e)
-            logits_i_list.append(logits_i)
-            logits_j_list.append(logits_j)
-
-        # fusion
-        h1 = self.combine_att(h_1_list)
-        h2 = self.combine_att(h_2_list)
-        c = torch.mean(h1, 0)   # readout
-        logits_e_fusion, logits_i_fusion, logits_j_fusion = self.disc_fusion(c, h1, h2, seq1, seq2)
-
-        return logits_e_list, logits_i_list, logits_j_list, logits_e_fusion, logits_i_fusion, logits_j_fusion
-
-    def apply_data_augment_offline(self, dataloader):
-        batch_list = []
-        for i, batch in enumerate(dataloader):
-            batch = batch.to(self._device)
-            batch_list.append(batch)
-        new_loader = AugmentDataLoader(batch_list=batch_list)
-        return new_loader
-
-
-def loss_fn(x, y):
-    x = F.normalize(x, dim=-1, p=2)
-    y = F.normalize(y, dim=-1, p=2)
-    return 2 - 2 * (x * y).sum(dim=-1)
-
+    def _init_loss(self, in_channels, hidden_channels):
+        loss_e = NegativeMI(sim_func=nn.Bilinear(hidden_channels, hidden_channels, 1))
+        loss_i = NegativeMI(sim_func=nn.Bilinear(in_channels, hidden_channels, 1))
+        loss_j = NegativeMI(sim_func=nn.Bilinear(hidden_channels, hidden_channels, 1))
+        return loss_e, loss_i, loss_j
     
-def init_weights(m):
-    if type(m) == nn.Linear:
-        torch.nn.init.xavier_uniform_(m.weight)
-        m.bias.data.fill_(0.01)
+    def _init_proj(in_channels, hidden_channels, proj_act):
+        s_proj = nn.ModuleList([nn.Linear(hidden_channels, hidden_channels), proj_act])
+        f_proj = nn.ModuleList([nn.Linear(in_channels, hidden_channels), proj_act])
+        sf_proj = nn.ModuleList([nn.Linear(2*hidden_channels, hidden_channels), proj_act])
+        return s_proj, f_proj, sf_proj
 
-def set_requires_grad(model, val):
-    for p in model.parameters():
-        p.requires_grad = val
+    def forward(self, feats, adj_list, sparse=False):
+        """
+        Args:
+            features: node features or attributes. Shape: [n_nodes, in_channels].
+            adj_list: a list of adjs. Each adj has the shape [N, N].
+            sparse: use sparse matrix multiplcation or not.
+        """
+        assert self.n_layers == len(adj_list), f"The specificed number of layers is {self.n_layers}, but the input has {len(adj_list)} layers."
 
+        # 1. data augment: get negative samples
+        feats_neg = self.apply_data_augment(feats)
+
+        # 2. get embeddings
+        emb_dict_pos = self.encoder(feats, adj_list, sparse)
+        emb_dict_neg = self.encoder(feats_neg, adj_list, sparse)
+
+        # 3. emb augment: get summary embs 
+        sum_dict_pos = self.apply_emb_augment(emb_dict_pos)
+
+        # 4. get loss based on the pos & neg embs
+        loss = self.get_loss(emb_dict_pos, emb_dict_neg, sum_dict_pos, feats, feats_neg)
+        return loss
+
+    def apply_data_augment(self, feats):
+        feats_neg = self.corrupt(feats).to(self.feats.device)
+        return feats_neg
+
+    def apply_emb_augment(self, emb_dict):
+        sum_embs_dict = {
+            "final": self.readout(emb_dict["final"], dim=-2),   # [hidden_channels]
+            "layers": self.readout(emb_dict["layers"], dim=-2)  # [n_layers, hidden_channels]
+        }
+        return sum_embs_dict
+        
+
+    def get_loss(self, emb_dict_pos, emb_dict_neg, sum_dict_pos, f_pos, f_neg):        
+        # layers
+        loss_layer_e = loss_layer_i = loss_layer_j = 0
+        for n in range(self.n_layers):
+            h_pos, h_neg = emb_dict_pos["layers"][n], emb_dict_neg["layers"][n]
+            s_pos = torch.unsqueeze(sum_dict_pos["layers"][n], 0)
+            loss_layer_e += self.loss_layer_e(s_pos, h_pos, s_pos, h_neg)
+            loss_layer_i += self.loss_layer_i(f_pos, h_pos, f_pos, h_neg)
+            loss_layer_j += self.loss_layer_j(s_pos, h_pos, f_pos, f_neg)
+        loss_layer = self.w_e*loss_layer_e + self.w_i*loss_layer_i + self.w_j*loss_layer_j
+
+        # final
+        h_pos, h_neg = emb_dict_pos["final"], emb_dict_neg["final"]
+        s_pos = emb_dict_pos["final"]
+        loss_final_e = self.loss_final_e(s_pos, h_pos, s_pos, h_neg)
+        loss_final_i = self.loss_final_i(f_pos, h_pos, f_pos, h_neg)
+        loss_final_j = self.loss_final_j(s_pos, h_pos, f_pos, f_neg)
+        loss_final = self.w_e*loss_final_e + self.w_i*loss_final_i + self.w_j*loss_final_j
+
+        loss = loss_layer + loss_final
+        return loss
+
+    def loss_layer_j(self, s_pos, h_pos, f_pos, f_neg):
+        loss = self._get_joint_loss(s_pos, h_pos, f_pos, f_neg, self.s_layer_proj, self.sf_layer_proj, self._loss_layer_j)
+        return loss
+
+    def loss_final_j(self, s_pos, h_pos, f_pos, f_neg):
+        loss = self._get_joint_loss(s_pos, h_pos, f_pos, f_neg, self.s_final_proj, self.sf_final_proj, self._loss_final_j)
+        return loss
+
+    def _get_joint_loss(self, s_pos, h_pos, f_pos, f_neg, s_proj_fn, f_proj_fn, sf_proj_fn, loss_fn):
+        s_pos = s_proj_fn(s_pos)
+        f_pos, f_neg = f_proj_fn(f_pos), f_proj_fn(f_neg)
+        sf_pos, sf_neg = torch.cat([s_pos, f_pos], dim=-1), torch.cat([s_pos, f_neg], dim=-1)
+        sf_pos, sf_neg = sf_proj_fn(sf_pos), sf_proj_fn(sf_neg)
+        loss_j = loss_fn(x=h_pos, y=sf_pos, x_ind=h_pos, y_ind=sf_neg)
+        return loss_j
 
 class HDMI_Encoder(nn.Module):
-    def __init__(self, ft_size, hid_units, n_networks):
+    def __init__(self, 
+                 in_channels: int, 
+                 hidden_channels: int, 
+                 n_layers: int):
+        """
+        Args:
+            in_channels: the dimension of the input features.
+            hidden_channels: the dimension of the embeddings.
+            n_layers: the number of meta-paths.
+        """
         super(HDMI_Encoder, self).__init__()
-        self.gcn_list = nn.ModuleList([GCN(ft_size, hid_units) for _ in range(n_networks)])
-        self.w_list = nn.ModuleList([nn.Linear(hid_units, hid_units, bias=False) for _ in range(n_networks)])
-        self.y_list = nn.ModuleList([nn.Linear(hid_units, 1) for _ in range(n_networks)])
+        self.gcn_list = nn.ModuleList([GCN(in_channels, hidden_channels) for _ in range(n_layers)])
+        self.w_list = nn.ModuleList([nn.Linear(hidden_channels, hidden_channels, bias=False) for _ in range(n_layers)])
+        self.y_list = nn.ModuleList([nn.Linear(hidden_channels, 1) for _ in range(n_layers)])
 
         self.att_act1 = nn.Tanh()
         self.att_act2 = nn.Softmax(dim=-1)
 
-        for m in self.modules():
-            self.weights_init(m)
-
-    def weights_init(self, m):
-        if isinstance(m, nn.Linear):
-            torch.nn.init.xavier_uniform_(m.weight.data)
-            if m.bias is not None:
-                m.bias.data.fill_(0.0)
+        # for m in self.modules():
+        #     self.weights_init(m)
+    # def weights_init(self, m):
+        # if isinstance(m, nn.Linear):
+        #     torch.nn.init.xavier_uniform_(m.weight.data)
+        #     if m.bias is not None:
+        #         m.bias.data.fill_(0.0)
 
     def combine_att(self, h_list):
         h_combine_list = []
@@ -130,84 +185,24 @@ class HDMI_Encoder(nn.Module):
         return h
 
     def forward(self, features, adj_list, sparse=True):
+        """
+        Args:
+            features: node features or attributes. Shape: [n_nodes, in_channels].
+            adj_list: a list of adjs. Each adj has the shape [n_nodes, n_nodes].
+            sparse: use sparse matrix multiplcation or not.
+        
+        Returns:
+            emb_dict: a dictionary of embeddings.
+            {"final": the final embedding. Shape: [dim]
+             "layers": the emebeddings of different layers/views. Shape: [n_layers, n_nodes, dim]}
+        """
         emb_list = []
         for i, adj in enumerate(adj_list):
             emb = torch.squeeze(self.gcn_list[i](features, adj, sparse))
             emb_list.append(emb)
         emb = self.combine_att(emb_list)
-        emb_dict = {"final": emb, "layers": emb_list}
+        emb_dict = {"final": emb, "layers": torch.stack(emb_list)}
         return emb_dict
-
-
-class InterDiscriminator(nn.Module):
-    def __init__(self, n_h, ft_size):
-        super().__init__()
-        self.f_k_bilinear_e = nn.Bilinear(n_h, n_h, 1)
-        self.f_k_bilinear_i = nn.Bilinear(ft_size, n_h, 1)
-        self.f_k_bilinear_j = nn.Bilinear(n_h, n_h, 1)
-
-        self.linear_c = nn.Linear(n_h, n_h)
-        self.linear_f = nn.Linear(ft_size, n_h)
-        self.linear_cf = nn.Linear(n_h*2, n_h)
-
-        self.act = nn.Sigmoid()
-        for m in self.modules():
-            self.weights_init(m)
-
-    def weights_init(self, m):
-        if isinstance(m, nn.Bilinear):
-            torch.nn.init.xavier_uniform_(m.weight.data)
-            if m.bias is not None:
-                m.bias.data.fill_(0.0)
-
-        if isinstance(m, nn.Linear):
-            torch.nn.init.xavier_uniform_(m.weight.data)
-            if m.bias is not None:
-                m.bias.data.fill_(0.0)
-
-    def forward(self, c, h_pl, h_mi, f_pl, f_mi):
-        """
-        :param c: global summary vector, [dim]
-        :param h_pl: positive local vectors [n_nodes, dim]
-        :param h_mi: negative local vectors [n_nodes, dim]
-        :param f: features/attributes [n_nodes, dim_f]
-        """
-        c_x = torch.unsqueeze(c, 0)
-        c_x = c_x.expand_as(h_pl)
-        c_x_0 = self.act(c_x)
-
-        # extrinsic
-        logits_1 = torch.squeeze(self.f_k_bilinear_e(c_x_0, h_pl))
-        logits_2 = torch.squeeze(self.f_k_bilinear_e(c_x_0, h_mi))
-        logits_nodes = torch.stack([logits_1, logits_2], 0)
-
-        # intrinsic
-        logits_1 = torch.squeeze(self.f_k_bilinear_i(f_pl, h_pl))
-        logits_2 = torch.squeeze(self.f_k_bilinear_i(f_pl, h_mi))
-        logits_locs = torch.stack([logits_1, logits_2], 0)
-
-        # joint
-        c_x = self.act(c_x)
-        c_x = self.linear_c(c_x)
-        f_pl = self.linear_f(f_pl)
-        f_mi = self.linear_f(f_mi)
-        c_x = self.act(c_x)
-        f_pl = self.act(f_pl)
-        f_mi = self.act(f_mi)
-
-        cs_pl = torch.cat([c_x, f_pl], dim=-1)
-        cs_mi = torch.cat([c_x, f_mi], dim=-1)
-
-        cs_pl = self.linear_cf(cs_pl)
-        cs_mi = self.linear_cf(cs_mi)
-        cs_pl = self.act(cs_pl)
-        cs_mi = self.act(cs_mi)
-
-        logits_1 = torch.squeeze(self.f_k_bilinear_j(cs_pl, h_pl))
-        logits_2 = torch.squeeze(self.f_k_bilinear_j(cs_mi, h_pl))
-        logits_cs = torch.stack([logits_1, logits_2], 0)
-
-        return logits_nodes, logits_locs, logits_cs
 
 
 class GCN(nn.Module):
