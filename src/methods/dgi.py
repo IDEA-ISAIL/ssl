@@ -1,4 +1,5 @@
 import torch
+from torch_geometric.nn.models import GCN
 
 from .base import BaseMethod
 from src.augment import ShuffleNode, SumEmb
@@ -54,3 +55,14 @@ class DGI(BaseMethod):
         # 4. get loss
         loss = self.get_loss(h_pos, h_neg, s)
         return loss
+
+
+class DGIEncoder(torch.nn.Module):
+    def __init__(self, in_channels, hidden_channels=512, num_layers=1, act=torch.nn.PReLU()):
+        super().__init__()
+        self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=act)
+        self.act = act
+
+    def forward(self, batch):
+        edge_weight = batch.edge_weight if "edge_weight" in batch else None
+        return self.act(self.gcn(x=batch.x, edge_index=batch.edge_index, edge_weight=edge_weight))

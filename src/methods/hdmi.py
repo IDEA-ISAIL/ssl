@@ -142,7 +142,7 @@ class HDMI(BaseMethod):
         loss_j = loss_fn(x=h_pos, y=sf_pos, x_ind=h_pos, y_ind=sf_neg)
         return loss_j
 
-class HDMI_Encoder(nn.Module):
+class HDMIEncoder(nn.Module):
     def __init__(self, 
                  in_channels: int, 
                  hidden_channels: int, 
@@ -153,7 +153,7 @@ class HDMI_Encoder(nn.Module):
             hidden_channels: the dimension of the embeddings.
             n_layers: the number of meta-paths.
         """
-        super(HDMI_Encoder, self).__init__()
+        super(HDMIEncoder, self).__init__()
         self.gcn_list = nn.ModuleList([GCN(in_channels, hidden_channels) for _ in range(n_layers)])
         self.w_list = nn.ModuleList([nn.Linear(hidden_channels, hidden_channels, bias=False) for _ in range(n_layers)])
         self.y_list = nn.ModuleList([nn.Linear(hidden_channels, 1) for _ in range(n_layers)])
