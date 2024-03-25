@@ -28,7 +28,7 @@ class DGI(BaseMethod):
 
     def apply_data_augment(self, batch):
         batch = batch.to(self.device)
-        batch2 = self.corrupt(batch).to(self._device)
+        batch2 = self.corrupt(batch).to(self.device)
         return batch, batch2
 
     def apply_emb_augment(self, h_pos):
