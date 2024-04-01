@@ -205,12 +205,13 @@ class GraphMAE(BaseMethod):
             recon = self.decoder(rep)
         else:
             recon = self.decoder(pre_use_g, rep)
+        loss = self.get_loss(x, recon, mask_nodes)
+        return loss
 
+    def get_loss(self, x, recon, mask_nodes):
         x_init = x[mask_nodes]
         x_rec = recon[mask_nodes]
-
         loss = self.criterion(x_rec, x_init)
-        # loss_item = {"loss": loss.item()}
         return loss
 
     @property
@@ -353,3 +354,11 @@ def load_graph_classification_dataset(dataset_name, raw_dir=None, deg4feat=False
     print(f"******** # Num Graphs: {len(dataset)}, # Num Feat: {feature_dim}, # Num Classes: {num_classes} ********")
 
     return dataset, feature_dim
+
+def apply_data_augment(self, batch):
+    raise NotImplementedError
+
+def apply_emb_augment(self, h_pos):
+    raise NotImplementedError
+
+

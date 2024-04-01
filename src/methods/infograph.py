@@ -57,25 +57,9 @@ class InfoGraph(BaseMethod):
                     m.bias.data.fill_(0.0)
 
     def forward(self, data):
-        # batch_size = data.num_graphs
-
         y, m = self.encoder(data)
-
-        g_enc = self.global_d(y)
-        l_enc = self.local_d(m)
-
-        measure = 'JSD'
-        local_global_loss = self.loss_function(l_enc, g_enc, data.batch, measure)
-
-        if self.prior:
-            prior = torch.rand_like(y)
-            term_a = torch.log(self.prior_d(prior)).mean()
-            term_b = torch.log(1.0 - self.prior_d(y)).mean()
-            PRIOR = - (term_a + term_b) * self.gamma
-        else:
-            PRIOR = 0
-
-        return local_global_loss + PRIOR
+        loss = self.get_loss(y, m, data)
+        return loss
 
     def get_embs(self, dataset):
         ret = []
@@ -92,6 +76,28 @@ class InfoGraph(BaseMethod):
         y = torch.FloatTensor(np.concatenate(y, 0))
         return y, ret
 
+    def apply_data_augment(self, batch):
+        raise NotImplementedError
+
+    def apply_emb_augment(self, h_pos):
+        raise NotImplementedError
+
+    def get_loss(self, y, m, data):
+        g_enc = self.global_d(y)
+        l_enc = self.local_d(m)
+
+        measure = 'JSD'
+        local_global_loss = self.loss_function(l_enc, g_enc, data.batch, measure)
+
+        if self.prior:
+            prior = torch.rand_like(y)
+            term_a = torch.log(self.prior_d(prior)).mean()
+            term_b = torch.log(1.0 - self.prior_d(y)).mean()
+            PRIOR = - (term_a + term_b) * self.gamma
+        else:
+            PRIOR = 0
+
+        return local_global_loss + PRIOR
 
 class Encoder(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, num_layers, GNN=GINConv):
@@ -129,22 +135,22 @@ class Encoder(torch.nn.Module):
         x = torch.cat(xpool, 1)
         return x, torch.cat(xs, 1)
 
-    def get_embeddings(self, loader):
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        ret = []
-        y = []
-        with torch.no_grad():
-            for data in loader:
-                data.to(device)
-                x, edge_index, batch = data.x, data.edge_index, data.batch
-                if x is None:
-                    x = torch.ones((batch.shape[0], 1)).to(device)
-                x, _ = self.forward(x, edge_index, batch)
-                ret.append(x.cpu().numpy())
-                y.append(data.y.cpu().numpy())
-        ret = np.concatenate(ret, 0)
-        y = np.concatenate(y, 0)
-        return ret, y
+    # def get_embeddings(self, loader):
+    #     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    #     ret = []
+    #     y = []
+    #     with torch.no_grad():
+    #         for data in loader:
+    #             data.to(device)
+    #             x, edge_index, batch = data.x, data.edge_index, data.batch
+    #             if x is None:
+    #                 x = torch.ones((batch.shape[0], 1)).to(device)
+    #             x, _ = self.forward(x, edge_index, batch)
+    #             ret.append(x.cpu().numpy())
+    #             y.append(data.y.cpu().numpy())
+    #     ret = np.concatenate(ret, 0)
+    #     y = np.concatenate(y, 0)
+    #     return ret, y
 
 
 class PriorDiscriminator(nn.Module):

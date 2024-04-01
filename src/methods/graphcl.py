@@ -47,20 +47,8 @@ class GraphCL(BaseMethod):
             h_neg2 = self.encoder(neg_batch2, neg_batch2.edge_index)
         else:
             assert False
-        s1 = self.readout(h_neg1, keepdim=True)
-        s1 = self.sigmoid(s1)
-        s2 = self.readout(h_neg2, keepdim=True)
-        s2 = self.sigmoid(s2)
-        s1 = s1.expand_as(h_pos)
-        s2 = s2.expand_as(h_pos)
-
-        augmentation = ShuffleNode()
-        neg_batch3 = augmentation(pos_batch).to(self._device)
-        h_neg = self.encoder(neg_batch3, pos_batch.adj_t)
-
-        loss1 = self.loss_function(x=s1, y=h_pos, x_ind=s1, y_ind=h_neg)
-        loss2 = self.loss_function(x=s2, y=h_pos, x_ind=s2, y_ind=h_neg)
-        return loss1 + loss2
+        loss = self.get_loss(h_pos, h_neg1, h_neg2)
+        return loss
 
     def apply_data_augment_offline(self, dataloader):
         batch_list = []
@@ -70,6 +58,27 @@ class GraphCL(BaseMethod):
             batch_list.append((batch, batch_aug, batch_aug2))
         new_loader = AugmentDataLoader(batch_list=batch_list)
         return new_loader
+
+    def apply_data_augment(self, batch):
+        raise NotImplementedError
+
+    def apply_emb_augment(self, h_pos):
+        raise NotImplementedError
+
+    def get_loss(self, h_pos, h_neg1, h_neg2):
+        s1 = self.readout(h_neg1, keepdim=True)
+        s1 = self.sigmoid(s1)
+        s2 = self.readout(h_neg2, keepdim=True)
+        s2 = self.sigmoid(s2)
+        s1 = s1.expand_as(h_pos)
+        s2 = s2.expand_as(h_pos)
+        augmentation = ShuffleNode()
+        neg_batch3 = augmentation(pos_batch).to(self._device)
+        h_neg = self.encoder(neg_batch3, pos_batch.adj_t)
+
+        loss1 = self.loss_function(x=s1, y=h_pos, x_ind=s1, y_ind=h_neg)
+        loss2 = self.loss_function(x=s2, y=h_pos, x_ind=s2, y_ind=h_neg)
+        return loss1 + loss2
 
 
 # class GraphCLEncoder(torch.nn.Module):
