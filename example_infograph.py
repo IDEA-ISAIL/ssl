@@ -10,9 +10,9 @@ import torch
 import numpy as np
 
 
-# config = load_yaml('./configuration/infograph_mutag.yml')
+config = load_yaml('./configuration/infograph_mutag.yml')
 # config = load_yaml('./configuration/infograph_imdb_b.yml')
-config = load_yaml('./configuration/infograph_imdb_m.yml')
+# config = load_yaml('./configuration/infograph_imdb_m.yml')
 torch.manual_seed(config.torch_seed)
 np.random.seed(config.torch_seed)
 device = torch.device("cuda:{}".format(config.gpu_idx) if torch.cuda.is_available() and config.use_cuda else "cpu")

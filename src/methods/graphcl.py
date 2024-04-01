@@ -21,11 +21,12 @@ class GraphCL(BaseMethod):
                  readout: Union[Callable, torch.nn.Module] = AvgReadout(),
                  corruption: AugmentType = RandomMask(),
                  loss_function: Optional[torch.nn.Module] = None) -> None:
-        loss_function = loss_function if loss_function else NegativeMI(hidden_channels)
         super().__init__(encoder=encoder, data_augment=corruption, loss_function=loss_function)
 
         self.readout = readout
         self.sigmoid = torch.nn.Sigmoid()
+        self.data_augment = corruption
+        self.loss_function = loss_function if loss_function else NegativeMI(hidden_channels)
 
     def forward(self, batch):
         pos_batch, neg_batch, neg_batch2 = batch

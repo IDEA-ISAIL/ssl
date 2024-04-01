@@ -32,7 +32,7 @@ class InfoGraph(BaseMethod):
                  gamma=.1,
                  num_layers=1,
                  prior=False) -> None:
-        loss_function = loss_function if loss_function else LocalGlobalLoss()
+
         super().__init__(encoder=encoder,  loss_function=loss_function)
 
         self.readout = readout
@@ -46,7 +46,7 @@ class InfoGraph(BaseMethod):
         self.global_d = MLP(self.embedding_dim)
         if self.prior:
             self.prior_d = PriorDiscriminator(self.embedding_dim)
-
+        self.loss_function = loss_function if loss_function else LocalGlobalLoss()
         self.init_emb()
 
     def init_emb(self):
