@@ -47,7 +47,7 @@ class GraphCL(BaseMethod):
             h_neg2 = self.encoder(neg_batch2, neg_batch2.edge_index)
         else:
             assert False
-        loss = self.get_loss(h_pos, h_neg1, h_neg2)
+        loss = self.get_loss(h_pos, h_neg1, h_neg2, pos_batch)
         return loss
 
     def apply_data_augment_offline(self, dataloader):
@@ -65,7 +65,7 @@ class GraphCL(BaseMethod):
     def apply_emb_augment(self, h_pos):
         raise NotImplementedError
 
-    def get_loss(self, h_pos, h_neg1, h_neg2):
+    def get_loss(self, h_pos, h_neg1, h_neg2, pos_batch):
         s1 = self.readout(h_neg1, keepdim=True)
         s1 = self.sigmoid(s1)
         s2 = self.readout(h_neg2, keepdim=True)
