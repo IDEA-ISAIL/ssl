@@ -108,8 +108,17 @@ PyTorch=2.2.1+cu118
 PyG=2.5.2
 torch_sparse=0.6.18+pt22cu118
 torch_scatter=2.1.2+pt22cu118
+----------------------------
 faiss-gpu=1.7.2
 matplotlib=3.8.3
 seaborn=0.13.2
 dgl=2.1.0
+```
+
+```
+conda create -n ssl python=3.10
+pip install torch==2.2.1 torchvision==0.17.1 torchaudio==2.2.1 --index-url https://download.pytorch.org/whl/cu118
+pip install torch_geometric==2.5.2
+pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.2.0+cu118.html
+pip install faiss-gpu==1.7.2 matplotlib==3.8.3 seaborn==0.13.2 dgl==2.1.0 pyyaml==6.0.1 pydantic==2.6.4
 ```
