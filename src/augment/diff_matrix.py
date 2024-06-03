@@ -13,17 +13,15 @@ class ComputePPR(Augmentor):
 
     def __call__(self, data: HomoData):
         data_tmp = copy.deepcopy(data)
-        a = data_tmp.adj_t.to_dense().cpu()
-        is_cuda = data.is_cuda
+        a = data_tmp.adj_t.to_dense()
+        device = a.device
         if self.self_loop:
-            a = torch.eye(a.shape[0]) + a
-        d = torch.diag(torch.sum(a, 1))
-        dinv = torch.from_numpy(fractional_matrix_power(d, -0.5))
+            a = torch.eye(a.shape[0], device=device) + a
+        d = torch.diag(torch.sum(a, 1)).cpu()
+        dinv = torch.from_numpy(fractional_matrix_power(d, -0.5)).to(device)
         at = torch.matmul(torch.matmul(dinv, a), dinv)
-        aug_adj = self.alpha * inv((torch.eye(a.shape[0]) - (1 - self.alpha) * at))
+        aug_adj = self.alpha * inv((torch.eye(a.shape[0], device=device) - (1 - self.alpha) * at))
         data_tmp.adj_t = aug_adj.to_sparse()
-        if is_cuda:
-            data_tmp = data_tmp.cuda()
         return data_tmp
 
 
@@ -36,8 +34,9 @@ class ComputeHeat(Augmentor):
     def __call__(self, data: HomoData):
         data_tmp = copy.deepcopy(data)
         a = data_tmp.adj_t.to_dense()
+        device = a.device
         if self.self_loop:
-            a = torch.eye(a.shape[0]) + a
+            a = torch.eye(a.shape[0], device=device) + a
         d = torch.diag(torch.sum(a, 1))
         aug_adj = torch.exp(self.t * (torch.matmul(a, inv(d)) - 1))
         data_tmp.adj_t = aug_adj.to_sparse()
