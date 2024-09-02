@@ -1,6 +1,6 @@
 from .base import BaseMethod
 from torch_geometric.typing import *
-from src.augment import RandomMask, ShuffleNode, ComputeHeat, ComputePPR
+from src.augment import ComputePPR, ComputeHeat, SumEmb
 from typing import Optional, Callable, Union
 from src.typing import AugmentType
 from .utils import AvgReadout
@@ -12,25 +12,23 @@ class MVGRL(BaseMethod):
     def __init__(self,
                  encoder: torch.nn.Module,
                  hidden_channels: int,
-                 readout: Union[Callable, torch.nn.Module] = AvgReadout(),
+                 readout: str="avg",
+                 readout_act: Callable=torch.nn.Sigmoid(),
                  diff: AugmentType = ComputePPR(),
-                 loss_function: Optional[torch.nn.Module] = None,
                  is_sparse = False,
                  sample_size: int = 1000) -> None:
-        
-        loss_function = loss_function if loss_function else torch.nn.BCEWithLogitsLoss()
 
-        super().__init__(encoder=encoder, data_augment=diff, loss_function=loss_function)
+        super().__init__(encoder=encoder)
 
-        self.readout = readout
+        self.readout = self.readout = SumEmb(readout, readout_act)
         self.sigmoid = torch.nn.Sigmoid()
         self.is_sparse = is_sparse
         self.sample_size = sample_size
-        # self.encoder_1 = encoder.encoder_1
-        # self.encoder_2 = encoder.encoder_2
+        self.corrput = diff
         self.discriminator = MVGRLDiscriminator(hidden_channels=hidden_channels)
-
-    def forward(self, batch, batch_size = 8):
+        self.loss_func = torch.nn.BCEWithLogitsLoss()
+    
+    def apply_data_augment(self, batch, batch_size = 8):
         batch, batch_neg = batch
         x_pos = batch.x
         adj = batch.adj_t.to_dense()
@@ -41,10 +39,6 @@ class MVGRL(BaseMethod):
         lbl_1 = torch.ones(batch_size, self.sample_size * 2)
         lbl_2 = torch.zeros(batch_size, self.sample_size * 2)
         lbl = torch.cat((lbl_1, lbl_2), 1).to(self._device)
-
-        # if self.use_cuda:
-        #     self.model = self.model.cuda()
-        #     lbl = lbl.cuda()
 
         idx = np.random.randint(0, adj.shape[-1] - self.sample_size + 1, batch_size)
         ba = torch.zeros((batch_size, self.sample_size, self.sample_size)).to(self._device)
@@ -61,40 +55,38 @@ class MVGRL(BaseMethod):
 
         idx = np.random.permutation(self.sample_size)
         shuf_fts = bf[:, idx, :]
+        
+        return bf, shuf_fts, ba, bd, lbl
 
-        # if self.use_cuda:
-        #     x_pos = x_pos.cuda()
-        #     x_neg = x_neg.cuda()
-        #     adj = adj.cuda()
-        #     diff = diff.cuda()
-        #     bf = bf.cuda()
-        #     ba = ba.cuda()
-        #     bd = bd.cuda()
-        #     shuf_fts = shuf_fts.cuda()
+    def apply_emb_augment(self, h_pos):
+        return h_pos
 
-        # h_1 = self.encoder_1(bf, ba, self.is_sparse)
-        # c_1 = self.readout(h_1)
-        # c_1 = self.sigmoid(c_1)
-        # h_2 = self.encoder_2(bf, bd, self.is_sparse)
-        # c_2 = self.readout(h_2)
-        # c_2 = self.sigmoid(c_2)
-        # h_3 = self.encoder_1(shuf_fts, ba, self.is_sparse)
-        # h_4 = self.encoder_2(shuf_fts, bd, self.is_sparse)
-
-        c_1, c_2, h_1, h_2, h_3, h_4 = self.encoder(bf, shuf_fts, ba, bd, self.is_sparse)
-
-        logits = self.discriminator(c_1, c_2, h_1, h_2, h_3, h_4)
-        loss = self.loss_function(logits, lbl)
+    def get_loss(self, logits, lbl):
+        loss = self.loss_func(logits, lbl)
         return loss
-
+    
     def apply_data_augment_offline(self, dataloader):
         batch_list = []
         for i, batch in enumerate(dataloader):
             batch = batch.to(self._device)
-            batch_aug = self.data_augment(batch)
+            batch_aug = self.corrput(batch)
             batch_list.append((batch, batch_aug))
         new_loader = AugmentDataLoader(batch_list=batch_list)
         return new_loader
+
+    def forward(self, batch):
+        # 1. data augmentation
+        bf, shuf_fts, ba, bd, lbl = self.apply_data_augment(batch)
+
+        # 2. get embeddings
+        embs= self.encoder(bf, shuf_fts, ba, bd, self.is_sparse)
+
+        # 3. emb augmentation
+        logits = self.discriminator(embs)
+
+        # 4. get loss
+        loss = self.get_loss(logits, lbl)
+        return loss
 
 
 class MVGRLBaseEncoder(torch.nn.Module):
@@ -164,17 +156,8 @@ class MVGRLEncoder(torch.nn.Module):
         c_2 = self.sigmoid(c_2)
         h_3 = self.encoder_1(x_neg, adj, is_sparse)
         h_4 = self.encoder_2(x_neg, diff, is_sparse)
-        return c_1, c_2, h_1, h_2, h_3, h_4
-
-    # def get_embs(self, x: Tensor, adj: Adj, diff: Adj, is_sparse: bool = True, msk: Tensor = None):
-    #     h_1 = self.encoder_1(x, adj, is_sparse)
-    #     c_1 = self.readout(h_1, msk)
-    #     h_2 = self.encoder_2(x, diff, is_sparse)
-    #     return (h_1 + h_2).detach(), c_1.detach()
-
-    # def get_embs_numpy(self, x: Tensor, adj: Adj, diff: Adj, is_sparse: bool = True, msk: Tensor = None):
-    #     embs = self.get_embs(x=x, adj=adj, diff=diff, is_sparse=is_sparse)
-    #     return embs.cpu().to_numpy()
+        embs = {'c1':c_1, 'c2':c_2, 'h1':h_1, 'h2':h_2, 'h3':h_3, 'h4':h_4, 'final': (h_1+h_2).detach()}
+        return embs
 
 
 class MVGRLDiscriminator(torch.nn.Module):
@@ -191,18 +174,18 @@ class MVGRLDiscriminator(torch.nn.Module):
             if m.bias is not None:
                 m.bias.data.fill_(0.0)
 
-    def forward(self, c_1: Tensor, c_2: Tensor, h_1: Tensor, h_2: Tensor, h_3: Tensor, h_4: Tensor):
-        c_x1 = torch.unsqueeze(c_1, 1)
-        c_x1 = c_x1.expand_as(h_1).contiguous()
+    def forward(self, embs: dict):
+        c_x1 = torch.unsqueeze(embs['c1'], 1)
+        c_x1 = c_x1.expand_as(embs['h1']).contiguous()
 
-        c_x2 = torch.unsqueeze(c_2, 1)
-        c_x2 = c_x2.expand_as(h_2).contiguous()
+        c_x2 = torch.unsqueeze(embs['c2'], 1)
+        c_x2 = c_x2.expand_as(embs['h2']).contiguous()
 
-        sc_1 = torch.squeeze(self.f_k(h_2, c_x1), 2)
-        sc_2 = torch.squeeze(self.f_k(h_1, c_x2), 2)
+        sc_1 = torch.squeeze(self.f_k(embs['h2'], c_x1), 2)
+        sc_2 = torch.squeeze(self.f_k(embs['h1'], c_x2), 2)
 
-        sc_3 = torch.squeeze(self.f_k(h_4, c_x1), 2)
-        sc_4 = torch.squeeze(self.f_k(h_3, c_x2), 2)
+        sc_3 = torch.squeeze(self.f_k(embs['h4'], c_x1), 2)
+        sc_4 = torch.squeeze(self.f_k(embs['h3'], c_x2), 2)
 
         logits = torch.cat((sc_1, sc_2, sc_3, sc_4), 1)
         return logits
