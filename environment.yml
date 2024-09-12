@@ -126,4 +126,3 @@ dependencies:
     - torch-spline-conv==1.2.2+pt113cu117
     - tzdata==2023.3
     - yacs==0.1.8
-prefix: /home/twei10/anaconda3/envs/ssl
