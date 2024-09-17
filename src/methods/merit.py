@@ -5,8 +5,12 @@ import torch.nn.functional as F
 import numpy as np
 import random
 import scipy.sparse as sp
+# import cupy as cp
+# import cupyx.scipy.sparse as sp1
+# import cupyx
 from .base import BaseMethod
 from torch_geometric.typing import *
+import time
 
 
 
@@ -101,8 +105,9 @@ class Merit(BaseMethod):
         
         super().__init__(encoder=encoder, loss_function=loss_function)
 
-        self.online_encoder = encoder
-        self.target_encoder = copy.deepcopy(self.online_encoder)
+        self.online_encoder = encoder.to(device)
+        # print(device)
+        self.target_encoder = copy.deepcopy(self.online_encoder).to(device)
         set_requires_grad(self.target_encoder, False)
         self.target_ema_updater = EMA(config["momentum"])
         self.online_predictor = MLP(config["projection_size"], config["prediction_size"], config["prediction_hidden_size"])
@@ -115,6 +120,8 @@ class Merit(BaseMethod):
         self.config = config
         self.sample_size = config["sample_size"]
         self.data = data
+        
+        # print(self.device)
                    
     def reset_moving_average(self):
         del self.target_encoder
@@ -125,22 +132,38 @@ class Merit(BaseMethod):
         update_moving_average(self.target_ema_updater, self.target_encoder, self.online_encoder)
 
     def forward(self, batch, batch_size = 8):
-        x_pos = self.data.x
-        # print(batch.adj_t)
-        adj = self.data.adj_t.to_dense()
-        diff = gdc(sp.csr_matrix(np.matrix(adj)), alpha=self.config["alpha"], eps=0.0001)
-        diff =  torch.from_numpy(diff)
+        # x_pos = self.data.x
+        # adj = self.data.adj_t.to_dense().cpu().numpy()
+        
+        
+        x_pos = batch.x.to(self.device)
+        adj = batch.adj_t.to_dense().cpu().numpy()
+        adj = cp.array(adj)
+        
+        # print(adj.device)
+        
+        
+        t = time.time()
+        # diff = gdc(sp.csr_matrix(adj), alpha=self.config["alpha"], eps=0.0001)
+        diff = gdc_test(sp1.csr_matrix(adj), alpha=self.config["alpha"], eps=0.0001)
+        
+        print(time.time()-t)
+        
+        # diff = gdc(sp.csr_matrix(np.matrix(adj).to(self.device)), alpha=self.config["alpha"], eps=0.0001)
+        diff =  torch.from_numpy(diff).to(self.device)
         # diff = batch_neg.adj_t.to_dense()
         ft_size = x_pos.shape[1]
+        
+        # print(x_pos.device,diff.device)
 
         
         idx = np.random.randint(0, adj.shape[-1] - self.sample_size + 1)
         ba = adj[idx: idx + self.sample_size, idx: idx + self.sample_size]
         bd = diff[idx: idx + self.sample_size, idx: idx + self.sample_size]
-        bd = sp.csr_matrix(np.matrix(bd))
+        bd = sp.csr_matrix(np.matrix(bd)).to(self.device)
         features = x_pos.squeeze(0)
         bf = features[idx: idx + self.sample_size]
-        ba = sp.csr_matrix(np.matrix(ba))
+        ba = sp.csr_matrix(np.matrix(ba)).to(self.device)
         # bf = sp.csr_matrix(np.matrix(bf))
 
         # lbl_1 = torch.ones(batch_size, self.sample_size * 2)
@@ -179,6 +202,10 @@ class Merit(BaseMethod):
 
         aug_features1 = aug_features1.to(self.device)
         aug_features2 = aug_features2.to(self.device)
+        
+        
+        
+        # print(aug_features1.device,aug_features2.device,adj_1.device,adj_2.device,self.online_encoder.device)
 
         _, online_proj_one = self.online_encoder(aug_features1, adj_1, self.is_sparse)
         _, online_proj_two = self.online_encoder(aug_features2, adj_2, self.is_sparse)
@@ -405,8 +432,68 @@ def gdc(A: sp.csr_matrix, alpha: float, eps: float):
     D_loop_vec_invsqrt = 1 / np.sqrt(D_loop_vec)
     D_loop_invsqrt = sp.diags(D_loop_vec_invsqrt)
     T_sym = D_loop_invsqrt @ A_loop @ D_loop_invsqrt
+    # print(T_sym)
+    # print(sp.eye(N))
     S = alpha * sp.linalg.inv(sp.eye(N) - (1 - alpha) * T_sym)
     S_tilde = S.multiply(S >= eps)
     D_tilde_vec = S_tilde.sum(0).A1
     T_S = S_tilde / D_tilde_vec
     return T_S
+  
+
+
+def gdc_test(A: sp.csr_matrix, alpha: float, eps: float):
+    N = A.shape[0]
+    print(type(A))
+    
+    # Create the matrix on GPU
+    A_loop = sp1.eye(N) + A
+    D_loop_vec = A_loop.sum(0).flatten() 
+    D_loop_vec_invsqrt = 1 / cp.sqrt(D_loop_vec)
+    D_loop_invsqrt = sp1.diags(D_loop_vec_invsqrt)
+    T_sym = D_loop_invsqrt @ A_loop @ D_loop_invsqrt
+    
+    # print(T_sym)
+    # print(sp1.eye(N)-T_sym)
+    
+    # Solve on GPU
+    # I = sp1.eye(N)
+    # S = alpha * sp1.linalg.inv(I - (1 - alpha) * T_sym)
+    
+    # S = alpha * sp.linalg.inv(sp.eye(N) - (1 - alpha) * T_sym)
+    # S_tilde = S.multiply(S >= eps)
+    # D_tilde_vec = S_tilde.sum(0).A1
+    # T_S = S_tilde / D_tilde_vec
+    
+    def compute_sparse_inverse(T_sym, N, alpha):
+      # Create the matrix A = sp.eye(N) - (1 - alpha) * T_sym
+      I = sp1.eye(N)
+      A = I - (1 - alpha) * T_sym
+      
+      import cupyx.scipy.sparse.linalg
+
+      # Perform LU decomposition on the sparse matrix A
+      A_lu = cupyx.scipy.sparse.linalg.splu(A)
+      
+
+      # Now A_lu can be used to solve for the inverse
+      # To get the inverse of A, you can solve for each column of the identity matrix
+      # inv_A = sp1.hstack([A_lu.solve(I[:, i].toarray()) for i in range(N)])
+      inv_A = sp1.hstack([(A_lu.solve(sp1.csr_matrix(I).getcol(i).toarray())) for i in range(N)])
+      
+        
+      
+      return inv_A
+    
+    S = compute_sparse_inverse(T_sym, N, alpha)
+    
+    
+    # Filter small values
+    S_tilde = S.multiply(S >= eps)
+    D_tilde_vec = S_tilde.sum(0).get().A1  # Move back to CPU for normalization
+    
+    # Back to GPU
+    T_S = S_tilde / D_tilde_vec
+    
+    return T_S
+

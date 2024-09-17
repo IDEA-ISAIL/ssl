@@ -16,8 +16,11 @@ from src.config import load_yaml
 torch.manual_seed(0)
 np.random.seed(0)
 torch.cuda.manual_seed_all(0)
+
 config = load_yaml('./configuration/afgrl_cs.yml')
+# config = load_yaml('./configuration/afgrl_photo.yml')
 # config = load_yaml('./configuration/afgrl_wikics.yml')
+
 device = torch.device("cuda:{}".format(config.gpu_idx) if torch.cuda.is_available() and config.use_cuda else "cpu")
 
 # WikiCS, cora, citeseer, pubmed, photo, computers, cs, and physics
@@ -70,5 +73,10 @@ trainer.train()
 data_pyg = dataset.data.to(method.device)
 embs = method.get_embs(data_pyg, data_pyg.edge_index).detach()
 
-lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=20, device=device)
+lg = LogisticRegression(lr=0.01, 
+                        weight_decay=0,
+                        max_iter=100, 
+                        n_run=10, 
+                        device=device)
+
 lg(embs=embs, dataset=data_pyg)

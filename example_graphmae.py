@@ -44,7 +44,9 @@ method = GraphMAE(encoder=encoder, decoder=decoder, hidden_channels=512, argumen
 method.device = device
 
 # ------------------ Trainer --------------------
-trainer = SimpleTrainer(method=method, data_loader=dataset, device=device, n_epochs=config.optim.max_epoch,
+trainer = SimpleTrainer(method=method, data_loader=dataset, device=device, 
+                        # n_epochs=config.optim.max_epoch,
+                        n_epochs=1,
                         lr=config.optim.base_lr)
 trainer.train()
 

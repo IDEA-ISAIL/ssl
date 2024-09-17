@@ -33,14 +33,18 @@ class BaseMethod(torch.nn.Module):
 
     def __init__(self,
                  encoder: torch.nn.Module,
+                 loss_function: Union[Callable, torch.nn.Module]=None,
                  device: str="cuda",
+                 data_augment: OptAugment = None,
                  save_root: str="./",
                  *args, **kwargs):
         super().__init__()
 
         self.encoder = encoder
+        self.loss_function = loss_function
         self._device = device  # device: cuda or cpu
         self.save_root = save_root  # record the latest path used by save() or load()
+        self.data_augment = data_augment
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}()'
@@ -58,6 +62,10 @@ class BaseMethod(torch.nn.Module):
         r"""Apply offline data augmentation. 
             These augmentations are used offline in the trainer."""
         return None
+
+    def get_embs(self, *args, **kwargs) -> Tensor:
+        embs = self.encoder(*args, **kwargs)
+        return embs
 
     def apply_emb_augment(self, *args, **kwargs) -> Any:
         r"""Apply online embedding augmentation."""

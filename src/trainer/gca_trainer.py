@@ -25,11 +25,15 @@ class GCATrainer(BaseTrainer):
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 5000,
-                 patience: int = 50,
+                 patience: int = 500,
                  drop_scheme: str = 'degree',
                  dataset_name: str = 'WikiCS',
                  device: Union[str, int] = "cuda:1",
-                 save_root: str = "./ckpt"):
+                 save_root: str = "./ckpt",
+                 drop_edge_rate_1: float=0.2,
+                 drop_edge_rate_2: float=0.3,
+                 drop_feature_rate_1: float=0.1,
+                 drop_feature_rate_2: float=0.1):
         super().__init__(method=method,
                          data_loader=data_loader,
                          save_root=save_root,
@@ -46,6 +50,11 @@ class GCATrainer(BaseTrainer):
         self.patience = patience
 
         self.early_stopper = EarlyStopper(patience=self.patience)
+        
+        self.drop_edge_rate_1 = drop_edge_rate_1
+        self.drop_edge_rate_2 = drop_edge_rate_2
+        self.drop_feature_rate_1 = drop_feature_rate_1
+        self.drop_feature_rate_2 = drop_feature_rate_2
 
     def train(self):
         self.method = self.method.to(self.device)
@@ -101,9 +110,9 @@ class GCATrainer(BaseTrainer):
                     # global drop_weights
 
                     if idx == 1:
-                        drop_edge_rate = 0.3
+                        drop_edge_rate = self.drop_edge_rate_1
                     else:
-                        drop_edge_rate = 0.4
+                        drop_edge_rate = self.drop_edge_rate_2
 
                     if self.drop_scheme == 'uniform':
                         return dropout_adj(data.edge_index, p=drop_edge_rate)[0]
@@ -111,9 +120,9 @@ class GCATrainer(BaseTrainer):
                         return drop_edge_weighted(data.edge_index, drop_weights, p=drop_edge_rate, threshold=0.7)
                     else:
                         raise Exception(f'undefined drop scheme: {self.drop_scheme}')
-
-                drop_feature_rate_1 = 0.1
-                drop_feature_rate_2 = 0.0
+                
+                drop_feature_rate_1 = self.drop_feature_rate_1
+                drop_feature_rate_2 = self.drop_feature_rate_2
 
                 edge_index_1 = drop_edge(1)
                 edge_index_2 = drop_edge(2)
@@ -133,7 +142,8 @@ class GCATrainer(BaseTrainer):
 
                 # print loss
                 end_time = time.time()
-                print("Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss, end_time - start_time))
+                if epoch%10 == 0:
+                  print("Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss, end_time - start_time))
 
                 self.early_stopper.update(loss)  # update the status
                 if self.early_stopper.save:

@@ -9,7 +9,7 @@ model:
 optim:
   base_lr: 0.001
   name : adam
-  max_epoch : 3000
+  max_epoch : 1
   patience : 200
   weight_decay : 0.0005
 classifier:
@@ -20,7 +20,7 @@ classifier:
   run : 10
   weight_decay : 0.0005
 dataset:
-  name : coauthor
+  name : cs
   root : pyg_data
 output:
   verbose : True

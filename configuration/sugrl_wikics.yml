@@ -1,14 +1,13 @@
-dataset: "wikics"
-
+dataset: "WikiCS"
+root : 'wikics'
 black_list: [4,5,6]
-lr: 0.0001
+lr: 0.01
 out_heads: 1
 task_type: Node_Transductive
 val_interval: 1
 num_hidden_features: 8
-epochs: 500
 to_undirected_at_neg: True
-epochs: 1000
+epochs: 1
 w_loss1: 100
 w_loss2: 100
 w_loss3: 2

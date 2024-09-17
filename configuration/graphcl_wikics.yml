@@ -1,5 +1,5 @@
 use_cuda : True
-gpu_idx : 0
+gpu_idx : 1
 model:
   dropout: 0.5 
   n_layers: 2 
@@ -9,13 +9,13 @@ model:
 optim:
   base_lr: 0.001
   name : adam
-  max_epoch : 3000
-  patience : 200
+  max_epoch : 500
+  patience : 20
   weight_decay : 0.0005
 classifier:
-  base_lr: 0.001
+  base_lr: 0.01
   name : adam
-  max_epoch : 3000
+  max_epoch : 100
   patience : 1000
   run : 10
   weight_decay : 0.0005
@@ -26,6 +26,3 @@ output:
   verbose : True
   save_dir : './saved_model'
   interval : 100
-  aaa:
-    aaaa: 0
-    bbbb: 0

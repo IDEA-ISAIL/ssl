@@ -3,7 +3,7 @@ from typing import Optional
 import torch
 import torch.nn as nn
 import numpy as np
-from .utils.gnn import create_norm, GIN, GAT, GCN, DotGAT
+# from .utils.gnn import create_norm, GIN, GAT, GCN, DotGAT
 from .base import BaseMethod
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.svm import SVC

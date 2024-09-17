@@ -1,5 +1,5 @@
 use_cuda : True
-gpu_idx : 0
+gpu_idx : 3
 model:
   dropout: 0.5 
   n_layers: 2 
@@ -13,7 +13,7 @@ optim:
   base_lr: 0.001
   name : adam
   max_epoch : 3000
-  patience : 200
+  patience : 50
   weight_decay : 0.0005
 classifier:
   base_lr: 0.001
@@ -23,7 +23,7 @@ classifier:
   run : 10
   weight_decay : 0.0005
 dataset:
-  name : coauthor
+  name : cs
   root : pyg_data
 output:
   verbose : True

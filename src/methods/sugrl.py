@@ -45,6 +45,8 @@ class SUGRL(BaseMethod):
         super().__init__(encoder=encoder, loss_function=loss_function)
         
         # self.optimizer = torch.optim.Adam(self.model.parameters(), lr, weight_decay=weight_decay)
+        
+        # print(encoder)
        
         self.encoder_1 = encoder[0]
         self.encoder_2 = encoder[1]

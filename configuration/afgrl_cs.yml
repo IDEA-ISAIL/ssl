@@ -12,9 +12,9 @@ model:
 optim:
   base_lr: 0.00005
   name : adam
-  max_epoch : 5000
+  max_epoch : 1000
   patience : 1000
-  weight_decay : 0.00001
+  weight_decay : 0.0001
   moving_average_decay: 0.9
 dataset:
   name : cs

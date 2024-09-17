@@ -21,7 +21,7 @@ class SimpleTrainer(BaseTrainer):
                  lr: float = 0.001,
                  weight_decay: float = 0.0,
                  n_epochs: int = 10000,
-                 patience: int = 50,
+                 patience: int = 100,
                  device: Union[str, int] = "cuda:0",
                  save_root: str = "./ckpt",
                  dataset=None):
@@ -43,6 +43,8 @@ class SimpleTrainer(BaseTrainer):
         self.early_stopper = EarlyStopper(patience=self.patience)
 
     def train(self):
+        print(self.method)
+      
         self.method = self.method.to(self.device)
         new_loader = self.method.apply_data_augment_offline(self.data_loader)
         if new_loader != None:
@@ -63,8 +65,9 @@ class SimpleTrainer(BaseTrainer):
                 # self.scheduler.step()
 
             end_time = time.time()
-            info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
-            print(info)
+            if epoch % 50 == 0:            
+              info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
+              print(info)
 
             # # ------------------ Evaluator -------------------
             # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

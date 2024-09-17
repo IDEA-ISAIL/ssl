@@ -27,6 +27,11 @@ class GraphCL(BaseMethod):
         self.sigmoid = torch.nn.Sigmoid()
         self.data_augment = corruption
         self.loss_function = loss_function if loss_function else NegativeMI(hidden_channels)
+        
+        self.encoder = encoder
+        
+        
+        # print(encoder)
 
     def forward(self, batch):
         pos_batch, neg_batch, neg_batch2 = batch
@@ -80,6 +85,11 @@ class GraphCL(BaseMethod):
         loss1 = self.loss_function(x=s1, y=h_pos, x_ind=s1, y_ind=h_neg)
         loss2 = self.loss_function(x=s2, y=h_pos, x_ind=s2, y_ind=h_neg)
         return loss1 + loss2
+      
+    def get_embs(self, x: Tensor, adj: Adj, is_sparse: bool = True):
+        h_p = self.encoder(x, adj.to_torch_sparse_coo_tensor(), is_sparse)
+        embs = torch.squeeze(h_p,0)
+        return embs
 
 
 # class GraphCLEncoder(torch.nn.Module):

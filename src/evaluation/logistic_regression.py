@@ -26,10 +26,15 @@ class LogisticRegression(BaseEvaluator):
         TODO: maybe we need to return something.
         """
         val_accs, test_accs = [], []
+        
+        # print(dataset)
 
         for n in range(self.n_run):
             n_splits, train_mask, val_mask, test_mask = process_split(dataset=dataset)
             test_mask = dataset.test_mask
+            
+            # print(train_mask.shape)
+            
             for i in range(n_splits):
                 train_msk = train_mask[i]
                 val_msk = val_mask[i]
@@ -56,6 +61,8 @@ class LogisticRegression(BaseEvaluator):
         embs, labels = embs.to(self.device), labels.to(self.device)
         classifier = LogisticRegressionClassifier(emb_dim, num_class).to(self.device)
         optimizer = torch.optim.Adam(classifier.parameters(), lr=self.lr, weight_decay=self.weight_decay)
+        
+        # print(train_mask.shape,embs.shape)
 
         for iter in range(self.max_iter):
             classifier.train()
@@ -64,13 +71,14 @@ class LogisticRegression(BaseEvaluator):
             loss.backward()
             optimizer.step()
 
-        val_logits, _ = classifier(embs[val_mask], labels[val_mask])
+        # val_logits, _ = classifier(embs[val_mask], labels[val_mask])
         test_logits, _ = classifier(embs[test_mask], labels[test_mask])
-        val_preds = torch.argmax(val_logits, dim=1)
+        # val_preds = torch.argmax(val_logits, dim=1)
         test_preds = torch.argmax(test_logits, dim=1)
 
-        val_acc = (torch.sum(val_preds == labels[val_mask]).float() /
-                   labels[val_mask].shape[0]).detach().cpu().numpy()
+        # val_acc = (torch.sum(val_preds == labels[val_mask]).float() /
+        #            labels[val_mask].shape[0]).detach().cpu().numpy()
+        val_acc = 0
         test_acc = (torch.sum(test_preds == labels[test_mask]).float() /
                     labels[test_mask].shape[0]).detach().cpu().numpy()
         return val_acc, test_acc
@@ -122,10 +130,14 @@ def process_split(dataset):
     val_mask = dataset.val_mask
     test_mask = dataset.test_mask
     if type(train_mask) == torch.Tensor and len(train_mask.shape) > 1:
+        # print(1)
+        # print(dataset)
         n_splits = dataset.train_mask.shape[0]
     elif type(dataset.train_mask) == list and len(dataset.train_mask) > 1:
+        # print(2)
         n_splits = len(dataset.train_mask)
     else:
+        # print(3)
         n_splits = 1
         train_mask = torch.unsqueeze(dataset.train_mask, 0)
         val_mask = torch.unsqueeze(dataset.val_mask, 0)

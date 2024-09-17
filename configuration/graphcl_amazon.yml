@@ -21,7 +21,7 @@ classifier:
   run : 10
   weight_decay : 0.0005
 dataset:
-  name : Amazon
+  name : photo
   root : pyg_data
 output:
   verbose : True

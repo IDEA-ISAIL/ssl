@@ -10,7 +10,7 @@ model:
 optim:
   base_lr: 0.00015
   name : adam
-  max_epoch : 10
+  max_epoch : 20
   patience : 10
   weight_decay : 0.000
 classifier:
@@ -20,6 +20,6 @@ classifier:
   patience : 100
   weight_decay : 0.000
 dataset:
-  name : IMDB-M
+  name : IMDB-MULTI
   root : pyg_data
   batch_size: 128

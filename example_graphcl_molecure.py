@@ -12,9 +12,10 @@ import numpy as np
 
 
 torch.manual_seed(0)
-config = load_yaml('./configuration/infograph_mutag.yml')
-# config = load_yaml('./configuration/infograph_imdb_b.yml')
-# config = load_yaml('./configuration/infograph_imdb_m.yml')
+config = load_yaml('./configuration/graphcl_molecure_mutag.yml')
+# config = load_yaml('./configuration/graphcl_molecure_imdb_b.yml')
+# config = load_yaml('./configuration/graphcl_molecure_imdb_m.yml')
+
 torch.manual_seed(config.torch_seed)
 np.random.seed(config.torch_seed)
 device = torch.device("cuda:{}".format(config.gpu_idx) if torch.cuda.is_available() and config.use_cuda else "cpu")
@@ -25,7 +26,7 @@ print(os.path.dirname(os.path.realpath(__file__)))
 current_folder = os.path.abspath('')
 print(current_folder)
 path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config.dataset.root, config.dataset.name)
-if config.dataset.name in ['IMDB-B', 'IMDB-M', 'mutag', 'COLLAB', 'PROTEINS']:
+if config.dataset.name in ['IMDB-BINARY', 'IMDB-MULTI', 'MUTAG', 'COLLAB', 'PROTEINS']:
     # dataset = TUDataset(path, name=config.dataset.name).shuffle()
     dataset = TUDataset(path, name=config.dataset.name)
 else:
@@ -59,7 +60,8 @@ augment_neg = AugmentorList([RandomDropEdge(), RandomMask()])
 
 
 # ------------------ Trainer --------------------
-trainer = SimpleTrainer(method=method, data_loader=data_loader, device="cuda:0")
+trainer = SimpleTrainer(method=method, data_loader=data_loader, device=device, n_epochs=config.optim.max_epoch,
+                        lr=config.optim.base_lr)
 trainer.train()
 
 
@@ -70,7 +72,8 @@ y, embs = method.get_embs(data_loader)
 
 data_pyg.x = embs
 lg = LogisticRegression(lr=config.classifier.base_lr, weight_decay=config.classifier.weight_decay,
-                        max_iter=config.classifier.max_epoch, n_run=1, device=device)
+                        max_iter=config.classifier.max_epoch,
+                        n_run=10, device=device)
 lg(embs=embs, dataset=data_pyg)
 
 

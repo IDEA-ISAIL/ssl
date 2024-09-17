@@ -37,46 +37,19 @@
 
 [//]: # (Backbone of the graph neural network, such as GCN, GAT, GraphSAGE.)
 
-# Reference files
-## General
-* DGI: [Deep Graph Infomax, ICLR'2019](https://arxiv.org/pdf/1809.10341.pdf), [(Github)](https://github.com/PetarV-/DGI) [Baoyu]
-* GCC: [GCC: Graph Contrastive Coding for Graph Neural Network Pre-Training, KDD'2020](https://arxiv.org/pdf/2006.09963.pdf), [(Github)](https://github.com/THUDM/GCC) []
-* GraphCL: [Graph Contrastive Learning with Augmentations](https://proceedings.nips.cc/paper/2020/file/3fe230348e9a12c13120749e3f9fa4cd-Paper.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL) [Lecheng]
-* MVGRL: [Contrastive Multi-View Representation Learning on Graphs](https://proceedings.mlr.press/v119/hassani20a/hassani20a.pdf), [(Github)](https://github.com/kavehhassani/mvgrl) [Zhichen]
-* GCA: [Graph Contrastive Learning with Adaptive Augmentation
-](https://arxiv.org/abs/2010.14945), [(Github)](https://github.com/CRIPAC-DIG/GCA) [Dongqi]
-* JOAO: [Graph Contrastive Learning Automated](https://proceedings.mlr.press/v139/you21a.html), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated) [Tianxin]
-* SUGRL: [SUGRL: Simple Unsupervised Graph Representation Learning](https://ojs.aaai.org/index.php/AAAI/article/view/20748),[(Github)](https://github.com/YujieMo/SUGRL) [Xinrui]
-* MERIT: [Multi-scale contrastive siamese networks for self-supervised graph representation learning](https://www.ijcai.org/proceedings/2021/0204.pdf), [(Github)](https://github.com/GRAND-Lab/MERIT) [Xinrui]
 
-### non-contrastive
-* BGRL: [Large-Scale Representation Learning on Graphs via Bootstrapping
-](https://arxiv.org/abs/2102.06514), [(Github)](https://github.com/Namkyeong/BGRL_Pytorch) [Tianxin]
-* AFGRL: [Augmentation-Free Self-Supervised Learning on Graphs
-](https://arxiv.org/abs/2112.02472), [(Github)](https://github.com/Namkyeong/AFGRL) [Tianxin]
+# For Zihao
 
-## Heterogeneous/Multiplex/Multiview
-* [Unsupervised Attributed Multiplex Network Embedding, AAAI'2020](https://arxiv.org/pdf/1911.06750.pdf), [(Github)](https://github.com/pcy1302/DMGI) [Lihui]
-* [Self-supervised Heterogeneous Graph Neural Network with Co-contrastive Learning, KDD'2021](https://arxiv.org/pdf/2105.09111.pdf), [(Github)](https://github.com/liun-online/HeCo) [Zihao]
-* [Multi-view Contrastive Graph Clustering, NeurIPS'2021](https://proceedings.neurips.cc/paper/2021/file/10c66082c124f8afe3df4886f5e516e0-Paper.pdf), [(Github)](https://github.com/Panern/MCGC) [Zhichen]
+Two env: 'basket' and 'ssl'. Please execure Molecure, ReGCL, MVGRL on ssl, the others on basket.
 
-## Temporal/Dynamic
-* [Self-supervised Representation Learning on Dynamic Graphs, CIKM'2021](https://dl.acm.org/doi/pdf/10.1145/3459637.3482389), no public code
-* [Mining Spatio-Temporal Relations via Self-Paced Graph Contrastive Learning, KDD'2022](https://dl.acm.org/doi/pdf/10.1145/3534678.3539422), [(Github), code is not ready on 11/29](https://github.com/RongfanLi98/SPGCL)
-* [Temporality- and Frequency-aware Graph Contrastive Learning for Temporal Networks, CIKM'2022](https://dl.acm.org/doi/pdf/10.1145/3511808.3557469), [(Github)](https://github.com/ShiyinTan/TF-GCL)
+试了下其实所有都可以在basket里跑。那就可以不用换了，其他只是当时在那个环境里调参的区别。
 
-## Directed
-* [Directed Graph Contrastive Learning, ICML'2021](https://proceedings.neurips.cc/paper/2021/file/a3048e47310d6efaa4b1eaf55227bc92-Paper.pdf), [(Github)](https://github.com/flyingtango/DiGCL)
+当时因为wikics的validation很怪或者我没看出来怎么处理，我直接把logisticregression的val mask注释了，所以这块会返回0.如果需要的话要单独处理一下wikics，或者就直接不输出validation set的结果？
 
-## Signed
-* [SGCL: Contrastive Representation Learning for Signed Graphs, CIKM'2021](https://dl.acm.org/doi/pdf/10.1145/3459637.3482478), no public code
+amazon有人叫amazon有人叫photo，coauthor有人叫cs有人叫coauthor。
 
-## Molecure
-* InfoGraph: [InfoGraph: Unsupervised and Semi-supervised Graph-Level Representation Learning via Mutual Information Maximization](https://openreview.net/pdf?id=r1lfF2NYvH), [(Github)](https://github.com/sunfanyunn/InfoGraph)[lecheng]
-* GraphCL: [Graph Contrastive Learning with Augmentations](https://proceedings.nips.cc/paper/2020/file/3fe230348e9a12c13120749e3f9fa4cd-Paper.pdf), [(Github)](https://github.com/Shen-Lab/GraphCL) [Lecheng]
-* AD-GCL: [Adversarial Graph Augmentation to Improve Graph Contrastive Learning github](https://openreview.net/forum?id=ioyq7NsR1KJ), [(Github)](https://github.com/susheels/adgcl)[Tianxin]
-* JOAO [Graph Contrastive Learning Automated](https://proceedings.mlr.press/v139/you21a.html), [(Github)](https://github.com/Shen-Lab/GraphCL_Automated)  [Tianxin]
-* GraphMAE [GraphMAE: Self-Supervised Masked Graph Autoencoders](https://arxiv.org/pdf/2205.10803.pdf)[(Github)(https://github.com/THUDM/GraphMAE)] [lecheng]
+tianxin两个算法的(AFGRL,BGRL)的数据在data_里，其他有人的在pyg_data里，还有人的在datasets里……这个后面能改再改吧。
+
 
 ## dataset
 https://github.com/dmlc/dgl/blob/master/python/dgl/data/dgl_dataset.py

@@ -10,7 +10,7 @@ model:
 optim:
   base_lr: 0.001
   name : adam
-  max_epoch : 20
+  max_epoch : 30
   patience : 10
   weight_decay : 0.0
 classifier:
@@ -21,7 +21,7 @@ classifier:
   run : 10
   weight_decay : 0.00
 dataset:
-  name : mutag
+  name : MUTAG
   root : pyg_data
   batch_size: 128
 
