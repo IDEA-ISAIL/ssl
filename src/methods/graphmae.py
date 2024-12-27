@@ -3,7 +3,7 @@ from typing import Optional
 import torch
 import torch.nn as nn
 import numpy as np
-from .utils.gnn import create_norm, GIN, GAT, GCN, DotGAT
+from .utils.gnn import create_norm, GIN, GAT, GCN
 from .base import BaseMethod
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.svm import SVC
@@ -29,22 +29,6 @@ def EncoderDecoder(GNN, in_channels=1433, hidden_channels=512, enc_dec="encoding
             feat_drop=dropout,
             attn_drop=attn_drop,
             negative_slope=negative_slope,
-            residual=residual,
-            norm=create_norm(norm),
-            encoding=(enc_dec == "encoding"),
-        )
-    elif GNN == "dotgat":
-        mod = DotGAT(
-            in_dim=in_channels,
-            num_hidden=num_hidden,
-            out_dim=hidden_channels,
-            num_layers=num_layers,
-            nhead=nhead,
-            nhead_out=nhead_out,
-            concat_out=concat_out,
-            activation=activation,
-            feat_drop=dropout,
-            attn_drop=attn_drop,
             residual=residual,
             norm=create_norm(norm),
             encoding=(enc_dec == "encoding"),

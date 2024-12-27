@@ -125,7 +125,7 @@ class GraphCLEncoder(torch.nn.Module):
         for m in self.modules():
             self._weights_init(m)
         self.fc = torch.nn.Linear(in_channels, hidden_channels, bias=False)
-        self.gcn = GCNConv(in_channels=in_channels, out_channels=hidden_channels, bias=True, act=None)
+        self.gcn = GCNConv(in_channels=in_channels, out_channels=hidden_channels, bias=True)
 
     def _weights_init(self, m):
         if isinstance(m, torch.nn.Linear):

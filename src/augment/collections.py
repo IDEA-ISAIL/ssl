@@ -10,7 +10,7 @@ from .augment_subgraph import AugmentSubgraph
 from .random_drop_node import RandomDropNode
 from .random_mask import RandomMask
 from .random_drop_edge import RandomDropEdge
-from .negative import ComputePPR, ComputeHeat, NeighborSearch_AFGRL
+from .negative import ComputePPR, ComputeHeat
 from .shuffle_node import ShuffleNode
 
 __all__ = [
@@ -19,7 +19,6 @@ __all__ = [
     "augment_mvgrl_heat",
     "augment_bgrl_1",
     "augment_bgrl_2",
-    "augment_afgrl"
 ]
 
 # augment_dgi = DataShuffle(is_x=True)
@@ -28,4 +27,3 @@ augment_mvgrl_ppr = ComputePPR()
 augment_mvgrl_heat = ComputeHeat()
 augment_bgrl_1 = RandomDropEdge()
 augment_bgrl_2 = RandomDropEdge()
-augment_afgrl = NeighborSearch_AFGRL()

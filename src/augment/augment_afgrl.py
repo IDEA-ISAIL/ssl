@@ -1,6 +1,6 @@
-import faiss
 import torch
 import numpy as np
+from sklearn.cluster import KMeans
 from .base import Augmentor
 class NeighborSearch_AFGRL(Augmentor):
     def __init__(self, device="cuda", num_centroids=100, num_kmeans=5, clus_num_iters=20):
@@ -39,9 +39,14 @@ class NeighborSearch_AFGRL(Augmentor):
         pred_labels = []
 
         for seed in range(self.num_kmeans):
-            kmeans = faiss.Kmeans(d, ncentroids, niter=niter, gpu=False, seed=seed + 1234)
-            kmeans.train(teacher.cpu().numpy())
-            _, I_kmeans = kmeans.index.search(teacher.cpu().numpy(), 1)
+            # kmeans = faiss.Kmeans(d, ncentroids, niter=niter, gpu=False, seed=seed + 1234)
+            # kmeans.train(teacher.cpu().numpy())
+            # _, I_kmeans = kmeans.index.search(teacher.cpu().numpy(), 1)
+            kmeans = KMeans(n_clusters=ncentroids, max_iter=niter, random_state=seed, n_init=10)
+            kmeans.fit(teacher.cpu().numpy())
+
+            # Get the cluster assignments
+            I_kmeans = kmeans.predict(teacher.cpu().numpy()).reshape(-1, 1)
         
             clust_labels = I_kmeans[:,0]
 
