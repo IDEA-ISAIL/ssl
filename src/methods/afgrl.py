@@ -58,6 +58,9 @@ class AFGRL(BaseMethod):
             batch_list.append(batch)
         new_loader = AugmentDataLoader(batch_list=batch_list)
         return new_loader
+    
+    def get_embs(self, x, edge_index):
+        return self.encoder(x, edge_index)
 
 
 def loss_fn(x, y):
@@ -99,27 +102,3 @@ class AFGRLEncoder(nn.Module):
             x = self.conv_list[i](x, edge_index, edge_weight=edge_weight)
             x = self.act_list[i](self.bn_list[i](x))
         return x
-    
-
-class AFGRLEncoder_old(torch.nn.Module):
-    def __init__(self,
-                 in_channels: int,
-                 hidden_channels: int = 512,
-                 act: torch.nn = torch.nn.PReLU(),
-                 num_layers=1):
-        super(AFGRLEncoder_old, self).__init__()
-        self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=act)
-        self.act = act
-        self.hidden_channels = hidden_channels
-        for m in self.modules():
-            self._weights_init(m)
-
-    def _weights_init(self, m):
-        if isinstance(m, torch.nn.Linear):
-            torch.nn.init.xavier_uniform_(m.weight.data)
-            if m.bias is not None:
-                m.bias.data.fill_(0.0)
-
-    def forward(self, batch, edge_index, is_sparse=True):
-        edge_weight = batch.edge_weight if "edge_weight" in batch else None
-        return self.act(self.gcn(x=batch.x, edge_index=edge_index, edge_weight=edge_weight))

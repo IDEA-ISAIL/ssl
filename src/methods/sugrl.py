@@ -196,76 +196,7 @@ class SUGRL(BaseMethod):
         loss = loss_mar * self.config['w_loss1'] + loss_mar_1 * self.config['w_loss2'] + mask_margin_N * self.config['w_loss3']
         self.epoch += 1
         return loss
-        # loss.backward()
-        # optimiser.step()
-        # string_1 = " loss_1: {:.3f}||loss_2: {:.3f}||loss_3: {:.3f}||".format(loss_mar.item(), loss_mar_1.item(),
-                                                                                # mask_margin_N.item())
-            # if args.pretrain:
-            #     if os.path.exists(args.checkpoint_dir + '/' + args.dataset_name + '_weights.pth'):
-            #             load_params = torch.load(args.checkpoint_dir + '/' + args.dataset_name + '_weights.pth')
-            #             model_params = model.state_dict()
-            #             same_parsms = {k: v for k, v in load_params.items() if k in model_params.keys()}
-            #             model_params.update(same_parsms)
-            #             model.load_state_dict(model_params)
-            # if args.save_model:
-            #     torch.save(model.state_dict(), args.checkpoint_dir + '/' + args.dataset_name + '_weights.pth')
 
-            #evaluation
-
-            # if epoch % config['epochs'] == 0 and epoch != 0:
-            #     self.model.eval()
-            #     h_a, h_p = self.model.get_embs(feature_X, A_I_nomal)
-            #     embs = torch.squeeze(h_p,0)
-            #     embs = embs / embs.norm(dim=1)[:, None]
-
-              
-            #     train_embs = embs[self.data.train_mask]
-            #     test_embs = embs[self.data.test_mask]
-                    
-            #     accs = []
-            #     accs_small = []
-            #     xent = torch.nn.CrossEntropyLoss()
-            #     for _ in range(2):
-            #         log = LogReg(config['dim'], self.nb_classes)
-            #         opt = torch.optim.Adam(log.parameters(), lr=config['lr2'], weight_decay=config['wd'])
-            #         log.to(self.device)
-            #         for _ in range(config['num1']):
-            #             log.train()
-            #             opt.zero_grad()
-            #             logits = log(train_embs)
-            #             loss = xent(logits, train_lbls)
-            #             loss.backward()
-            #             opt.step()
-            #         logits = log(test_embs)
-            #         preds = torch.argmax(logits, dim=1)
-            #         acc = torch.sum(preds == test_lbls).float() / test_lbls.shape[0]
-            #         accs.append(acc * 100)
-            #         ac = []
-            #         for i in range(self.nb_classes):
-            #             acc_small = torch.sum(preds[test_lbls == i] == test_lbls[test_lbls == i]).float() / \
-            #                         test_lbls[test_lbls == i].shape[0]
-            #             ac.append(acc_small * 100)
-            #         accs_small = ac
-            #     accs = torch.stack(accs)
-            #     string_3 = ""
-            #     for i in range(self.nb_classes):
-            #         string_3 = string_3 + "|{:.1f}".format(accs_small[i].item())
-            #     string_2 = " epoch: {},accs: {:.1f},std: {:.2f} ".format(epoch, accs.mean().item(),
-            #                                                                         accs.std().item())
-            #     tqdm.write(string_1 + string_2 + string_3)
-            #     noe = t()
-            #     print('total time', noe - start)
-                # elif args.custom_key == 'link':
-                #     sc_roc, sc_ap = get_roc_score(test_edges, test_edges_false, embs.cpu().detach().numpy(), adj_1)
-                #     print('AUC', sc_roc, 'AP', sc_ap)
-                # elif args.custom_key == 'clu':
-                #     kmeans = KMeans(n_clusters=nb_classes).fit(embs[ylablesx].cpu().detach().numpy())
-                #     predict_labels = kmeans.predict(embs[ylablesx].cpu().detach().numpy())
-
-                #     cm = clustering_metrics(tsne_lab, predict_labels)
-                #     acc, nmi, adjscore = cm.evaluationClusterModelFromLabel()
-
-                #     print('Acc, nmi, adj:', acc, nmi, adjscore)
 
 class SugrlMLP(nn.Module):
     def __init__(self, in_channels,dropout=0.2, cfg=[512, 128], batch_norm=False, out_layer=None):

@@ -33,11 +33,11 @@ root = config.dataset.root
 dataset = Dataset(root=root, name=data_name)
 if not hasattr(dataset, "adj_t"):
     data = dataset.data
-    dataset.data.adj_t = torch.sparse.FloatTensor(data.edge_index, torch.ones_like(data.edge_index[0]), [data.x.shape[0], data.x.shape[0]])
+    dataset.data.adj_t = torch.sparse_coo_tensor(data.edge_index, torch.ones_like(data.edge_index[0]), [data.x.shape[0], data.x.shape[0]]).coalesce()
 data_loader = DataLoader(dataset)
 data = dataset.data
 # data.x[7028] = torch.zeros((300))
-adj_ori_sparse = torch.sparse.FloatTensor(data.edge_index, torch.ones_like(data.edge_index[0]), [data.x.shape[0], data.x.shape[0]]).to(device)
+adj_ori_sparse = torch.sparse_coo_tensor(data.edge_index, torch.ones_like(data.edge_index[0]), [data.x.shape[0], data.x.shape[0]]).to(device).coalesce()
 # Augmentation
 augment = NeighborSearch_AFGRL(device=device, num_centroids=config.model.num_centroids, num_kmeans=config.model.num_kmeans, clus_num_iters=config.model.clus_num_iters)
 
