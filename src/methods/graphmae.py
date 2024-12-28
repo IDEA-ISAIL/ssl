@@ -95,7 +95,7 @@ def setup_loss_fn(loss_fn, alpha_l):
 
 def collate_fn(batch):
     graphs = [x[0] for x in batch]
-    labels = [torch.tensor(x[1]) for x in batch]
+    labels = [x[1].clone().detach() for x in batch]
     batch_g = dgl.batch(graphs)
     labels = torch.stack(labels, dim=0)
     return batch_g, labels
@@ -165,6 +165,7 @@ class GraphMAE(BaseMethod):
         return use_g, out_x, (mask_nodes, keep_nodes)
 
     def forward(self, data):
+
         g = data[0]
         x = data[0].ndata['attr']
         pre_use_g, use_x, (mask_nodes, keep_nodes) = self.encoding_mask_noise(g, x, self._mask_rate)
@@ -267,8 +268,8 @@ class GraphMAE(BaseMethod):
         for train_index, test_index in kf.split(embeddings, labels):
             x_train = embeddings[train_index]
             x_test = embeddings[test_index]
-            y_train = labels[train_index]
-            y_test = labels[test_index]
+            y_train = labels[train_index].ravel()
+            y_test = labels[test_index].ravel()
             params = {"C": [1e-3, 1e-2, 1e-1, 1, 10]}
             svc = SVC(random_state=42)
             clf = GridSearchCV(svc, params)
