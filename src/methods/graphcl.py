@@ -81,28 +81,8 @@ class GraphCL(BaseMethod):
         loss2 = self.loss_function(x=s2, y=h_pos, x_ind=s2, y_ind=h_neg)
         return loss1 + loss2
 
-
-# class GraphCLEncoder(torch.nn.Module):
-#     def __init__(self,
-#                  in_channels: int,
-#                  hidden_channels: int = 512,
-#                  act: torch.nn = torch.nn.PReLU(),
-#                  num_layers=1):
-#         super(GraphCLEncoder, self).__init__()
-#         self.gcn = GCN(in_channels=in_channels, hidden_channels=hidden_channels, num_layers=num_layers, act=None)
-#         self.act = act
-#         for m in self.modules():
-#             self._weights_init(m)
-#
-#     def _weights_init(self, m):
-#         if isinstance(m, torch.nn.Linear):
-#             torch.nn.init.xavier_uniform_(m.weight.data)
-#             if m.bias is not None:
-#                 m.bias.data.fill_(0.0)
-#
-#     def forward(self, batch, edge_index):
-#         edge_weight = batch.edge_weight if "edge_weight" in batch else None
-#         return self.act(self.gcn(x=batch.x, edge_index=edge_index, edge_weight=edge_weight))
+    def get_embs(self, data):
+        return self.encoder(data, data.adj_t).detach()
 
 
 class GraphCLEncoder(torch.nn.Module):

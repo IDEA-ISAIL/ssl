@@ -72,9 +72,11 @@ trainer.train()
 
 # ------------------ Evaluator -------------------
 method.eval()
+# renew dataset to get back train_mask and value_mask from .T
+dataset = Dataset(root=root, name=data_name)
+dataset = add_adj_t(dataset)
 data_pyg = dataset.data.to(method.device)
-y, embs = method.get_embs(data_loader)
-
+embs = method.get_embs(data_pyg)
 lg = LogisticRegression(lr=config.classifier.base_lr, weight_decay=config.classifier.weight_decay,
                         max_iter=config.classifier.max_epoch, n_run=1, device=device)
 lg(embs=embs, dataset=data_pyg)
