@@ -7,6 +7,8 @@ from .base import BaseEvaluator
 from typing import Union
 from src.typing import Tensor
 
+from tqdm import tqdm
+
 
 class LogisticRegression(BaseEvaluator):
     def __init__(self,
@@ -27,7 +29,7 @@ class LogisticRegression(BaseEvaluator):
         """
         val_accs, test_accs = [], []
 
-        for n in range(self.n_run):
+        for n in tqdm(range(self.n_run)):
             n_splits, train_mask, val_mask, test_mask = process_split(dataset=dataset)
             test_mask = dataset.test_mask
             for i in range(n_splits):

@@ -1,6 +1,7 @@
 import torch
 import numpy as np
-from sklearn.cluster import KMeans
+# from kmeans_pytorch import kmeans
+import faiss
 from .base import Augmentor
 class NeighborSearch_AFGRL(Augmentor):
     def __init__(self, device="cuda", num_centroids=100, num_kmeans=5, clus_num_iters=20):
@@ -38,15 +39,28 @@ class NeighborSearch_AFGRL(Augmentor):
         tmp = torch.LongTensor(np.arange(n_data)).unsqueeze(-1).to(self.device)
         pred_labels = []
 
+        # import pdb; pdb.set_trace()
         for seed in range(self.num_kmeans):
-            # kmeans = faiss.Kmeans(d, ncentroids, niter=niter, gpu=False, seed=seed + 1234)
-            # kmeans.train(teacher.cpu().numpy())
-            # _, I_kmeans = kmeans.index.search(teacher.cpu().numpy(), 1)
-            kmeans = KMeans(n_clusters=ncentroids, max_iter=niter, random_state=seed, n_init=10)
-            kmeans.fit(teacher.cpu().numpy())
+            kmeans = faiss.Kmeans(d, ncentroids, niter=niter, gpu=False, seed=seed + 1234)
+            kmeans.train(teacher.cpu().numpy())
+            _, I_kmeans = kmeans.index.search(teacher.cpu().numpy(), 1)
+            # scikit kmeans. too slow
+            # kmeans = MiniBatchKMeans(n_clusters=ncentroids, max_iter=niter, random_state=seed, n_init=10)
+            # kmeans.fit(teacher.cpu().numpy())
 
-            # Get the cluster assignments
-            I_kmeans = kmeans.predict(teacher.cpu().numpy()).reshape(-1, 1)
+            # # Get the cluster assignments
+            # I_kmeans = kmeans.predict(teacher.cpu().numpy()).reshape(-1, 1)
+
+            # cluster_ids_x, cluster_centers = kmeans(
+            #     X=teacher, 
+            #     num_clusters=ncentroids, 
+            #     distance='euclidean', 
+            #     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu'),
+            #     tol=1,
+            #     # num_iters=niter
+            # )
+
+            # I_kmeans = cluster_ids_x.reshape(-1, 1)
         
             clust_labels = I_kmeans[:,0]
 
@@ -79,8 +93,20 @@ class NeighborSearch_AFGRL(Augmentor):
         index = np.repeat(range(I.shape[0]), I.shape[1])
         
         assert len(similar) == len(index)
-        indices = torch.tensor([index, similar]).to(self.device)
-        result = torch.sparse_coo_tensor(indices, torch.ones_like(I.reshape(-1)), [I.shape[0], I.shape[0]], dtype=torch.float).to(self.device)
+        # indices = torch.tensor([index, similar]).to(self.device)
+        # result = torch.sparse_coo_tensor(indices, torch.ones_like(I.reshape(-1)), [I.shape[0], I.shape[0]], dtype=torch.float).to(self.device)
+
+        indices_np = np.array([index, similar])  # Efficiently combine the arrays
+        indices = torch.tensor(indices_np, device=self.device)  # Convert to a PyTorch tensor on the target device
+
+        # Create the sparse COO tensor
+        result = torch.sparse_coo_tensor(
+            indices,
+            torch.ones_like(indices[0]),
+            [I.shape[0], I.shape[0]],
+            dtype=torch.float,
+            device=self.device
+        )
 
         return result
 

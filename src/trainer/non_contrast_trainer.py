@@ -70,12 +70,12 @@ class NonContrastTrainer(BaseTrainer):
             end_time = time.time()
             info = "Epoch {}: loss: {:.4f}, time: {:.4f}s".format(epoch, loss.detach().cpu().numpy(), end_time-start_time)
             
-            if (epoch+1)%200==0:
+            if (epoch+1)%20==0:
                 print(info)
                 self.method.eval()
                 data_pyg = self.dataset.data.to(self.method.device)
                 embs = self.method.get_embs(data_pyg, data_pyg.edge_index).detach()
-                lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=20, device=self.device)
+                lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=5, device=self.device)
                 lg(embs=embs, dataset=data_pyg)
             self.early_stopper.update(loss)  # update the status
             if self.early_stopper.save:
