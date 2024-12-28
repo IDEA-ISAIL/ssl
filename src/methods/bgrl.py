@@ -40,6 +40,8 @@ class BGRL(BaseMethod):
         super().__init__(encoder=student_encoder, data_augment=data_augment, loss_function=loss_fn)
         self.encoder = student_encoder
         self.teacher_encoder = teacher_encoder
+        self.data_augment = data_augment
+        self.loss_function = loss_fn
         set_requires_grad(self.teacher_encoder, False)
         rep_dim = self.encoder.hidden_channels
         if pred_dim==None:
@@ -75,6 +77,9 @@ class BGRL(BaseMethod):
             batch_list.append((batch_aug_1, batch_aug_2))
         new_loader = AugmentDataLoader(batch_list=batch_list)
         return new_loader
+    
+    def get_embs(self, data):
+        return self.encoder(data, data.edge_index).detach()
 
 
 class BGRLEncoder(nn.Module):
@@ -85,7 +90,7 @@ class BGRLEncoder(nn.Module):
         self.conv1 = GCNConv(in_channel, hidden_channels[0])
         self.bn1 = nn.BatchNorm1d(hidden_channels[0], momentum = 0.01)
         self.prelu1 = nn.PReLU()
-        self.num_layer = len(hidden_channels)
+        self.num_layer = len(hidden_channels) 
         self.conv_list, self.bn_list, self.act_list = nn.ModuleList([]), nn.ModuleList([]), nn.ModuleList([])
         for i in range(self.num_layer-1):
             self.conv_list.append(GCNConv(hidden_channels[i],hidden_channels[i+1]))

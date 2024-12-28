@@ -59,8 +59,11 @@ class AFGRL(BaseMethod):
         new_loader = AugmentDataLoader(batch_list=batch_list)
         return new_loader
     
-    def get_embs(self, x, edge_index):
-        return self.encoder(x, edge_index)
+    # def get_embs(self, x, edge_index):
+    #     return self.encoder(x, edge_index)
+
+    def get_embs(self, data):
+        return self.encoder(data, data.edge_index).detach()
 
 
 def loss_fn(x, y):

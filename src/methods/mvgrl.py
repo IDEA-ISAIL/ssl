@@ -87,6 +87,9 @@ class MVGRL(BaseMethod):
         # 4. get loss
         loss = self.get_loss(logits, lbl)
         return loss
+    
+    def get_embs(self, data, data_neg):
+        return self.encoder(data.x, data_neg.x, data.adj_t, data_neg.adj_t, False)['final'].detach()
 
 
 class MVGRLBaseEncoder(torch.nn.Module):

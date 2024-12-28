@@ -122,6 +122,9 @@ class GRACE(BaseMethod):
         ret = ret.mean() if mean else ret.sum()
 
         return ret
+    
+    def get_embs(self, data):
+        return self.encoder(data.x, data.edge_index).detach()
 
 
 class LogReg(nn.Module):

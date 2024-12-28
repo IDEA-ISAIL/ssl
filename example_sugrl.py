@@ -67,6 +67,6 @@ trainer.train()
 data_pyg = dataset.data.to(method.device)
 embs = method.get_embs(data_pyg.x, data_pyg.adj_t).detach()
 
-lg = LogisticRegression(lr=0.001, weight_decay=0, max_iter=3000, n_run=50, device="cuda")
+lg = LogisticRegression(lr=0.001, weight_decay=0, max_iter=3000, n_run=10, device="cuda")
 create_masks(data=data_pyg.cpu())
 lg(embs=embs, dataset=data_pyg)

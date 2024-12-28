@@ -74,7 +74,7 @@ class NonContrastTrainer(BaseTrainer):
                 print(info)
                 self.method.eval()
                 data_pyg = self.dataset.data.to(self.method.device)
-                embs = self.method.get_embs(data_pyg, data_pyg.edge_index).detach()
+                embs = self.method.get_embs(data_pyg).detach()
                 lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=5, device=self.device)
                 lg(embs=embs, dataset=data_pyg)
             self.early_stopper.update(loss)  # update the status

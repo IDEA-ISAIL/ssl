@@ -37,7 +37,7 @@ root = config.dataset.root
 dataset = Dataset(root=root, name=data_name)
 if not hasattr(dataset, "adj_t"):
     data = dataset.data
-    dataset.data.adj_t = torch.sparse.FloatTensor(data.edge_index, torch.ones_like(data.edge_index[0]), [data.x.shape[0], data.x.shape[0]])
+    dataset.data.adj_t = torch.sparse_coo_tensor(data.edge_index, torch.ones_like(data.edge_index[0]), [data.x.shape[0], data.x.shape[0]]).coalesce()
 data_loader = DataLoader(dataset)
 # dataset.data.x[7028] = torch.zeros((300))
 

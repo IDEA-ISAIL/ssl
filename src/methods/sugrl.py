@@ -53,9 +53,10 @@ class SUGRL(BaseMethod):
         self.device = device
         self.config = config
 
-        i = torch.LongTensor([self.data.edge_index[0].numpy(), self.data.edge_index[1].numpy()])
+        # i = torch.LongTensor([self.data.edge_index[0].numpy(), self.data.edge_index[1].numpy()])
+        i = torch.tensor(np.array([self.data.edge_index[0].numpy(), self.data.edge_index[1].numpy()]), dtype=torch.long)
         v = torch.FloatTensor(torch.ones([self.data.num_edges]))
-        A_sp = torch.sparse.FloatTensor(i, v, torch.Size([self.data.num_nodes, self.data.num_nodes]))
+        A_sp = torch.sparse_coo_tensor(i, v, torch.Size([self.data.num_nodes, self.data.num_nodes])).coalesce()
         A = A_sp.to_dense()
         I = torch.eye(A.shape[1]).to(A.device)
         A_I = A + I
@@ -130,7 +131,7 @@ class SUGRL(BaseMethod):
             test_index = []
             for j in range(lable.max().item() + 1):
                 # num = ((lable == j) + 0).sum().item()
-                index = torch.range(0, len(lable) - 1)[(lable == j).squeeze()]
+                index = torch.arange(0, len(lable), device=lable.device)[(lable == j).squeeze()]
                 x_list0 = random.sample(list(index), int(len(index) * 0.1))
                 for x in x_list0:
                     train_index.append(int(x))

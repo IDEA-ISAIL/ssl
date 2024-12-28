@@ -11,7 +11,7 @@ from src.utils.create_data import create_masks
 from src.utils.add_adj import add_adj_t
 
 # load the configuration file
-config = load_yaml('./configuration/mvgrl_wikics.yml')
+config = load_yaml('./configuration/mvgrl_cora.yml')
 torch.manual_seed(config.torch_seed)
 device = torch.device("cuda:{}".format(config.gpu_idx) if torch.cuda.is_available() and config.use_cuda else "cuda")
 
@@ -50,9 +50,9 @@ trainer.train()
 # ------------------ Evaluator -------------------
 data_pyg = dataset.data.to(method.device)
 data_neg = method.corrput(data_pyg).to(method.device)
-enc_embs = method.encoder(data_pyg.x, data_neg.x, data_pyg.adj_t, data_neg.adj_t, False)
-embs = enc_embs['final']
-
+# enc_embs = method.encoder(data_pyg.x, data_neg.x, data_pyg.adj_t, data_neg.adj_t, False)
+# embs = enc_embs['final']
+embs = method.get_embs(data_pyg, data_neg)
 
 lg = LogisticRegression(lr=0.01, weight_decay=0, max_iter=100, n_run=50, device=device)
 lg(embs=embs, dataset=data_pyg)
